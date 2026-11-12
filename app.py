@@ -1041,6 +1041,9 @@ def reception():
     if br:
         qv += " AND v.branch_id=?"
         av.append(br)
+    if current_user()["role"] in ("laser", "beauty"):
+        qv += " AND v.target=?"  # لا تظهر زبائن المديرة في غرفة التجميل/الليزر
+        av.append(current_user()["role"])
     open_visits = db.execute(qv + " ORDER BY v.id", av).fetchall()
     return render_template("reception.html", pending=pending, todays=todays, total=total, br=br,
                            open_visits=open_visits)
@@ -2107,6 +2110,9 @@ def visits_list():
     if br:
         q += " AND v.branch_id=?"
         args.append(br)
+    if current_user()["role"] in ("laser", "beauty"):
+        q += " AND v.target=?"
+        args.append(current_user()["role"])
     rows = db.execute(q + " ORDER BY v.id DESC", args).fetchall()
     return render_template("visits.html", rows=rows, d=d, br=br)
 
@@ -2117,6 +2123,8 @@ def visit_view(vid):
     db = get_db()
     u = current_user()
     v, items, total = visit_data(vid)
+    if u["role"] in ("laser", "beauty") and v["target"] != u["role"]:
+        abort(403)  # غرفة الليزر/التجميل لا ترى زبائن المديرة ولا الأقسام الأخرى
     tgt, _ = queue_target()
     can_treat = u["role"] == "admin" or (u["role"] in ("laser", "beauty", "reception") and v["target"] == u["role"])
     can_edit = v["status"] in ("waiting", "treating") and (can_treat or u["role"] in ("admin", "reception"))
