@@ -164,6 +164,16 @@ document.querySelectorAll('.picker').forEach(function(pk){
   document.addEventListener('click',function(e){if(!pk.contains(e.target))list.style.display='none'});
 });
 </script>
+{% if cu and live_page() %}<script>
+/* تحديث تلقائي: إذا وصلت معلومة جديدة (من حاسوب آخر أو من هنا) تتحدث الصفحة وحدها،
+   إلا إذا كان المستخدم يكتب في خانة */
+(function(){var s=null,dirty=false;
+document.addEventListener('input',function(){dirty=true});
+function busy(){var a=document.activeElement;return dirty||(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))||document.querySelector('details[open].dd')}
+setInterval(function(){fetch('/api/stamp',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+ if(s!==null&&d.s!==s&&!busy()){var y=window.scrollY;sessionStorage.setItem('bil_y',y);location.reload()}s=d.s}).catch(function(){})},2500);
+try{var y=sessionStorage.getItem('bil_y');if(y){window.scrollTo(0,+y);sessionStorage.removeItem('bil_y')}}catch(e){}
+})();</script>{% endif %}
 </body></html>"""
 
 TEMPLATES["macros.html"] = r"""

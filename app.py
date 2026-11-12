@@ -3990,7 +3990,7 @@ def page_icon():
     return icons.ic(name, "pg")
 
 
-app.jinja_env.globals.update(ic=icons.ic, item_ic=icons.item, avatar=icons.avatar,
+app.jinja_env.globals.update(live_page=lambda: request.endpoint in LIVE_PAGES, ic=icons.ic, item_ic=icons.item, avatar=icons.avatar,
                              icon_sprite=icons.sprite, page_icon=page_icon)
 RESTORE_MSG = backup.apply_pending_restore(DB_PATH)
 from templates import TEMPLATES  # noqa: E402
@@ -4081,9 +4081,28 @@ START_TIME = time.time()
 LAST_REQ = [time.time()]
 
 
+@app.after_request
+def _after_write(resp):
+    """بعد أي عملية حفظ: الصفحات المفتوحة تتحدث، والحاسوب الفرعي يرسل فورًا."""
+    if request.method == "POST" and resp.status_code < 400 and not request.path.startswith("/sync/"):
+        sync.bump()
+        if sync.NODE:
+            sync.WAKE.set()
+    return resp
+
+
+LIVE_PAGES = {"dashboard", "reception", "cashbox", "cash_daily", "appointments", "calendar", "debts",
+              "visits_list", "branch_view", "plans", "stock_alerts_page", "visit_view", "client_view"}
+
+
+@app.route("/api/stamp")
+def api_stamp():
+    return {"s": sync.STAMP[0]}
+
+
 @app.before_request
 def _mark_activity():
-    if request.endpoint not in ("static", None):
+    if request.endpoint not in ("static", None, "api_stamp"):
         LAST_REQ[0] = time.time()
 
 

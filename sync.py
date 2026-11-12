@@ -197,7 +197,7 @@ def rows_since(con, t, since, where="", args=()):
 IMAGE_SETTINGS = {"stamp_img", "signature_img"}
 
 
-OVERLAP = 120  # ثانية: نعيد إرسال آخر دقيقتين حتى لا تضيع عملية وصلت من حاسوب آخر في نفس اللحظة
+OVERLAP = 10  # ثوانٍ: نعيد إرسال آخر لحظات حتى لا تضيع عملية وصلت من حاسوب آخر في نفس اللحظة
 
 
 def central_pull(con, branch_id, since, img_ver=None):
@@ -223,9 +223,21 @@ def central_pull(con, branch_id, since, img_ver=None):
     return {"now": now, "tables": out, "deleted": deleted, "settings": settings, "stock": stock}
 
 
+# ---------------------------------------------------------------- سرعة التنقل
+STAMP = [0]                 # يزيد كلما تغيّرت المعلومات (لتحديث الصفحات المفتوحة وحدها)
+WAKE = threading.Event()    # يوقظ المزامنة فورًا بعد أي عملية في هذا الحاسوب
+_last_hello = [0.0]
+
+
+def bump():
+    STAMP[0] += 1
+
+
 def central_push(con, branch_id, payload):
     rcv = utcnow()
     n = apply_rows(con, payload.get("tables", {}), payload.get("deleted", []), rcv=rcv)
+    if n:
+        bump()
     recompute_stock(con, branch_id)
     con.execute("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)",
                 (f"sync_last_{branch_id}", datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
@@ -298,10 +310,12 @@ def node_sync_once(connect):
     con = connect()
     try:
         # 0) نسخة البرنامج في الحاسوب المركزي (للتحديث التلقائي)
-        hello = _post("/sync/hello", {"branch_id": NODE["branch_id"], "device": NODE.get("device"),
-                                      "version": APP_VERSION}, timeout=15)
-        state_set(con, "central_version", hello.get("version", "0"))
-        con.commit()
+        if time.time() - _last_hello[0] > 60:  # مرة في الدقيقة تكفي
+            hello = _post("/sync/hello", {"branch_id": NODE["branch_id"], "device": NODE.get("device"),
+                                          "version": APP_VERSION}, timeout=15)
+            state_set(con, "central_version", hello.get("version", "0"))
+            con.commit()
+            _last_hello[0] = time.time()
         # 1) إرسال ما سُجّل محليًا
         for _ in range(20):
             tables, deleted = node_collect(con)
@@ -324,7 +338,9 @@ def node_sync_once(connect):
                                        "since": since, "img_ver": iv[0] if iv else ""})
             if not res.get("ok"):
                 raise RuntimeError(res.get("error", "رفض المركزي"))
-            apply_rows(con, res["tables"], res["deleted"])
+            applied = apply_rows(con, res["tables"], res["deleted"])
+            if applied:
+                bump()
             for k, v in res.get("settings", {}).items():
                 con.execute("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)", (k, v))
             for s in res.get("stock", []):
@@ -332,7 +348,8 @@ def node_sync_once(connect):
                             (s["product_id"], s["branch_id"]))
                 con.execute("UPDATE stock SET min_qty=? WHERE product_id=? AND branch_id=?",
                             (s["min_qty"], s["product_id"], s["branch_id"]))
-            recompute_stock(con, NODE["branch_id"])
+            if applied:
+                recompute_stock(con, NODE["branch_id"])
             got = sum(len(v) for v in res["tables"].values())
             # إذا كانت الدفعة كاملة (5000) نكمل من آخر وقت استلمناه
             if got and max(len(v) for v in res["tables"].values()) >= 5000:
@@ -373,10 +390,13 @@ def sync_now(connect):
         return node_sync_once(connect)
 
 
-def node_loop(connect, every=30):
+def node_loop(connect, every=3):
+    """كل 3 ثوانٍ، وفورًا بعد أي عملية في هذا الحاسوب. عند انقطاع الاتصال ننتظر أكثر."""
     while True:
+        ok = False
         try:
-            sync_now(connect)
+            ok, _ = sync_now(connect)
         except Exception as e:
             print("sync error:", e)
-        time.sleep(every)
+        WAKE.wait(every if ok else 15)
+        WAKE.clear()
