@@ -60,17 +60,17 @@ Source: "..\dist\update\Bilsan-update-{#AppVer}.zip"; DestDir: "{#Data}\update";
 Source: "{#CfgDir}\*"; DestDir: "{#Data}"; Flags: onlyifdoesntexist; Check: IsFirstInstall
 
 [Icons]
-Name: "{commondesktop}\Bilsan"; Filename: "{app}\Bilsan.exe"; IconFilename: "{app}\Bilsan.exe"
-Name: "{commonprograms}\Bilsan"; Filename: "{app}\Bilsan.exe"
+Name: "{commondesktop}\Bilsan"; Filename: "{app}\Bilsan.exe"; IconFilename: "{app}\Bilsan.exe"; WorkingDir: "{#Data}"
+Name: "{commonprograms}\Bilsan"; Filename: "{app}\Bilsan.exe"; WorkingDir: "{#Data}"
 ; يعمل في الخلفية عند تشغيل الحاسوب حتى تبقى المزامنة شغالة
-Name: "{commonstartup}\Bilsan"; Filename: "{app}\Bilsan.exe"; Parameters: "--background"
+Name: "{commonstartup}\Bilsan"; Filename: "{app}\Bilsan.exe"; Parameters: "--background"; WorkingDir: "{#Data}"
 
 [Run]
 #if Variant == "Central"
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""Bilsan"""; Flags: runhidden
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""Bilsan"" dir=in action=allow protocol=TCP localport=5000"; Flags: runhidden
 #endif
-Filename: "{app}\Bilsan.exe"; Description: "Open Bilsan"; Flags: postinstall nowait skipifsilent
+Filename: "{app}\Bilsan.exe"; WorkingDir: "{#Data}"; Description: "Open Bilsan"; Flags: postinstall nowait skipifsilent
 
 [UninstallRun]
 Filename: "{sys}\taskkill.exe"; Parameters: "/f /im Bilsan.exe"; Flags: runhidden; RunOnceId: "KillBilsan"

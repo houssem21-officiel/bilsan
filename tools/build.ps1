@@ -41,7 +41,8 @@ $env:BILSAN_DATA = "$T\c"; $env:BILSAN_VERSION = "99.0"; $env:BILSAN_PORT = "500
 $pc = Start-Process dist\Bilsan\Bilsan.exe -ArgumentList "--background" -PassThru
 Start-Sleep 8
 $env:BILSAN_DATA = "$T\n"; $env:BILSAN_VERSION = "1.0"; $env:BILSAN_PORT = "5001"; $env:BILSAN_UPDATE_EVERY = "3"
-$pn = Start-Process "$T\n\app\Bilsan.exe" -ArgumentList "--background" -PassThru
+# نشغّله من داخل مجلده (كما يفعل اختصار سطح المكتب) للتأكد أن التحديث يستبدل المجلد رغم ذلك
+$pn = Start-Process "$T\n\app\Bilsan.exe" -ArgumentList "--background" -WorkingDirectory "$T\n\app" -PassThru
 Remove-Item Env:\BILSAN_DATA, Env:\BILSAN_VERSION, Env:\BILSAN_PORT, Env:\BILSAN_UPDATE_EVERY
 $up = $false
 for ($i = 0; $i -lt 90; $i++) {
@@ -52,7 +53,9 @@ for ($i = 0; $i -lt 90; $i++) {
 }
 Get-Process Bilsan -ErrorAction SilentlyContinue | Stop-Process -Force
 Get-Content "$T\n\bilsan.log" -ErrorAction SilentlyContinue | Select-Object -Last 15
+Get-Content "$T\n\update_result.txt" -ErrorAction SilentlyContinue
 if (!$up) { throw "auto-update test failed" }
+if (!(Select-String -Path "$T\n\update_result.txt" -Pattern "ok" -Quiet)) { throw "auto-update did not replace the app" }
 Write-Host "auto-update test OK"
 
 $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"

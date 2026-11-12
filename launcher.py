@@ -38,6 +38,12 @@ def open_window():
 
 
 def main():
+    # لا نبقي مجلد البرنامج «مفتوحًا» (حتى يستطيع التحديث التلقائي استبداله)
+    try:
+        import paths
+        os.chdir(paths.DATA_DIR)
+    except OSError:
+        pass
     restart = "--restart" in sys.argv  # بعد ربط حاسوب جديد: النافذة مفتوحة أصلًا
     background = "--background" in sys.argv or restart
     if server_up() and not restart:

@@ -4192,6 +4192,7 @@ def _mark_activity():
 
 
 UPDATE_BAT = r"""@echo off
+cd /d "{data}"
 ping -n 4 127.0.0.1 >nul
 taskkill /f /im Bilsan.exe >nul 2>&1
 ping -n 3 127.0.0.1 >nul
@@ -4199,10 +4200,12 @@ set "A={app}"
 if exist "%A%_old" rmdir /s /q "%A%_old"
 move "%A%" "%A%_old" >nul || goto fail
 move "{new}" "%A%" >nul || (move "%A%_old" "%A%" >nul & goto fail)
-start "" "%A%\Bilsan.exe" --background
+echo ok> "{data}\update_result.txt"
+start "" /D "{data}" "%A%\Bilsan.exe" --background
 exit /b 0
 :fail
-start "" "%A%\Bilsan.exe" --background
+echo fail> "{data}\update_result.txt"
+start "" /D "{data}" "%A%\Bilsan.exe" --background
 """
 
 
@@ -4242,10 +4245,13 @@ def apply_update():
     appdir = os.path.dirname(os.path.abspath(sys.executable))
     bat = os.path.join(BASE_DIR, "update.bat")
     with open(bat, "w", encoding="ascii", errors="replace") as f:
-        f.write(UPDATE_BAT.replace("{app}", appdir).replace("{new}", newdir).replace("\n", "\r\n"))
+        f.write(UPDATE_BAT.replace("{app}", appdir).replace("{new}", newdir).replace("{data}", BASE_DIR)
+                .replace("\n", "\r\n"))
     print(f"تحديث البرنامج إلى {cv}")
     flags = 0x08000000 | 0x00000008 if os.name == "nt" else 0  # بدون نافذة، منفصل
-    subprocess.Popen(["cmd", "/c", bat] if os.name == "nt" else ["sh", bat], creationflags=flags, close_fds=True)
+    # مهم: نشغّله من مجلد البيانات، وإلا يبقى مجلد البرنامج «مستعملًا» فلا يمكن استبداله
+    subprocess.Popen(["cmd", "/c", bat] if os.name == "nt" else ["sh", bat], creationflags=flags, close_fds=True,
+                     cwd=BASE_DIR)
     time.sleep(0.5)
     os._exit(0)
 
