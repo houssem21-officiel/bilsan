@@ -1272,7 +1272,7 @@ def pos():
     prods = db.execute("""SELECT p.*, COALESCE(s.qty,0) AS qty FROM products p
         LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1
         ORDER BY p.category, p.name""", (br,)).fetchall()
-    return render_template("pos.html", prods=[dict(p) for p in prods], br=br)
+    return render_template("pos.html", prods=[dict(p, ic=icons.item_icon(p["name"], "product")) for p in prods], br=br)
 
 
 # ---------------------------------------------------------------- الصندوق المركزي
@@ -3965,6 +3965,33 @@ def notfound(e):
 
 
 sync.APP_VERSION = APP_VERSION
+import icons  # noqa: E402
+
+# صفحة → رمزها (يظهر في عنوان كل صفحة)
+PAGE_ICONS = {
+    "dashboard": "home", "branch_view": "branch", "visit_queue": "queue", "visit_view": "visits",
+    "visit_new": "reception", "visits_list": "visits", "reception": "cash", "receipt": "invoice",
+    "charge_new": "send", "pos": "cart", "appointments": "calendar", "calendar": "rooms",
+    "plans": "plans", "plan_new": "plans", "plan_view": "plans", "clients": "clients",
+    "client_view": "clients", "consent": "sign", "payment_new": "card", "debts": "debt",
+    "cash_close": "lock", "cash_daily": "safe", "cashbox": "vault", "reports": "reports",
+    "expenses": "expense", "permissions": "key", "audit_page": "audit", "backup_page": "backup",
+    "products": "products", "stock_alerts_page": "alert", "purchases": "invoice", "purchase_new": "invoice",
+    "suppliers": "truck", "services": "services", "branches": "branch", "branch_edit": "branch",
+    "devices": "monitor", "users": "users", "sms_page": "sms", "sms_campaign": "sms",
+    "settings": "settings", "change_password": "key", "staff": "staff", "staff_view": "staff",
+    "attendance": "staff", "courses": "course", "course_view": "course",
+}
+
+
+def page_icon():
+    ep = request.endpoint or ""
+    name = PAGE_ICONS.get(ep) or next((v for k, v in PAGE_ICONS.items() if ep.startswith(k)), "leaf")
+    return icons.ic(name, "pg")
+
+
+app.jinja_env.globals.update(ic=icons.ic, item_ic=icons.item, avatar=icons.avatar,
+                             icon_sprite=icons.sprite, page_icon=page_icon)
 RESTORE_MSG = backup.apply_pending_restore(DB_PATH)
 from templates import TEMPLATES  # noqa: E402
 app.jinja_loader = DictLoader(TEMPLATES)

@@ -68,55 +68,73 @@ border-radius:8px;width:100%;max-height:240px;overflow:auto;display:none}
 .dd summary::-webkit-details-marker{display:none}.dd[open] summary{background:rgba(228,171,116,.15)}
 .ddm{position:absolute;z-index:20;background:#173f36;border:1px solid rgba(228,171,116,.5);border-radius:8px;min-width:220px;padding:6px 0;box-shadow:0 8px 20px rgba(0,0,0,.3)}
 .ddm a{display:block;padding:8px 14px}
+.ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.22em;flex:none}
+nav a .ic,.dd summary .ic,.ddm a .ic{color:var(--gold);margin-inline-end:6px}
+nav a.on .ic{color:inherit}
+.ddm a{display:flex!important;align-items:center;direction:rtl;justify-content:flex-start}
+h1 .ic.pg{box-sizing:border-box;width:1.7em;height:1.7em;padding:.3em;margin-inline-end:.45em;border-radius:14px;vertical-align:middle;
+ color:#0f4c45;background:linear-gradient(135deg,#f7e2bd,#e4ab74);box-shadow:0 3px 10px rgba(228,171,116,.45),inset 0 1px 0 rgba(255,255,255,.6);stroke-width:1.9}
+h2 .ic{color:var(--gold);margin-inline-end:6px}
+.itm{display:inline-flex;width:30px;height:30px;border-radius:9px;align-items:center;justify-content:center;margin-inline-end:8px;vertical-align:middle;
+ color:#0f4c45;background:linear-gradient(135deg,#eef6f3,#cfe6df);box-shadow:inset 0 0 0 1px rgba(15,76,69,.12)}
+.itm .ic{box-sizing:content-box;width:18px;height:18px;vertical-align:0}
+.av{display:inline-flex;width:32px;height:32px;border-radius:50%;align-items:center;justify-content:center;margin-inline-end:8px;vertical-align:middle;
+ font-weight:bold;font-size:15px;background:hsl(var(--h) 45% 88%);color:hsl(var(--h) 55% 26%);box-shadow:inset 0 0 0 2px hsl(var(--h) 45% 78%)}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:14px;text-decoration:none;
+ background:var(--card,#fbf6ec);color:#0f4c45;font-weight:bold;box-shadow:0 4px 14px rgba(0,0,0,.12);transition:transform .15s,box-shadow .15s}
+.tile:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.2)}
+.tile .ic{box-sizing:border-box;width:56px;height:56px;padding:13px;border-radius:50%;color:#0f4c45;background:linear-gradient(135deg,#f7e2bd,#e4ab74);stroke-width:1.6}
 .badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:#c0392b;color:#fff;font-size:12px;text-align:center}
 .viewing{background:var(--gold);color:var(--g9);padding:6px 14px;border-radius:8px;margin-bottom:12px;display:flex;gap:10px;align-items:center}
 @media print{header,nav,.noprint{display:none!important}body,html{background:#fff!important}.card{border:0}}
 </style></head><body>
+{{ icon_sprite() }}
 {% if cu %}
 <header><div class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="">{{ center }}</div>
 {% if cu.role=='admin' %}<form action="{{ url_for('view_branch') }}" style="margin:0"><select name="b" onchange="this.form.submit()" style="background:rgba(255,255,255,.08);color:var(--goldl);border-color:rgba(228,171,116,.5)">
 <option value="" style="color:#000">الحاسوب المركزي — كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" style="color:#000" {{ 'selected' if view_branch==b.id }}>عرض: {{ b.name }}</option>{% endfor %}</select></form>{% endif %}
 <div class="who">{{ cu.full_name or cu.username }} — {{ ROLES[cu.role] }}{% if cu.branch_id %} — {{ branch_name(cu.branch_id) }}{% endif %}
- | <a href="{{ url_for('change_password') }}">كلمة المرور</a> | <a href="{{ url_for('logout') }}">خروج</a></div></header>
+ | <a href="{{ url_for('change_password') }}">{{ ic('key') }} كلمة المرور</a> | <a href="{{ url_for('logout') }}">{{ ic('logout') }} خروج</a></div></header>
 <nav>
 {% set ep = request.endpoint %}
-<a href="{{ url_for('dashboard') }}" class="{{ 'on' if ep in ('dashboard','branch_view') }}">الرئيسية</a>
-{% if cu.role in ('admin','laser','beauty') %}<a href="{{ url_for('visit_queue') }}" class="{{ 'on' if ep in ('visit_queue','visit_view') }}">{{ 'زبائن المديرة' if cu.role=='admin' else 'قائمة الانتظار' }}{% if queue_count %} <span class="badge">{{ queue_count }}</span>{% endif %}</a>{% endif %}
-{% if perm('reception_visits') %}<a href="{{ url_for('visit_new') }}" class="{{ 'on' if ep in ('visit_new','visits_list') }}">استقبال زبون</a>{% endif %}
-{% if perm('collect') %}<a href="{{ url_for('reception') }}" class="{{ 'on' if ep in ('reception','receipt') }}">{{ 'الاستقبال والتحصيل' if cu.role in ('admin','reception') else 'التحصيل' }}</a>
-{% elif cu.role in ('laser','beauty') %}<a href="{{ url_for('charge_new') }}" class="{{ 'on' if ep=='charge_new' }}">إرسال مبلغ للاستقبال</a>{% endif %}
-{% if perm('pos') %}<a href="{{ url_for('pos') }}" class="{{ 'on' if ep=='pos' }}">بيع المنتجات</a>{% endif %}
-<a href="{{ url_for('appointments') }}" class="{{ 'on' if ep in ('appointments','calendar') }}">المواعيد</a>
-<a href="{{ url_for('plans') }}" class="{{ 'on' if ep in ('plans','plan_new','plan_view') }}">خطط الحصص</a>
-<a href="{{ url_for('clients') }}" class="{{ 'on' if ep in ('clients','client_view','consent') }}">الزبائن</a>
-<details class="dd"><summary>المزيد ▾{% if alerts_count and perm('stock_alerts') %} <span class="badge">{{ alerts_count }}</span>{% endif %}</summary><div class="ddm">
-{% if perm('calendar') %}<a href="{{ url_for('calendar') }}">جدول الغرف</a>{% endif %}
-{% if perm('reception_visits') %}<a href="{{ url_for('visits_list') }}">الزيارات</a>{% endif %}
-{% if perm('direct_payment') %}<a href="{{ url_for('payment_new') }}">دفعة مباشرة</a>{% endif %}
-{% if perm('debts') %}<a href="{{ url_for('debts') }}">الديون</a>{% endif %}
-{% if perm('cash_close') and cu.role!='admin' %}<a href="{{ url_for('cash_close') }}">إغلاق صندوق اليوم</a>{% endif %}
-{% if perm('expenses') and cu.role!='admin' %}<a href="{{ url_for('expenses') }}">إخراج مبلغ (مصروف)</a>{% endif %}
-{% if perm('purchases') and cu.role!='admin' %}<a href="{{ url_for('purchases') }}">فواتير الشراء</a>{% endif %}
-{% if perm('courses') %}<a href="{{ url_for('courses') }}">الدورات والشهادات</a>{% endif %}
-{% if perm('attendance') %}<a href="{{ url_for('staff') }}">العمال والحضور</a>{% endif %}
-{% if perm('stock_alerts') %}<a href="{{ url_for('stock_alerts_page') }}">تنبيهات المخزون{% if alerts_count %} <span class="badge">{{ alerts_count }}</span>{% endif %}</a>{% endif %}
+<a href="{{ url_for('dashboard') }}" class="{{ 'on' if ep in ('dashboard','branch_view') }}">{{ ic('home') }}الرئيسية</a>
+{% if cu.role in ('admin','laser','beauty') %}<a href="{{ url_for('visit_queue') }}" class="{{ 'on' if ep in ('visit_queue','visit_view') }}">{{ ic('queue') }}{{ 'زبائن المديرة' if cu.role=='admin' else 'قائمة الانتظار' }}{% if queue_count %} <span class="badge">{{ queue_count }}</span>{% endif %}</a>{% endif %}
+{% if perm('reception_visits') %}<a href="{{ url_for('visit_new') }}" class="{{ 'on' if ep in ('visit_new','visits_list') }}">{{ ic('reception') }}استقبال زبون</a>{% endif %}
+{% if perm('collect') %}<a href="{{ url_for('reception') }}" class="{{ 'on' if ep in ('reception','receipt') }}">{{ ic('cash') }}{{ 'الاستقبال والتحصيل' if cu.role in ('admin','reception') else 'التحصيل' }}</a>
+{% elif cu.role in ('laser','beauty') %}<a href="{{ url_for('charge_new') }}" class="{{ 'on' if ep=='charge_new' }}">{{ ic('send') }}إرسال مبلغ للاستقبال</a>{% endif %}
+{% if perm('pos') %}<a href="{{ url_for('pos') }}" class="{{ 'on' if ep=='pos' }}">{{ ic('cart') }}بيع المنتجات</a>{% endif %}
+<a href="{{ url_for('appointments') }}" class="{{ 'on' if ep in ('appointments','calendar') }}">{{ ic('calendar') }}المواعيد</a>
+<a href="{{ url_for('plans') }}" class="{{ 'on' if ep in ('plans','plan_new','plan_view') }}">{{ ic('plans') }}خطط الحصص</a>
+<a href="{{ url_for('clients') }}" class="{{ 'on' if ep in ('clients','client_view','consent') }}">{{ ic('clients') }}الزبائن</a>
+<details class="dd"><summary>{{ ic('more') }}المزيد ▾{% if alerts_count and perm('stock_alerts') %} <span class="badge">{{ alerts_count }}</span>{% endif %}</summary><div class="ddm">
+{% if perm('calendar') %}<a href="{{ url_for('calendar') }}">{{ ic('rooms') }}جدول الغرف</a>{% endif %}
+{% if perm('reception_visits') %}<a href="{{ url_for('visits_list') }}">{{ ic('visits') }}الزيارات</a>{% endif %}
+{% if perm('direct_payment') %}<a href="{{ url_for('payment_new') }}">{{ ic('card') }}دفعة مباشرة</a>{% endif %}
+{% if perm('debts') %}<a href="{{ url_for('debts') }}">{{ ic('debt') }}الديون</a>{% endif %}
+{% if perm('cash_close') and cu.role!='admin' %}<a href="{{ url_for('cash_close') }}">{{ ic('lock') }}إغلاق صندوق اليوم</a>{% endif %}
+{% if perm('expenses') and cu.role!='admin' %}<a href="{{ url_for('expenses') }}">{{ ic('expense') }}إخراج مبلغ (مصروف)</a>{% endif %}
+{% if perm('purchases') and cu.role!='admin' %}<a href="{{ url_for('purchases') }}">{{ ic('invoice') }}فواتير الشراء</a>{% endif %}
+{% if perm('courses') %}<a href="{{ url_for('courses') }}">{{ ic('course') }}الدورات والشهادات</a>{% endif %}
+{% if perm('attendance') %}<a href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}
+{% if perm('stock_alerts') %}<a href="{{ url_for('stock_alerts_page') }}">{{ ic('alert') }}تنبيهات المخزون{% if alerts_count %} <span class="badge">{{ alerts_count }}</span>{% endif %}</a>{% endif %}
 </div></details>
-{% if cu.role=='admin' %}<details class="dd"><summary>الإدارة ▾</summary><div class="ddm">
-<a href="{{ url_for('cash_daily') }}">الصندوق اليومي</a>
-<a href="{{ url_for('cashbox') }}">{{ 'كل العمليات (الصندوق المركزي)' if not view_branch else 'عمليات الفرع' }}</a>
-<a href="{{ url_for('reports') }}">التقارير والأرباح</a>
-<a href="{{ url_for('expenses') }}">المصاريف</a>
-<a href="{{ url_for('permissions') }}">صلاحيات العمال</a>
-<a href="{{ url_for('audit_page') }}">سجل العمليات</a>
-<a href="{{ url_for('backup_page') }}">النسخ الاحتياطي</a>
-<a href="{{ url_for('products') }}">المنتجات والمخزون</a>
-<a href="{{ url_for('purchases') }}">المشتريات والموردون</a>
-<a href="{{ url_for('services') }}">الخدمات والأسعار</a>
-<a href="{{ url_for('branches') }}">الفروع والغرف</a>
-{% if not NODE %}<a href="{{ url_for('devices') }}">💻 الحواسيب وكلمات السر</a>{% endif %}
-<a href="{{ url_for('users') }}">المستخدمون</a>
-<a href="{{ url_for('sms_page') }}">رسائل SMS</a>
-<a href="{{ url_for('settings') }}">الإعدادات</a>
+{% if cu.role=='admin' %}<details class="dd"><summary>{{ ic('shield') }}الإدارة ▾</summary><div class="ddm">
+<a href="{{ url_for('cash_daily') }}">{{ ic('safe') }}الصندوق اليومي</a>
+<a href="{{ url_for('cashbox') }}">{{ ic('vault') }}{{ 'كل العمليات (الصندوق المركزي)' if not view_branch else 'عمليات الفرع' }}</a>
+<a href="{{ url_for('reports') }}">{{ ic('reports') }}التقارير والأرباح</a>
+<a href="{{ url_for('expenses') }}">{{ ic('expense') }}المصاريف</a>
+<a href="{{ url_for('permissions') }}">{{ ic('key') }}صلاحيات العمال</a>
+<a href="{{ url_for('audit_page') }}">{{ ic('audit') }}سجل العمليات</a>
+<a href="{{ url_for('backup_page') }}">{{ ic('backup') }}النسخ الاحتياطي</a>
+<a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>
+<a href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات والموردون</a>
+<a href="{{ url_for('services') }}">{{ ic('services') }}الخدمات والأسعار</a>
+<a href="{{ url_for('branches') }}">{{ ic('branch') }}الفروع والغرف</a>
+{% if not NODE %}<a href="{{ url_for('devices') }}">{{ ic('monitor') }}الحواسيب وكلمات السر</a>{% endif %}
+<a href="{{ url_for('users') }}">{{ ic('users') }}المستخدمون</a>
+<a href="{{ url_for('sms_page') }}">{{ ic('sms') }}رسائل SMS</a>
+<a href="{{ url_for('settings') }}">{{ ic('settings') }}الإعدادات</a>
 </div></details>{% endif %}
 </nav>
 {% endif %}
@@ -193,17 +211,18 @@ TEMPLATES["login.html"] = r"""{% extends "base.html" %}{% block body %}
 {% endblock %}"""
 
 TEMPLATES["password.html"] = r"""{% extends "base.html" %}{% block body %}
-<div class="card" style="max-width:420px"><h1>تغيير كلمة المرور</h1>
+<div class="card" style="max-width:420px"><h1>{{ page_icon() }}تغيير كلمة المرور</h1>
 <form method="post" style="display:flex;flex-direction:column;gap:10px">
 <input type="password" name="old" placeholder="كلمة المرور الحالية" required>
 <input type="password" name="new" placeholder="كلمة المرور الجديدة" required>
 <button class="btn">حفظ</button></form></div>{% endblock %}"""
 
 TEMPLATES["msg.html"] = r"""{% extends "base.html" %}{% block body %}
-<div class="card"><h1>{{ msg }}</h1><a class="btn" href="{{ url_for('dashboard') }}">الرجوع للرئيسية</a></div>{% endblock %}"""
+<div class="card"><h1>{{ page_icon() }}{{ msg }}</h1><a class="btn" href="{{ url_for('dashboard') }}">الرجوع للرئيسية</a></div>{% endblock %}"""
 
 TEMPLATES["dash_admin.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>الحاسوب المركزي — مداخيل اليوم</h1>
+<h1>{{ page_icon() }}الحاسوب المركزي — مداخيل اليوم</h1>
+{% include "tiles.html" %}
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">مجموع المداخيل اليوم (كل الفروع)</div><div class="n">{{ grand|money }} {{ cur }}</div></div>
 {% for b in per_branch %}
@@ -226,7 +245,8 @@ TEMPLATES["dash_admin.html"] = r"""{% extends "base.html" %}{% block body %}
 {% endblock %}"""
 
 TEMPLATES["dash_staff.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>مرحبًا {{ cu.full_name or cu.username }}</h1>
+<h1>{{ page_icon() }}مرحبًا {{ cu.full_name or cu.username }}</h1>
+{% include "tiles.html" %}
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">مواعيد اليوم</div><div class="n">{{ appts|length }}</div></div>
 {% if can_collect %}
@@ -243,7 +263,7 @@ TEMPLATES["dash_staff.html"] = r"""{% extends "base.html" %}{% block body %}
 TEMPLATES["appt_table.html"] = r"""<table><tr><th>الساعة</th>{% if cu.role=='admin' %}<th>الفرع</th>{% endif %}<th>القسم</th><th>الزبون</th><th>الهاتف</th><th>الخدمة / الحصة</th><th>الغرفة</th><th>الحالة</th><th>الدفع</th><th>SMS</th><th></th></tr>
 {% for a in (rows if rows is defined else appts) %}<tr>
 <td>{{ a.start_at[11:16] }}</td>{% if cu.role=='admin' %}<td>{{ a.branch }}</td>{% endif %}
-<td>{{ DEPTS[a.dept] }}</td><td><a href="{{ url_for('client_view', cid=a.client_id) }}">{{ a.client }}</a></td><td>{{ a.phone }}</td>
+<td>{{ DEPTS[a.dept] }}</td><td><a href="{{ url_for('client_view', cid=a.client_id) }}">{{ avatar(a.client) }}{{ a.client }}</a></td><td>{{ a.phone }}</td>
 <td>{% if a.plan_id %}<a href="{{ url_for('plan_view', pid=a.plan_id) }}">{{ a.plan_title }}</a><div><span class="tag">حصة {{ a.session_no }} من {{ a.plan_n }}</span></div>{% else %}{{ a.service or '-' }}{% endif %}{% if a.notes %}<div class="mut">{{ a.notes }}</div>{% endif %}</td>
 <td>{{ a.room or '' }}</td>
 <td><span class="tag {{ {'scheduled':'amber','cancelled':'red','noshow':'gray'}.get(a.status,'') }}">{{ APPT_STATUS[a.status] }}</span></td>
@@ -263,16 +283,16 @@ TEMPLATES["appt_table.html"] = r"""<table><tr><th>الساعة</th>{% if cu.role
 {% else %}<tr><td colspan="11" class="mut">لا توجد مواعيد</td></tr>{% endfor %}</table>"""
 
 TEMPLATES["clients.html"] = r"""{% extends "base.html" %}{% from "macros.html" import new_client_box with context %}{% block body %}
-<h1>الزبائن</h1>
+<h1>{{ page_icon() }}الزبائن</h1>
 <div class="card"><form class="row"><label>بحث<input name="q" value="{{ s }}" placeholder="الاسم أو الهاتف"></label><button class="btn">بحث</button>
 <a class="btn light" href="#" onclick="document.getElementById('newc').style.display='block';return false">+ زبون جديد</a></form></div>
 {{ new_client_box('') }}
 <div class="card"><table><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الفرع</th><th>تاريخ التسجيل</th></tr>
-{% for c in rows %}<tr><td>{{ c.id }}</td><td><a href="{{ url_for('client_view', cid=c.id) }}">{{ c.name }}</a></td><td>{{ c.phone }}</td><td>{{ c.branch or '' }}</td><td>{{ (c.created_at or '')[:10] }}</td></tr>
+{% for c in rows %}<tr><td>{{ c.id }}</td><td><a href="{{ url_for('client_view', cid=c.id) }}">{{ avatar(c.name) }}{{ c.name }}</a></td><td>{{ c.phone }}</td><td>{{ c.branch or '' }}</td><td>{{ (c.created_at or '')[:10] }}</td></tr>
 {% else %}<tr><td colspan="5" class="mut">لا يوجد زبائن</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["client_view.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ c.name }}</h1>
+<h1>{{ page_icon() }}{{ c.name }}</h1>
 <div class="card"><form method="post" class="row">
 <label>الاسم<input name="name" value="{{ c.name }}"></label><label>الهاتف<input name="phone" value="{{ c.phone or '' }}"></label>
 <label>تاريخ الميلاد{% if c.birth_date %} ({{ c.birth_date|age }} سنة){% endif %}<input type="date" name="birth_date" value="{{ c.birth_date or '' }}"></label>
@@ -322,7 +342,7 @@ TEMPLATES["client_view.html"] = r"""{% extends "base.html" %}{% block body %}
 {% else %}<tr><td colspan="5" class="mut">لا شيء</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["appointments.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box, branch_filter with context %}{% block body %}
-<h1>المواعيد</h1>
+<h1>{{ page_icon() }}المواعيد</h1>
 <div class="row" style="margin-bottom:14px"><a class="btn" href="{{ url_for('plan_new') }}">+ موعد بعدة حصص (خطة جلسات)</a>
 <a class="btn light" href="{{ url_for('plans') }}">كل خطط الحصص</a></div>
 {% if perm('appointments') %}<div class="card"><h2>موعد واحد</h2>
@@ -347,7 +367,7 @@ TEMPLATES["appointments.html"] = r"""{% extends "base.html" %}{% from "macros.ht
 {% include "appt_table.html" %}</div>{% endblock %}"""
 
 TEMPLATES["charge_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box with context %}{% block body %}
-<h1>إرسال مبلغ إلى الاستقبال</h1>
+<h1>{{ page_icon() }}إرسال مبلغ إلى الاستقبال</h1>
 <div class="card"><p class="mut">بعد تقديم الخدمة، حدّد المبلغ هنا فيظهر عند الاستقبال ليحصّله من الزبون.</p>
 <form method="post" class="row">
 {{ client_picker(sel_client) }}
@@ -360,7 +380,7 @@ TEMPLATES["charge_new.html"] = r"""{% extends "base.html" %}{% from "macros.html
 {{ new_client_box(request.path) }}{% endblock %}"""
 
 TEMPLATES["reception.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>{{ 'الاستقبال والتحصيل' if cu.role in ('admin','reception') else 'التحصيل — ' ~ DEPTS[cu.role] }}</h1>
+<h1>{{ page_icon() }}{{ 'الاستقبال والتحصيل' if cu.role in ('admin','reception') else 'التحصيل — ' ~ DEPTS[cu.role] }}</h1>
 {% if cu.role=='admin' %}<div class="card"><form class="row">{{ branch_filter(br) }}<button class="btn light">عرض</button></form></div>{% endif %}
 <div class="row" style="margin-bottom:14px">
 {% if perm('reception_visits') %}<a class="btn gold" href="{{ url_for('visit_new') }}">استقبال زبون وإرساله للعلاج</a>{% endif %}
@@ -388,7 +408,7 @@ TEMPLATES["reception.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 {% else %}<tr><td colspan="7" class="mut">لا شيء اليوم</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["payment_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box with context %}{% block body %}
-<h1>دفعة مباشرة في الاستقبال</h1>
+<h1>{{ page_icon() }}دفعة مباشرة في الاستقبال</h1>
 <div class="card"><form method="post" class="row">
 {% if cu.role=='admin' %}<label>الفرع<select name="branch">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
 {{ client_picker(sel_client) }}
@@ -402,7 +422,7 @@ TEMPLATES["payment_new.html"] = r"""{% extends "base.html" %}{% from "macros.htm
 {{ new_client_box(request.path) }}{% endblock %}"""
 
 TEMPLATES["pos.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box with context %}{% block body %}
-<h1>بيع المنتجات</h1>
+<h1>{{ page_icon() }}بيع المنتجات</h1>
 {% if cu.role=='admin' %}<div class="card"><form class="row"><label>البيع باسم فرع<select name="branch" onchange="this.form.submit()">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label></form></div>{% endif %}
 <div style="display:grid;grid-template-columns:minmax(0,3fr) minmax(280px,2fr);gap:16px">
 <div class="card"><input id="search" placeholder="ابحث عن منتج أو امسح الباركود" style="width:100%;margin-bottom:10px" autofocus>
@@ -423,7 +443,7 @@ function fm(n){return (Math.round(n*100)/100).toFixed(2)}
 function esc(s){var d=document.createElement('div');d.textContent=s==null?'':s;return d.innerHTML}
 function renderP(q){var t=document.getElementById('plist');t.querySelectorAll('tr.p').forEach(r=>r.remove());
  P.filter(p=>!q||p.name.indexOf(q)>-1||(p.barcode||'')==q||(p.category||'').indexOf(q)>-1).slice(0,80).forEach(function(p){
-  var r=t.insertRow();r.className='p';r.innerHTML='<td>'+esc(p.name)+'</td><td class="mut">'+esc(p.category)+'</td><td>'+fm(p.price)+'</td><td>'+
+  var r=t.insertRow();r.className='p';r.innerHTML='<td><span class="itm"><svg class="ic"><use href="#i-'+p.ic+'"/></svg></span>'+esc(p.name)+'</td><td class="mut">'+esc(p.category)+'</td><td>'+fm(p.price)+'</td><td>'+
   '<span class="tag '+(p.qty<=0?'red':p.qty<=3?'amber':'')+'">'+p.qty+'</span></td><td><button class="btn sm" type="button">+</button></td>';
   r.querySelector('button').onclick=function(){add(p)}})}
 function add(p){var c=cart.find(x=>x.id==p.id);if(c)c.qty++;else cart.push({id:p.id,name:p.name,qty:1,price:p.price});renderC()}
@@ -460,7 +480,7 @@ TEMPLATES["receipt.html"] = r"""{% extends "base.html" %}{% block body %}
 </div>{% endblock %}"""
 
 TEMPLATES["cashbox.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>{{ 'الصندوق المركزي — كل مدفوعات الفروع' if cu.role=='admin' else 'صندوق الفرع' }}</h1>
+<h1>{{ page_icon() }}{{ 'الصندوق المركزي — كل مدفوعات الفروع' if cu.role=='admin' else 'صندوق الفرع' }}</h1>
 <div class="card"><form class="row">
 <label>من<input type="date" name="from" value="{{ d1 }}"></label><label>إلى<input type="date" name="to" value="{{ d2 }}"></label>
 {{ branch_filter(br) }}
@@ -479,7 +499,7 @@ TEMPLATES["cashbox.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 {% else %}<tr><td colspan="9" class="mut">لا توجد عمليات في هذه الفترة</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>المنتجات والمخزون{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<h1>{{ page_icon() }}المنتجات والمخزون{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 <div class="card"><h2>{{ 'تعديل منتج' if edit else 'منتج جديد' }}</h2>
 <form method="post">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
 <div class="row">
@@ -507,7 +527,7 @@ TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>الفرع<select name="branch"><option value="">كل الفروع</option>{% for b in branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>
 <button class="btn light">عرض</button></form>
 <table><tr><th>المنتج</th><th>الفئة</th><th>السعر</th><th>الشراء</th><th>الصلاحية</th>{% for b in show %}<th>{{ b.name }}<div class="mut">الكمية / الحد</div></th>{% endfor %}<th>تعديل الكمية أو الحد</th><th></th></tr>
-{% for p in rows %}<tr class="{{ 'cx' if not p.active }}"><td>{{ p.name }}</td><td>{{ p.category or '' }}</td><td>{{ p.price|money }}</td>
+{% for p in rows %}<tr class="{{ 'cx' if not p.active }}"><td>{{ item_ic(p.name, 'product') }}{{ p.name }}</td><td>{{ p.category or '' }}</td><td>{{ p.price|money }}</td>
 <td class="mut">{{ (p.cost_price or 0)|money }}</td>
 <td>{% if p.expiry %}<span class="tag {{ 'red' if p.expiry<today else 'amber' if p.expiry<=soon else '' }}">{{ p.expiry }}</span>{% endif %}</td>
 {% for b in show %}{% set st = stock.get((p.id,b.id)) %}{% set q = st.qty if st else 0 %}{% set m = st.min_qty or 0 if st else 0 %}
@@ -541,7 +561,7 @@ if(!it.length){alert('حدد منتجات');return}location='{{ url_for("purchas
 <table><tr><th class="chk"><input type="checkbox" checked onclick="document.querySelectorAll('.rowchk').forEach(c=>{c.checked=this.checked;c.onchange()})"></th>
 <th>المنتج</th><th>الفئة</th>{% if not br %}<th>الفرع</th>{% endif %}<th>الكمية الحالية</th><th>حد التنبيه</th><th>الصلاحية</th><th>الحالة</th><th>الكمية المطلوبة</th>{% if cu.role=='admin' %}<th class="ctl">تحكم</th>{% endif %}</tr>
 {% for r in rows %}<tr data-pid="{{ r.product_id }}" data-br="{{ r.branch_id }}"><td class="chk"><input type="checkbox" class="rowchk" checked onchange="this.closest('tr').classList.toggle('skip',!this.checked)"></td>
-<td>{{ r.name }}</td><td>{{ r.category or '' }}</td>{% if not br %}<td>{{ r.branch }}</td>{% endif %}
+<td>{{ item_ic(r.name, 'product') }}{{ r.name }}</td><td>{{ r.category or '' }}</td>{% if not br %}<td>{{ r.branch }}</td>{% endif %}
 <td><b>{{ '%g'|format(r.qty) }}</b></td><td>{{ '%g'|format(r.min_qty) }}</td><td>{{ r.expiry or '' }}</td>
 <td>{% if r.out %}<span class="tag red">نفد</span>{% elif r.low %}<span class="tag amber">قارب على النفاد</span>{% endif %}
 {% if r.expired %}<span class="tag red">انتهت الصلاحية</span>{% elif r.expiring %}<span class="tag amber">صلاحية قريبة</span>{% endif %}</td>
@@ -555,7 +575,7 @@ if(!it.length){alert('حدد منتجات');return}location='{{ url_for("purchas
 {% endblock %}"""
 
 TEMPLATES["branches.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>الفروع</h1>
+<h1>{{ page_icon() }}الفروع</h1>
 <div class="card"><h2>{{ 'تعديل فرع' if edit else 'إضافة فرع جديد' }}</h2>
 <form method="post">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
 <div class="row">
@@ -580,7 +600,7 @@ TEMPLATES["branches.html"] = r"""{% extends "base.html" %}{% block body %}
 <a class="btn light sm" href="?edit={{ b.id }}">تعديل</a></div></div>{% endfor %}</div>{% endblock %}"""
 
 TEMPLATES["branch_view.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ b.name }}</h1>
+<h1>{{ page_icon() }}{{ b.name }}</h1>
 <div class="row" style="margin-bottom:14px">
 <a class="btn" href="{{ url_for('view_branch', b=b.id) }}">العمل على هذا الفرع فقط</a>
 <a class="btn light" href="{{ url_for('cashbox', branch=b.id) }}">صندوق الفرع (كل الفترات)</a>
@@ -625,12 +645,12 @@ TEMPLATES["branch_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <td>{{ w.check_in or '' }}</td><td>{{ '%g'|format(ms.days) }}</td><td>{{ ms.cnt.absent }}{% if ms.cnt.justified %} <span class="mut">(+{{ ms.cnt.justified }} مبرر)</span>{% endif %}</td><td>{{ ms.plus|money }}</td></tr>
 {% else %}<tr><td colspan="7" class="mut">لا يوجد عمال في هذا الفرع بعد. أضفهم من صفحة «العمال والحضور».</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>مخزون الفرع</h2><table><tr><th>المنتج</th><th>الفئة</th><th>السعر</th><th>الكمية</th><th>حد التنبيه</th><th>الصلاحية</th></tr>
-{% for p in stock %}<tr><td>{{ p.name }}</td><td>{{ p.category or '' }}</td><td>{{ p.price|money }}</td>
+{% for p in stock %}<tr><td>{{ item_ic(p.name, 'product') }}{{ p.name }}</td><td>{{ p.category or '' }}</td><td>{{ p.price|money }}</td>
 <td><span class="tag {{ 'red' if p.qty<=0 else 'amber' if p.min_qty and p.qty<=p.min_qty }}">{{ '%g'|format(p.qty) }}</span></td><td>{{ '%g'|format(p.min_qty) }}</td><td>{{ p.expiry or '' }}</td></tr>
 {% else %}<tr><td colspan="6" class="mut">لا توجد منتجات</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["services.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>الخدمات والأسعار</h1>
+<h1>{{ page_icon() }}الخدمات والأسعار</h1>
 <div class="card"><h2>{{ 'تعديل خدمة' if edit else 'خدمة جديدة' }}</h2>
 <form method="post" class="row">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
 <label>الاسم<input name="name" value="{{ edit.name if edit else '' }}" required></label>
@@ -642,11 +662,11 @@ TEMPLATES["services.html"] = r"""{% extends "base.html" %}{% block body %}
 {% if edit %}<label>الحالة<select name="active"><option value="1">نشطة</option><option value="0" {{ 'selected' if not edit.active }}>موقوفة</option></select></label>{% endif %}
 <button class="btn">حفظ</button></form></div>
 <div class="card"><table><tr><th>الخدمة</th><th>النوع</th><th>القسم</th><th>الفرع</th><th>المدة</th><th>السعر</th><th></th></tr>
-{% for s in rows %}<tr class="{{ 'cx' if not s.active }}"><td>{{ s.name }}</td><td>{{ SERVICE_KINDS[s.kind] }}</td><td>{{ DEPTS[s.dept] }}</td><td>{{ s.branch or 'كل الفروع' }}</td><td class="mut">{{ s.duration or 30 }} د</td>
+{% for s in rows %}<tr class="{{ 'cx' if not s.active }}"><td>{{ item_ic(s.name) }}{{ s.name }}</td><td>{{ SERVICE_KINDS[s.kind] }}</td><td>{{ DEPTS[s.dept] }}</td><td>{{ s.branch or 'كل الفروع' }}</td><td class="mut">{{ s.duration or 30 }} د</td>
 <td>{{ s.price|money }}{% if not s.price %} <span class="tag amber">حدد السعر</span>{% endif %}</td><td><a class="btn light sm" href="?edit={{ s.id }}">تعديل</a></td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["users.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>المستخدمون</h1>
+<h1>{{ page_icon() }}المستخدمون</h1>
 <div class="card"><h2>{{ 'تعديل مستخدم' if edit else 'مستخدم جديد' }}</h2>
 <form method="post" class="row">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
 <label>اسم الدخول<input name="username" value="{{ edit.username if edit else '' }}" {{ 'disabled' if edit else 'required' }}></label>
@@ -662,7 +682,7 @@ TEMPLATES["users.html"] = r"""{% extends "base.html" %}{% block body %}
 <td>{{ 'نشط' if u.active else 'موقوف' }}</td><td><a class="btn light sm" href="?edit={{ u.id }}">تعديل</a></td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>الإعدادات</h1>
+<h1>{{ page_icon() }}الإعدادات</h1>
 <form method="post">
 <div class="card"><h2>عام</h2><div class="row">
 <label>اسم المركز<input name="center_name" value="{{ s.center_name }}" style="width:300px"></label>
@@ -729,7 +749,7 @@ TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
 <button class="btn">حفظ الصور</button></form></div>{% endblock %}"""
 
 TEMPLATES["sms.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>رسائل SMS</h1>
+<h1>{{ page_icon() }}رسائل SMS</h1>
 <div class="row" style="margin-bottom:12px"><a class="btn gold" href="{{ url_for('sms_campaign') }}">رسالة جماعية للزبائن</a>{% if queued %}<span class="tag amber">{{ queued }} رسالة في انتظار الإرسال</span>{% endif %}</div>
 {% if not enabled %}<div class="flash err">الإرسال التلقائي غير مفعل. فعّله من <a href="{{ url_for('settings') }}">الإعدادات</a>.</div>{% endif %}
 <div class="card"><h2>رسالة تجريبية</h2><form method="post" class="row"><input type="hidden" name="action" value="test">
@@ -745,7 +765,7 @@ TEMPLATES["sms.html"] = r"""{% extends "base.html" %}{% block body %}
 {% else %}<tr><td colspan="5" class="mut">لا شيء بعد</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["staff.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>العمال{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<h1>{{ page_icon() }}العمال{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 <div class="row" style="margin-bottom:14px">
 <a class="btn" href="{{ url_for('attendance', branch=br) }}">ورقة الحضور اليومية</a>
 <a class="btn light" href="{{ url_for('staff_report', branch=br) }}">التقرير الشهري والأجور</a></div>
@@ -794,7 +814,7 @@ b.addEventListener('change',f);f()})()</script>
 {% else %}<tr><td colspan="8" class="mut">لا يوجد عمال بعد</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["attendance.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>ورقة الحضور — {{ branch_name(br) }}</h1>
+<h1>{{ page_icon() }}ورقة الحضور — {{ branch_name(br) }}</h1>
 <div class="card noprint"><form class="row">
 <label>اليوم<input type="date" name="date" value="{{ d }}"></label>
 {% if cu.role=='admin' %}<label>الفرع<select name="branch">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
@@ -818,7 +838,7 @@ TEMPLATES["attendance.html"] = r"""{% extends "base.html" %}{% block body %}
 {% if emps %}<p><button class="btn">حفظ الحضور</button></p>{% endif %}</form></div>{% endblock %}"""
 
 TEMPLATES["employee.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ e.name }}</h1>
+<h1>{{ page_icon() }}{{ e.name }}</h1>
 <div class="card"><h2>معلومات العامل {% if cu.role=='admin' %}<a class="btn light sm noprint" href="{{ url_for('staff', edit=e.id) }}">تعديل</a>{% endif %}</h2>
 <table><tr><td class="mut">الهاتف</td><td>{{ e.phone or '-' }}</td><td class="mut">الفرع / الوظيفة</td><td>{{ e.branch }}{% if e.post %} — <b>{{ e.post }}</b>{% endif %}</td></tr>
 <tr><td class="mut">تاريخ الميلاد</td><td>{{ e.birth_date or '-' }}{% if e.birth_date %} ({{ e.birth_date|age }} سنة){% endif %}</td><td class="mut">مكان الميلاد</td><td>{{ e.birth_place or '-' }}</td></tr>
@@ -915,7 +935,7 @@ TEMPLATES["staff_report.html"] = r"""{% extends "base.html" %}{% block body %}
 </table></div>{% endblock %}"""
 
 TEMPLATES["plans.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>خطط الحصص{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<h1>{{ page_icon() }}خطط الحصص{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 <div class="row" style="margin-bottom:14px"><a class="btn" href="{{ url_for('plan_new') }}">+ خطة حصص جديدة</a></div>
 <div class="card"><form class="row"><label>بحث<input name="q" value="{{ s }}" placeholder="الزبون أو الهاتف أو الخطة"></label>
 <label>الحالة<select name="status"><option value="all">الكل</option>{% for k,v in PLAN_STATUS.items() %}<option value="{{ k }}" {{ 'selected' if status==k }}>{{ v }}</option>{% endfor %}</select></label>
@@ -930,7 +950,7 @@ TEMPLATES["plans.html"] = r"""{% extends "base.html" %}{% block body %}
 {% else %}<tr><td colspan="10" class="mut">لا توجد خطط</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["plan_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box with context %}{% block body %}
-<h1>خطة حصص جديدة (موعد بعدة جلسات)</h1>
+<h1>{{ page_icon() }}خطة حصص جديدة (موعد بعدة جلسات)</h1>
 <div class="card"><form method="post">
 <div class="row">{{ client_picker(sel_client, True) }}
 {% if cu.role=='admin' %}<label>الفرع<select name="branch_id" onchange="location='?branch_id='+this.value">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% else %}<input type="hidden" name="branch_id" value="{{ br }}">{% endif %}
@@ -956,7 +976,7 @@ TEMPLATES["plan_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" 
 {{ new_client_box(request.path) }}{% endblock %}"""
 
 TEMPLATES["plan_view.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ p.title }}</h1>
+<h1>{{ page_icon() }}{{ p.title }}</h1>
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">الزبون</div><div class="n" style="font-size:18px"><a href="{{ url_for('client_view', cid=p.client_id) }}">{{ p.client }}</a></div><div class="mut">{{ p.phone or '' }} · {{ p.branch }} · {{ DEPTS[p.dept] }}{% if p.room %} · {{ p.room }}{% endif %}</div></div>
 <div class="stat"><div class="l">الحصص المنجزة</div><div class="n">{{ st.done }} / {{ st.n }}</div><div class="mut">{{ PLAN_STATUS[p.status] }}</div></div>
@@ -1011,7 +1031,7 @@ document.getElementById('selsum').textContent=s.toFixed(2);var a=document.getEle
 {% endblock %}"""
 
 TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box with context %}{% block body %}
-<h1>استقبال زبون — زيارة جديدة</h1>
+<h1>{{ page_icon() }}استقبال زبون — زيارة جديدة</h1>
 <div class="card"><form method="post">
 <div class="row">{{ client_picker(sel_client, True) }}
 <label>يُرسَل إلى<select name="target">{% for k,v in targets.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label></div>
@@ -1030,7 +1050,7 @@ TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 {{ new_client_box(request.path) }}{% endblock %}"""
 
 TEMPLATES["visit_queue.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ 'زبائن المديرة' if tgt=='director' else 'قائمة الانتظار' }}{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<h1>{{ page_icon() }}{{ 'زبائن المديرة' if tgt=='director' else 'قائمة الانتظار' }}{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 {% if not tgt %}<div class="card">لا توجد قائمة انتظار لهذا المستخدم.</div>{% else %}
 <div class="card"><div class="mut noprint" style="margin-bottom:8px">تتحدث القائمة تلقائيًا كل 5 ثوانٍ.</div>
 <div id="qrows">…</div></div>
@@ -1053,7 +1073,7 @@ TEMPLATES["visit_queue_rows.html"] = r"""<table><tr><th>#</th><th>الوصول</
 {% else %}<tr><td colspan="8" class="mut">لا يوجد زبائن في الانتظار</td></tr>{% endfor %}</table>"""
 
 TEMPLATES["visits.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>الزيارات</h1>
+<h1>{{ page_icon() }}الزيارات</h1>
 <div class="row" style="margin-bottom:14px"><a class="btn" href="{{ url_for('visit_new') }}">+ استقبال زبون (زيارة جديدة)</a></div>
 <div class="card"><form class="row"><label>اليوم<input type="date" name="date" value="{{ d }}"></label>{{ branch_filter(br) }}<button class="btn light">عرض</button></form></div>
 <div class="card"><table><tr><th>#</th><th>الوقت</th>{% if not br %}<th>الفرع</th>{% endif %}<th>الزبون</th><th>عند</th><th>الطلب</th><th>المجموع</th><th>الحالة</th></tr>
@@ -1063,7 +1083,7 @@ TEMPLATES["visits.html"] = r"""{% extends "base.html" %}{% from "macros.html" im
 {% else %}<tr><td colspan="8" class="mut">لا توجد زيارات</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["visit_view.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>ملف الزيارة رقم {{ v.id|rid }} — {{ v.client }}</h1>
+<h1>{{ page_icon() }}ملف الزيارة رقم {{ v.id|rid }} — {{ v.client }}</h1>
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">الزبون</div><div class="n" style="font-size:18px"><a href="{{ url_for('client_view', cid=v.client_id) }}">{{ v.client }}</a></div>
 <div class="mut">{{ v.phone or '' }}{% if v.birth_date %} · {{ v.birth_date|age }} سنة{% endif %}{% if v.gender %} · {{ v.gender }}{% endif %}{% if v.address %} · {{ v.address }}{% endif %}</div></div>
@@ -1110,7 +1130,7 @@ TEMPLATES["visit_view.html"] = r"""{% extends "base.html" %}{% block body %}
 {% endif %}{% endblock %}"""
 
 TEMPLATES["courses.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>الدورات التكوينية</h1>
+<h1>{{ page_icon() }}الدورات التكوينية</h1>
 {% if not locked %}<div class="card"><h2>دورة جديدة</h2>
 <form method="post" class="row">
 <label>اسم الدورة<input name="name" required style="width:260px" placeholder="مثلاً: دورة الحجامة العلاجية"></label>
@@ -1124,13 +1144,13 @@ TEMPLATES["courses.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 {% else %}<div class="card mut">الدورات الجديدة وأسعارها تُنشئها المديرة. يمكنك تسجيل المتكونين وتحصيل المبالغ وطباعة الشهادات.</div>{% endif %}
 <div class="card">{% if cu.role=='admin' %}<form class="row" style="margin-bottom:10px">{{ branch_filter(br) }}<button class="btn light">عرض</button></form>{% endif %}
 <table><tr><th>الدورة</th>{% if not br %}<th>الفرع</th>{% endif %}<th>من</th><th>إلى</th><th>الساعات</th><th>المكوّن</th><th>المتكونون</th><th>السعر</th><th>الحالة</th></tr>
-{% for c in rows %}<tr class="{{ 'cx' if c.status=='cancelled' }}"><td><a href="{{ url_for('course_view', cid=c.id) }}"><b>{{ c.name }}</b></a></td>{% if not br %}<td>{{ c.branch }}</td>{% endif %}
+{% for c in rows %}<tr class="{{ 'cx' if c.status=='cancelled' }}"><td><a href="{{ url_for('course_view', cid=c.id) }}">{{ item_ic('دورة') }}<b>{{ c.name }}</b></a></td>{% if not br %}<td>{{ c.branch }}</td>{% endif %}
 <td>{{ c.start_date or '' }}</td><td>{{ c.end_date or '' }}</td><td>{{ '%g'|format(c.hours) if c.hours else '' }}</td><td>{{ c.trainer or '' }}</td>
 <td>{{ c.n }}</td><td>{{ c.price|money }}</td><td><span class="tag {{ 'amber' if c.status=='open' else '' }}">{{ COURSE_STATUS[c.status] }}</span></td></tr>
 {% else %}<tr><td colspan="9" class="mut">لا توجد دورات بعد</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["course_view.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box with context %}{% block body %}
-<h1>{{ c.name }}</h1>
+<h1>{{ page_icon() }}{{ c.name }}</h1>
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">الدورة</div><div>{{ c.branch }}</div><div class="mut">من {{ c.start_date or '...' }} إلى {{ c.end_date or '...' }}{% if c.hours %} · {{ '%g'|format(c.hours) }} ساعة{% endif %}{% if c.trainer %} · {{ c.trainer }}{% endif %}</div>
 <div><span class="tag amber">{{ COURSE_STATUS[c.status] }}</span></div></div>
@@ -1216,7 +1236,7 @@ var sz=17;function fs(d){sz=Math.max(11,Math.min(26,sz+d));document.getElementBy
 </script>{% endblock %}"""
 
 TEMPLATES["expenses.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>المصاريف{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<h1>{{ page_icon() }}المصاريف{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 <div class="card"><h2>{{ 'إخراج مبلغ من صندوق اليوم' if worker else 'تسجيل مصروف' }}</h2><form method="post" class="row">
 {% if not worker %}<label>الفرع<select name="branch_id">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>
 <label>التاريخ<input type="date" name="day" value="{{ today }}"></label>{% endif %}
@@ -1245,7 +1265,7 @@ TEMPLATES["bars.html"] = r"""{% set m = (items|map(attribute=1)|max) if items el
 <div style="width:110px;text-align:left;font-size:13px"><b>{{ v|money }}</b></div></div>{% else %}<div class="mut">لا شيء</div>{% endfor %}"""
 
 TEMPLATES["reports.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>التقارير{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<h1>{{ page_icon() }}التقارير{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 <div class="card noprint"><form class="row"><label>الشهر<input type="month" name="month" value="{{ mm or '' }}"></label>
 <span class="mut">أو</span><label>من<input type="date" name="from" value="{{ d1 if not mm else '' }}"></label><label>إلى<input type="date" name="to" value="{{ d2 if not mm else '' }}"></label>
 {{ branch_filter(br) }}<button class="btn light">عرض</button><button type="button" class="btn gold" onclick="window.print()">طباعة</button></form></div>
@@ -1272,13 +1292,13 @@ TEMPLATES["reports.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 <div class="card"><h2>المصاريف حسب الفئة</h2>{% with items=r.exp_cat, color='#c0392b' %}{% include "bars.html" %}{% endwith %}</div>
 <div class="card"><h2>طرق الدفع</h2>{% with items=r.by_method, color='#c99a5b' %}{% include "bars.html" %}{% endwith %}</div></div>
 <div class="card"><h2>أكثر الخدمات طلبًا</h2><table><tr><th>الخدمة</th><th>العدد</th><th>المداخيل</th></tr>
-{% for s in r.top_services %}<tr><td>{{ s.name }}</td><td>{{ '%g'|format(s.n or 0) }}</td><td>{{ s.rev|money }}</td></tr>{% else %}<tr><td colspan="3" class="mut">لا شيء</td></tr>{% endfor %}</table></div>
+{% for s in r.top_services %}<tr><td>{{ item_ic(s.name) }}{{ s.name }}</td><td>{{ '%g'|format(s.n or 0) }}</td><td>{{ s.rev|money }}</td></tr>{% else %}<tr><td colspan="3" class="mut">لا شيء</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>أكثر المنتجات مبيعًا</h2><table><tr><th>المنتج</th><th>الكمية</th><th>المبيعات</th><th>الربح (البيع − الشراء)</th></tr>
-{% for p in r.top_products %}<tr><td>{{ p.name }}</td><td>{{ '%g'|format(p.q) }}</td><td>{{ p.rev|money }}</td><td>{{ p.margin|money }}</td></tr>{% else %}<tr><td colspan="4" class="mut">لا شيء</td></tr>{% endfor %}</table>
+{% for p in r.top_products %}<tr><td>{{ item_ic(p.name, 'product') }}{{ p.name }}</td><td>{{ '%g'|format(p.q) }}</td><td>{{ p.rev|money }}</td><td>{{ p.margin|money }}</td></tr>{% else %}<tr><td colspan="4" class="mut">لا شيء</td></tr>{% endfor %}</table>
 <p class="mut">تكلفة المنتجات المباعة في الفترة: {{ r.cogs|money }} {{ cur }} (حسب سعر الشراء المسجل).</p></div>{% endblock %}"""
 
 TEMPLATES["debts.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>ديون الزبائن{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<h1>{{ page_icon() }}ديون الزبائن{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 {% if cu.role=='admin' %}<div class="card"><form class="row">{{ branch_filter(br) }}<button class="btn light">عرض</button></form>
 <div class="stat" style="margin-top:10px;max-width:320px"><div class="l">مجموع الديون</div><div class="n">{{ total|money }} {{ cur }}</div></div></div>{% endif %}
 <div class="card"><p class="mut">عندما يدفع الزبون أقل من المستحق عند التحصيل، يُسجَّل الباقي هنا دينًا عليه حتى يسدده.</p>
@@ -1315,7 +1335,7 @@ TEMPLATES["consent.html"] = r"""{% extends "base.html" %}{% block body %}
 </div>{% endblock %}"""
 
 TEMPLATES["calendar.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>جدول الغرف الأسبوعي — {{ branch_name(br) }}</h1>
+<h1>{{ page_icon() }}جدول الغرف الأسبوعي — {{ branch_name(br) }}</h1>
 <div class="row noprint" style="margin-bottom:12px"><a class="btn light" href="?week={{ prev }}&branch={{ br }}">→ الأسبوع السابق</a>
 <a class="btn light" href="?branch={{ br }}">هذا الأسبوع</a><a class="btn light" href="?week={{ next }}&branch={{ br }}">الأسبوع القادم ←</a>
 {% if cu.role=='admin' %}<form class="row"><select name="branch" onchange="this.form.submit()">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select><input type="hidden" name="week" value="{{ days[0] }}"></form>{% endif %}
@@ -1332,7 +1352,7 @@ background:{{ '#e3efe8' if a.status=='done' else '#fbeedd' if a.status=='schedul
 <p class="mut">المدة حسب الخدمة (تُحدد في «الخدمات والأسعار»). البرنامج يمنع حجز موعدين متداخلين في نفس الغرفة.</p>{% endblock %}"""
 
 TEMPLATES["sms_campaign.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>رسالة جماعية للزبائن</h1>
+<h1>{{ page_icon() }}رسالة جماعية للزبائن</h1>
 <div class="card"><form method="post">
 <div class="row"><label>الفرع<select name="branch"><option value="">كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if f.get('branch')==b.id|string }}>{{ b.name }}</option>{% endfor %}</select></label>
 <label>الجنس<select name="gender"><option value="">الكل</option>{% for g in ('ذكر','أنثى') %}<option {{ 'selected' if f.get('gender')==g }}>{{ g }}</option>{% endfor %}</select></label>
@@ -1346,7 +1366,7 @@ TEMPLATES["sms_campaign.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="mut">{% for c in targets[:60] %}{{ c.name }}{{ '، ' if not loop.last }}{% endfor %}{% if targets|length > 60 %} ...{% endif %}</div></div>{% endblock %}"""
 
 TEMPLATES["suppliers.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>الموردون</h1>
+<h1>{{ page_icon() }}الموردون</h1>
 <div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ طلبية شراء</a><a class="btn light" href="{{ url_for('purchases') }}">كل الطلبيات</a></div>
 <div class="card"><h2>{{ 'تعديل مورد' if edit else 'مورد جديد' }}</h2><form method="post" class="row">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
 <label>الاسم<input name="name" value="{{ edit.name if edit else '' }}" required></label><label>الهاتف<input name="phone" value="{{ edit.phone or '' if edit else '' }}"></label>
@@ -1354,13 +1374,13 @@ TEMPLATES["suppliers.html"] = r"""{% extends "base.html" %}{% block body %}
 {% if edit %}<label>الحالة<select name="active"><option value="1">نشط</option><option value="0" {{ 'selected' if not edit.active }}>موقوف</option></select></label>{% endif %}
 <button class="btn">حفظ</button></form></div>
 <div class="card"><table><tr><th>المورد</th><th>الهاتف</th><th>ملاحظات</th><th>مجموع المشتريات</th><th>المدفوع</th><th>الباقي له</th><th></th></tr>
-{% for s in rows %}<tr class="{{ 'cx' if not s.active }}"><td><b>{{ s.name }}</b></td><td>{{ s.phone or '' }}</td><td class="mut">{{ s.notes or '' }}</td>
+{% for s in rows %}<tr class="{{ 'cx' if not s.active }}"><td><span class="itm">{{ ic('truck') }}</span><b>{{ s.name }}</b></td><td>{{ s.phone or '' }}</td><td class="mut">{{ s.notes or '' }}</td>
 <td>{{ s.total|money }}</td><td>{{ s.paid|money }}</td><td>{% if s.rest>0 %}<span class="tag red">{{ s.rest|money }}</span>{% else %}<span class="tag">0</span>{% endif %}</td>
 <td><a class="btn light sm" href="{{ url_for('purchases', supplier=s.id) }}">الطلبيات</a> <a class="btn light sm" href="?edit={{ s.id }}">تعديل</a></td></tr>
 {% else %}<tr><td colspan="7" class="mut">لا يوجد موردون</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["purchases.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>طلبيات الشراء</h1>
+<h1>{{ page_icon() }}طلبيات الشراء</h1>
 <div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ فاتورة / طلبية شراء</a>{% if cu.role=='admin' %}<a class="btn light" href="{{ url_for('suppliers') }}">الموردون</a>{% endif %}</div>
 <div class="card"><form class="row" style="margin-bottom:10px">{{ branch_filter(br) }}<button class="btn light">عرض</button></form>
 <table><tr><th>#</th><th>التاريخ</th><th>المورد</th>{% if not br %}<th>الفرع</th>{% endif %}<th>المجموع</th><th>المدفوع</th><th>الحالة</th></tr>
@@ -1369,7 +1389,7 @@ TEMPLATES["purchases.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 {% else %}<tr><td colspan="7" class="mut">لا توجد طلبيات</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["purchase_new.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>طلبية شراء جديدة</h1>
+<h1>{{ page_icon() }}طلبية شراء جديدة</h1>
 <div class="card"><form method="post">
 <div class="row"><label>المورد<select name="supplier_id"><option value="">—</option>{% for s in sups %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select></label>
 {% if cu.role=='admin' %}<a class="btn light sm" href="{{ url_for('suppliers') }}">+ مورد جديد</a>
@@ -1421,7 +1441,7 @@ TEMPLATES["permissions.html"] = r"""{% extends "base.html" %}{% block body %}
 .sl:before{content:"";position:absolute;width:18px;height:18px;right:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
 .sw input:checked+.sl{background:#2a6153}.sw input:checked+.sl:before{transform:translateX(-22px)}
 td.c{text-align:center}</style>
-<h1>صلاحيات العمال</h1>
+<h1>{{ page_icon() }}صلاحيات العمال</h1>
 <div class="card mut">كل مكان (استقبال، غرفة ليزر، غرفة تجميل) في كل فرع له صلاحياته. كل من يعمل في ذلك المكان يأخذها.
 المهمة المغلقة تختفي من شاشة العامل ولا يستطيع فتحها. التغيير فوري، ويصل إلى حاسوب سكيكدة خلال 30 ثانية.
 <b>الصندوق والمجاميع والتقارير والرواتب والأسعار والإعدادات للمديرة وحدها دائمًا.</b></div>
@@ -1434,7 +1454,7 @@ fetch('{{ url_for("permissions") }}',{method:'POST',body:fd,headers:{'X-Requeste
 .catch(function(){el.checked=!el.checked;alert('تعذر الحفظ')})}</script>{% endblock %}"""
 
 TEMPLATES["cash_close.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>إغلاق صندوق اليوم — {{ PLACES.get(cu.role,'') }}</h1>
+<h1>{{ page_icon() }}إغلاق صندوق اليوم — {{ PLACES.get(cu.role,'') }}</h1>
 <div class="card" style="max-width:520px">
 {% if ex %}<div class="flash ok">أُغلق الصندوق اليوم على الساعة {{ ex.closed_at[11:16] }}. يمكنك تصحيح المبلغ إن أخطأت في العدّ.</div>{% endif %}
 <p>عُدّ النقود الموجودة في الصندوق الآن واكتب المبلغ. البرنامج يقارنه بما سُجّل، والمديرة ترى النتيجة.</p>
@@ -1443,7 +1463,7 @@ TEMPLATES["cash_close.html"] = r"""{% extends "base.html" %}{% block body %}
 <p class="mut">غدًا يبدأ صندوق جديد من صفر. المدفوعات بالبطاقة أو CCP لا تُعدّ هنا.</p></div>{% endblock %}"""
 
 TEMPLATES["cash_daily.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>الصندوق اليومي</h1>
+<h1>{{ page_icon() }}الصندوق اليومي</h1>
 <div class="card noprint"><form class="row"><label>من<input type="date" name="from" value="{{ d1 }}"></label><label>إلى<input type="date" name="to" value="{{ d2 }}"></label>
 {{ branch_filter(br) }}<button class="btn light">عرض</button>
 <a class="btn light" href="?from={{ today }}&to={{ today }}">اليوم</a><button type="button" class="btn gold" onclick="window.print()">طباعة</button></form>
@@ -1463,7 +1483,7 @@ TEMPLATES["cash_daily.html"] = r"""{% extends "base.html" %}{% from "macros.html
 {% else %}<tr><td colspan="12" class="mut">لا توجد عمليات في هذه الفترة</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["audit.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
-<h1>سجل العمليات</h1>
+<h1>{{ page_icon() }}سجل العمليات</h1>
 <div class="card"><form class="row"><label>من<input type="date" name="from" value="{{ d1 }}"></label><label>إلى<input type="date" name="to" value="{{ d2 }}"></label>
 {{ branch_filter(br) }}<label>بحث<input name="q" value="{{ qq }}" placeholder="إلغاء، سعر، صندوق..."></label><button class="btn light">عرض</button></form></div>
 <div class="card"><table><tr><th>الوقت</th><th>العامل</th><th>الفرع</th><th>العملية</th><th>التفاصيل</th></tr>
@@ -1472,7 +1492,7 @@ TEMPLATES["audit.html"] = r"""{% extends "base.html" %}{% from "macros.html" imp
 {% else %}<tr><td colspan="5" class="mut">لا شيء</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["backup.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>النسخ الاحتياطي</h1>
+<h1>{{ page_icon() }}النسخ الاحتياطي</h1>
 <div class="grid" style="margin-bottom:16px">
 <div class="stat" style="border-top-color:{{ '#c0392b' if st.warn else '#2a6153' }}"><div class="l">آخر نسخة</div><div class="n" style="font-size:20px">{{ st.last or 'لم تُصنع بعد' }}</div>
 <div class="mut">{% if st.age is not none %}منذ {{ '%.0f'|format(st.age) }} ساعة{% endif %} · تلقائيًا كل {{ st.every }} ساعات</div></div>
@@ -1524,7 +1544,7 @@ TEMPLATES["leave.html"] = r"""{% extends "base.html" %}{% block body %}
 
 
 TEMPLATES["devices.html"] = r"""{% extends "base.html" %}{% block body %}
-<div class="card"><h1>💻 الحواسيب وكلمات السر</h1>
+<div class="card"><h1>{{ page_icon() }} الحواسيب وكلمات السر</h1>
 <p class="mut">كل حاسوب مربوط بفرع ومكان، ويدخل بكلمة سر خاصة به. تغيير كلمة السر أو الإيقاف يصل للحاسوب عند اتصاله بالإنترنت.
 الحاسوب الموقوف لا يستطيع الدخول ولا إرسال أي شيء.</p>
 <p>نسخة البرنامج في هذا الحاسوب: <b dir="ltr">{{ version }}</b>. الحواسيب الأخرى تتحدث وحدها إلى هذه النسخة عند تشغيلها أو بعد 5 دقائق بلا استعمال.</p>
@@ -1552,3 +1572,25 @@ TEMPLATES["devices.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>كلمة السر<input name="password" minlength="4" required></label>
 <button class="btn">إضافة</button></form></div>
 {% endblock %}"""
+
+
+TEMPLATES["tiles.html"] = r"""<div class="tiles noprint">
+{% if perm('reception_visits') %}<a class="tile" href="{{ url_for('visit_new') }}">{{ ic('reception') }}استقبال زبون</a>{% endif %}
+{% if perm('collect') %}<a class="tile" href="{{ url_for('reception') }}">{{ ic('cash') }}التحصيل</a>{% endif %}
+{% if perm('pos') %}<a class="tile" href="{{ url_for('pos') }}">{{ ic('cart') }}بيع المنتجات</a>{% endif %}
+<a class="tile" href="{{ url_for('appointments') }}">{{ ic('calendar') }}المواعيد</a>
+<a class="tile" href="{{ url_for('clients') }}">{{ ic('clients') }}الزبائن</a>
+<a class="tile" href="{{ url_for('plans') }}">{{ ic('plans') }}خطط الحصص</a>
+{% if cu.role=='admin' %}
+<a class="tile" href="{{ url_for('cash_daily') }}">{{ ic('safe') }}الصندوق اليومي</a>
+<a class="tile" href="{{ url_for('reports') }}">{{ ic('reports') }}التقارير والأرباح</a>
+<a class="tile" href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>
+<a class="tile" href="{{ url_for('services') }}">{{ ic('services') }}الخدمات والأسعار</a>
+<a class="tile" href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>
+<a class="tile" href="{{ url_for('permissions') }}">{{ ic('key') }}الصلاحيات</a>
+{% if not NODE %}<a class="tile" href="{{ url_for('devices') }}">{{ ic('monitor') }}الحواسيب</a>{% endif %}
+{% else %}
+{% if perm('attendance') %}<a class="tile" href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}
+{% if perm('courses') %}<a class="tile" href="{{ url_for('courses') }}">{{ ic('course') }}الدورات</a>{% endif %}
+{% if perm('cash_close') %}<a class="tile" href="{{ url_for('cash_close') }}">{{ ic('lock') }}إغلاق الصندوق</a>{% endif %}
+{% endif %}</div>"""
