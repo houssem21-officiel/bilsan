@@ -9,7 +9,7 @@ from functools import wraps
 from urllib import request as urlreq
 
 from flask import (Flask, g, request, redirect, url_for, session, flash,
-                   render_template, abort, Response)
+                   render_template, abort, Response, send_file)
 from jinja2 import DictLoader
 from markupsafe import Markup
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -19,6 +19,12 @@ import catalog
 import backup
 
 import paths  # noqa: E402
+try:
+    with open(os.path.join(paths.APP_DIR, "VERSION")) as _f:
+        APP_VERSION = _f.read().strip()
+except OSError:
+    APP_VERSION = "0"
+APP_VERSION = os.environ.get("BILSAN_VERSION", APP_VERSION)  # للاختبار فقط
 BASE_DIR = paths.DATA_DIR  # مكان البيانات (قاعدة البيانات، السجل، الإعدادات)
 DB_PATH = os.environ.get("BILSAN_DB", os.path.join(BASE_DIR, "bilsan.db"))
 
@@ -298,6 +304,7 @@ def init_db():
     add_col("users", "device", "INTEGER DEFAULT 0")
     add_col("users", "slot", "INTEGER")
     add_col("users", "last_seen", "TEXT")
+    add_col("users", "app_version", "TEXT")
     con.execute("CREATE TABLE IF NOT EXISTS pair_codes(code TEXT PRIMARY KEY, user_id INTEGER, expires TEXT)")
     for k, v in DEFAULT_SETTINGS.items():
         con.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (k, v))
@@ -3851,7 +3858,7 @@ def devices():
     codes = {r["user_id"]: r for r in db.execute("SELECT * FROM pair_codes WHERE expires>=?", (now_str(),))}
     return render_template("devices.html", rows=device_rows(db), codes=codes,
                            branches=db.execute("SELECT * FROM branches WHERE active=1 ORDER BY id").fetchall(),
-                           now=datetime.now())
+                           now=datetime.now(), version=APP_VERSION)
 
 
 @app.route("/pair", methods=["POST"])
@@ -3893,9 +3900,34 @@ def sync_auth():
         d = db.execute("SELECT id,active,branch_id FROM users WHERE username=? AND device=1", (dv,)).fetchone()
         if not d or not d["active"] or d["branch_id"] != int(b):
             abort(423)  # الحاسوب موقوف أو محذوف
-        db.execute("UPDATE users SET last_seen=? WHERE id=?", (now_str(), d["id"]))
+        if data.get("version"):
+            db.execute("UPDATE users SET last_seen=?, app_version=? WHERE id=?",
+                       (now_str(), str(data["version"])[:20], d["id"]))
+        else:
+            db.execute("UPDATE users SET last_seen=? WHERE id=?", (now_str(), d["id"]))
         db.commit()
     return data, int(b)
+
+
+@app.route("/sync/hello", methods=["POST"])
+def sync_hello():
+    sync_auth()
+    return {"ok": True, "version": APP_VERSION, "update": bool(update_zip())}
+
+
+def update_zip():
+    """ملف التحديث الذي يأتي مع ملف تثبيت الحاسوب المركزي."""
+    p = os.path.join(BASE_DIR, "update", f"Bilsan-update-{APP_VERSION}.zip")
+    return p if os.path.exists(p) else None
+
+
+@app.route("/sync/update", methods=["POST"])
+def sync_update_file():
+    sync_auth()
+    p = update_zip()
+    if not p:
+        abort(404)
+    return send_file(p, mimetype="application/zip", as_attachment=True, download_name=os.path.basename(p))
 
 
 @app.route("/sync/push", methods=["POST"])
@@ -3932,6 +3964,7 @@ def notfound(e):
     return render_template("msg.html", msg="الصفحة أو العنصر غير موجود"), 404
 
 
+sync.APP_VERSION = APP_VERSION
 RESTORE_MSG = backup.apply_pending_restore(DB_PATH)
 from templates import TEMPLATES  # noqa: E402
 app.jinja_loader = DictLoader(TEMPLATES)
@@ -4014,6 +4047,95 @@ else:
     init_db()
 
 
+# ---------------------------------------------------------------- التحديث التلقائي للحواسيب
+# الحاسوب المركزي يُحدَّث يدويًا (ملف التثبيت). كل حاسوب آخر يرى أن المركزي بنسخة أحدث
+# فيحمّل منه ملف التحديث ويثبّته وحده: عند تشغيل الحاسوب، أو بعد 5 دقائق بلا استعمال.
+START_TIME = time.time()
+LAST_REQ = [time.time()]
+
+
+@app.before_request
+def _mark_activity():
+    if request.endpoint not in ("static", None):
+        LAST_REQ[0] = time.time()
+
+
+UPDATE_BAT = r"""@echo off
+ping -n 4 127.0.0.1 >nul
+taskkill /f /im Bilsan.exe >nul 2>&1
+ping -n 3 127.0.0.1 >nul
+set "A={app}"
+if exist "%A%_old" rmdir /s /q "%A%_old"
+move "%A%" "%A%_old" >nul || goto fail
+move "{new}" "%A%" >nul || (move "%A%_old" "%A%" >nul & goto fail)
+start "" "%A%\Bilsan.exe" --background
+exit /b 0
+:fail
+start "" "%A%\Bilsan.exe" --background
+"""
+
+
+def apply_update():
+    """يحمّل ملف التحديث من الحاسوب المركزي ويستبدل البرنامج ثم يعيد تشغيله."""
+    import zipfile
+    import shutil
+    import subprocess
+    con = connect()
+    try:
+        cv = sync.state_get(con, "central_version", "")
+        tried = sync.state_get(con, "update_tried", "")
+        if tried.startswith(cv + "|") and time.time() - float(tried.split("|")[1]) < 6 * 3600:
+            return False  # جربنا هذه النسخة منذ قليل ولم تنجح: لا نعيد كل دقيقة
+        sync.state_set(con, "update_tried", f"{cv}|{time.time()}")
+        con.commit()
+    finally:
+        con.close()
+    zpath = os.path.join(BASE_DIR, "update_download.zip")
+    newdir = os.path.join(BASE_DIR, "app_new")
+    req = urlreq.Request(sync.NODE["central_url"] + "/sync/update", method="POST",
+                         data=json.dumps({"branch_id": sync.NODE["branch_id"], "device": sync.NODE.get("device")}).encode(),
+                         headers={"Content-Type": "application/json", "X-Sync-Key": sync.NODE.get("key", "")})
+    with urlreq.urlopen(req, timeout=600) as r, open(zpath, "wb") as f:
+        shutil.copyfileobj(r, f)
+    shutil.rmtree(newdir, ignore_errors=True)
+    with zipfile.ZipFile(zpath) as z:
+        if z.testzip() is not None:
+            raise RuntimeError("ملف التحديث تالف")
+        z.extractall(newdir)
+    os.remove(zpath)
+    if not os.path.exists(os.path.join(newdir, "Bilsan.exe")):
+        raise RuntimeError("ملف التحديث ناقص")
+    if not getattr(sys, "frozen", False):  # تشغيل من الكود (اختبار): لا نستبدل شيئًا
+        open(os.path.join(BASE_DIR, "update_ready.txt"), "w").write(cv)
+        return True
+    appdir = os.path.dirname(os.path.abspath(sys.executable))
+    bat = os.path.join(BASE_DIR, "update.bat")
+    with open(bat, "w", encoding="ascii", errors="replace") as f:
+        f.write(UPDATE_BAT.replace("{app}", appdir).replace("{new}", newdir).replace("\n", "\r\n"))
+    print(f"تحديث البرنامج إلى {cv}")
+    flags = 0x08000000 | 0x00000008 if os.name == "nt" else 0  # بدون نافذة، منفصل
+    subprocess.Popen(["cmd", "/c", bat] if os.name == "nt" else ["sh", bat], creationflags=flags, close_fds=True)
+    time.sleep(0.5)
+    os._exit(0)
+
+
+def update_loop():
+    while True:
+        time.sleep(float(os.environ.get("BILSAN_UPDATE_EVERY", "60")))
+        try:
+            con = connect()
+            try:
+                newer = sync.central_is_newer(con)
+            finally:
+                con.close()
+            idle = time.time() - LAST_REQ[0]
+            if newer and (time.time() - START_TIME < 600 or idle > 300) and \
+                    not os.path.exists(os.path.join(BASE_DIR, "update_ready.txt")):
+                apply_update()
+        except Exception as e:  # noqa: BLE001
+            print("update error:", e)
+
+
 def wait_port_free(port, secs=15):
     import socket
     for _ in range(secs * 4):
@@ -4037,6 +4159,8 @@ def run_server(port=None):
         if sync.NODE:
             print(f"  وضع الحاسوب الفرعي: يتزامن مع {sync.NODE['central_url']}")
             threading.Thread(target=sync.node_loop, args=(connect,), daemon=True).start()
+            if getattr(sys, "frozen", False) or os.environ.get("BILSAN_UPDATE_TEST"):
+                threading.Thread(target=update_loop, daemon=True).start()
         else:
             threading.Thread(target=reminder_loop, daemon=True).start()
     # الحاسوب المركزي يستقبل الحواسيب الأخرى، أما الحاسوب الفرعي فلا يفتح إلا لنفسه

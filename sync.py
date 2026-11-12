@@ -279,10 +279,29 @@ def _post(path, data, timeout=25):
         raise
 
 
+APP_VERSION = "0"  # يضبطه app.py
+
+
+def vtuple(v):
+    try:
+        return tuple(int(x) for x in str(v).split("."))
+    except ValueError:
+        return (0,)
+
+
+def central_is_newer(con):
+    return vtuple(state_get(con, "central_version", "0")) > vtuple(APP_VERSION)
+
+
 def node_sync_once(connect):
     """يرسل ثم يستقبل. يعيد (نجح؟، رسالة)."""
     con = connect()
     try:
+        # 0) نسخة البرنامج في الحاسوب المركزي (للتحديث التلقائي)
+        hello = _post("/sync/hello", {"branch_id": NODE["branch_id"], "device": NODE.get("device"),
+                                      "version": APP_VERSION}, timeout=15)
+        state_set(con, "central_version", hello.get("version", "0"))
+        con.commit()
         # 1) إرسال ما سُجّل محليًا
         for _ in range(20):
             tables, deleted = node_collect(con)
@@ -297,7 +316,8 @@ def node_sync_once(connect):
             if sum(len(v) for v in tables.values()) < 3000:
                 break
         # 2) استقبال ما تغيّر في المركزي
-        for _ in range(20):
+        #    إذا كان المركزي بنسخة أحدث ننتظر التحديث أولًا (قد تكون فيه أعمدة جديدة)
+        for _ in range(0 if central_is_newer(con) else 20):
             since = state_get(con, "last_pull", "")
             iv = con.execute("SELECT value FROM settings WHERE key='img_ver'").fetchone()
             res = _post("/sync/pull", {"branch_id": NODE["branch_id"], "device": NODE.get("device"),
@@ -324,7 +344,7 @@ def node_sync_once(connect):
             con.commit()
             break
         state_set(con, "last_ok", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
-        state_set(con, "last_error", "")
+        state_set(con, "last_error", "في انتظار تحديث البرنامج" if central_is_newer(con) else "")
         state_set(con, "disabled", "")
         con.commit()
         return True, "تمت المزامنة"

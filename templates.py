@@ -1527,10 +1527,12 @@ TEMPLATES["devices.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card"><h1>💻 الحواسيب وكلمات السر</h1>
 <p class="mut">كل حاسوب مربوط بفرع ومكان، ويدخل بكلمة سر خاصة به. تغيير كلمة السر أو الإيقاف يصل للحاسوب عند اتصاله بالإنترنت.
 الحاسوب الموقوف لا يستطيع الدخول ولا إرسال أي شيء.</p>
-<table><tr><th>الحاسوب</th><th>الفرع</th><th>المكان</th><th>آخر اتصال</th><th>الحالة</th><th>كلمة سر جديدة</th><th></th></tr>
+<p>نسخة البرنامج في هذا الحاسوب: <b dir="ltr">{{ version }}</b>. الحواسيب الأخرى تتحدث وحدها إلى هذه النسخة عند تشغيلها أو بعد 5 دقائق بلا استعمال.</p>
+<table><tr><th>الحاسوب</th><th>الفرع</th><th>المكان</th><th>آخر اتصال</th><th>النسخة</th><th>الحالة</th><th>كلمة سر جديدة</th><th></th></tr>
 {% for d in rows %}<tr{% if not d.active %} style="opacity:.55"{% endif %}>
 <td><b>{{ d.full_name }}</b><div class="mut">رقم {{ d.slot }}</div></td><td>{{ d.branch }}</td><td>{{ PLACES.get(d.role, d.role) }}</td>
 <td>{% if d.last_seen %}{{ d.last_seen[:16] }}{% else %}<span class="mut">لم يتصل بعد</span>{% endif %}</td>
+<td dir="ltr">{% if d.app_version %}{{ d.app_version }}{% if d.app_version != version %} <span title="سيتحدث قريبًا">⏳</span>{% else %} ✅{% endif %}{% else %}<span class="mut">—</span>{% endif %}</td>
 <td>{% if d.active %}<span style="color:#1a7a40">🟢 يعمل</span>{% else %}<span style="color:#a12">⛔ موقوف</span>{% endif %}
 {% if codes.get(d.id) %}<div class="mut">رمز الربط: <b dir="ltr" style="font-size:16px;letter-spacing:2px">{{ codes[d.id].code }}</b></div>{% endif %}</td>
 <td><form method="post" style="display:flex;gap:4px"><input type="hidden" name="act" value="password"><input type="hidden" name="id" value="{{ d.id }}">
@@ -1539,7 +1541,7 @@ TEMPLATES["devices.html"] = r"""{% extends "base.html" %}{% block body %}
 <button class="btn sm {{ 'red' if d.active else '' }}" onclick="return confirm('{{ 'إيقاف' if d.active else 'تشغيل' }} {{ d.full_name }}؟')">{{ 'إيقاف' if d.active else 'تشغيل' }}</button></form>
 <form method="post" style="display:inline"><input type="hidden" name="act" value="code"><input type="hidden" name="id" value="{{ d.id }}">
 <button class="btn sm ghost" title="لإعادة تثبيت البرنامج على حاسوب جديد مكان هذا">رمز ربط</button></form></td></tr>
-{% else %}<tr><td colspan="7" class="mut">لا توجد حواسيب بعد</td></tr>{% endfor %}</table></div>
+{% else %}<tr><td colspan="8" class="mut">لا توجد حواسيب بعد</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>➕ إضافة حاسوب جديد</h2>
 <p class="mut">بعد الإضافة يظهر <b>رمز ربط من 6 أرقام</b>. ثبّت البرنامج العام (Bilsan-Setup) على الحاسوب الجديد واكتب الرمز. الرمز صالح يومين ولمرة واحدة.</p>
 <form method="post" class="grid" style="grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;align-items:end">

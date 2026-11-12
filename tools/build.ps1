@@ -9,9 +9,12 @@ python -m pip install flask waitress pillow pyinstaller
 
 python tools/make_configs.py build/variants.txt
 pyinstaller --noconfirm --clean --noconsole --onedir --name Bilsan `
-  --icon static\bilsan.ico --add-data "static;static" `
+  --icon static\bilsan.ico --add-data "static;static" --add-data "VERSION;." `
   --hidden-import waitress --collect-submodules waitress launcher.py
 if (!(Test-Path dist\Bilsan\Bilsan.exe)) { throw "PyInstaller failed" }
+# ملف التحديث التلقائي (يوضع مع الحاسوب المركزي)
+New-Item -ItemType Directory -Force dist\update | Out-Null
+Compress-Archive -Path dist\Bilsan\* -DestinationPath "dist\update\Bilsan-update-$ver.zip" -Force
 
 # اختبار سريع: البرنامج المبني يشتغل ويجيب على صفحة الدخول
 $env:BILSAN_DATA = "$PWD\build\smoke"
@@ -26,6 +29,31 @@ Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
 Remove-Item Env:\BILSAN_DATA
 if (!$ok) { Get-Content build\smoke\bilsan.log -ErrorAction SilentlyContinue; throw "smoke test failed" }
 Write-Host "smoke test OK"
+
+# اختبار التحديث التلقائي: مركزي بنسخة أحدث + حاسوب فرع بنسخة أقدم
+$T = "$PWD\build\uptest"
+New-Item -ItemType Directory -Force "$T\c\update", "$T\n" | Out-Null
+Copy-Item -Recurse dist\Bilsan "$T\n\app"
+Copy-Item "dist\update\Bilsan-update-$ver.zip" "$T\c\update\Bilsan-update-99.0.zip"
+'{"sync_key":"kkkkkkkkkkkkkkkkkkkkkkkk","devices":[{"username":"d1","full_name":"t","branch_id":1,"role":"reception","slot":101,"password":"1111"}]}' | Out-File -Encoding ascii "$T\c\seed.json"
+'{"branch_id":1,"slot":101,"device":"d1","central_url":"http://127.0.0.1:5000","key":"kkkkkkkkkkkkkkkkkkkkkkkk"}' | Out-File -Encoding ascii "$T\n\node.json"
+$env:BILSAN_DATA = "$T\c"; $env:BILSAN_VERSION = "99.0"; $env:BILSAN_PORT = "5000"
+$pc = Start-Process dist\Bilsan\Bilsan.exe -ArgumentList "--background" -PassThru
+Start-Sleep 8
+$env:BILSAN_DATA = "$T\n"; $env:BILSAN_VERSION = "1.0"; $env:BILSAN_PORT = "5001"; $env:BILSAN_UPDATE_EVERY = "3"
+$pn = Start-Process "$T\n\app\Bilsan.exe" -ArgumentList "--background" -PassThru
+Remove-Item Env:\BILSAN_DATA, Env:\BILSAN_VERSION, Env:\BILSAN_PORT, Env:\BILSAN_UPDATE_EVERY
+$up = $false
+for ($i = 0; $i -lt 90; $i++) {
+  Start-Sleep 1
+  if ((Test-Path "$T\n\app_old\Bilsan.exe") -and (Test-Path "$T\n\app\Bilsan.exe")) {
+    try { $r = Invoke-WebRequest http://127.0.0.1:5001/login -UseBasicParsing -TimeoutSec 2; if ($r.StatusCode -eq 200) { $up = $true; break } } catch {}
+  }
+}
+Get-Process Bilsan -ErrorAction SilentlyContinue | Stop-Process -Force
+Get-Content "$T\n\bilsan.log" -ErrorAction SilentlyContinue | Select-Object -Last 15
+if (!$up) { throw "auto-update test failed" }
+Write-Host "auto-update test OK"
 
 $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
 if (!(Test-Path $iscc)) { choco install innosetup -y --no-progress; }
