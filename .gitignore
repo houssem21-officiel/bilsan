@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+*.db
+*.db-wal
+*.db-shm
+secret.key
+bilsan.log
+node.json
+seed.json
+pair.flag
+restore_pending.txt
+backups/
+build/
+dist/
+*.spec

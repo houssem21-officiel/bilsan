@@ -1,0 +1,13 @@
+{
+  "_note": "إعدادات ملفات التثبيت الجاهزة. كلمات السر هنا أولية فقط: غيّرها من صفحة «الحواسيب» بعد التثبيت. هذا المستودع خاص، لا تجعله عامًا.",
+  "central_url": "http://bilsan-central:5000",
+  "sync_key": "83a7b0b889094890211498043b3019ac",
+  "admin_password": "568018",
+  "devices": [
+    {"file": "Harrouch-Reception", "username": "harrouch-reception", "full_name": "استقبال الحروش", "branch_id": 2, "role": "reception", "slot": 101, "password": "271597"},
+    {"file": "Harrouch-Beauty", "username": "harrouch-beauty", "full_name": "تجميل الحروش", "branch_id": 2, "role": "beauty", "slot": 102, "password": "983467"},
+    {"file": "Skikda-Reception", "username": "skikda-reception", "full_name": "استقبال سكيكدة", "branch_id": 1, "role": "reception", "slot": 103, "password": "123373"},
+    {"file": "Skikda-Laser", "username": "skikda-laser", "full_name": "ليزر سكيكدة", "branch_id": 1, "role": "laser", "slot": 104, "password": "267188"},
+    {"file": "Skikda-Beauty", "username": "skikda-beauty", "full_name": "تجميل سكيكدة", "branch_id": 1, "role": "beauty", "slot": 105, "password": "661381"}
+  ]
+}
