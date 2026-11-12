@@ -582,7 +582,7 @@ def inject():
 def node_status():
     db = get_db()
     return dict(ok=sync.state_get(db, "last_ok"), err=sync.state_get(db, "last_error"),
-                update=sync.central_is_newer(db),
+                newver=sync.central_is_newer(db), ms=sync.LAST_MS[0],
                 pending=sync.pending_count(db), first=not db.execute("SELECT 1 FROM users").fetchone())
 
 
@@ -4066,7 +4066,8 @@ def page_icon():
     return icons.ic(name, "pg")
 
 
-app.jinja_env.globals.update(live_page=lambda: request.endpoint in LIVE_PAGES, ic=icons.ic, item_ic=icons.item, avatar=icons.avatar,
+app.jinja_env.globals.update(live_page=lambda: bool(request.endpoint) and request.endpoint not in NOT_LIVE
+                             and not request.endpoint.endswith(("_print", "_csv")) and request.method == "GET", ic=icons.ic, item_ic=icons.item, avatar=icons.avatar,
                              icon_sprite=icons.sprite, page_icon=page_icon)
 RESTORE_MSG = backup.apply_pending_restore(DB_PATH)
 from templates import TEMPLATES  # noqa: E402
@@ -4167,8 +4168,10 @@ def _after_write(resp):
     return resp
 
 
-LIVE_PAGES = {"dashboard", "reception", "cashbox", "cash_daily", "appointments", "calendar", "debts",
-              "visits_list", "branch_view", "plans", "stock_alerts_page", "visit_view", "client_view"}
+# كل الصفحات تتحدث وحدها عند وصول معلومة جديدة، إلا الصفحات التي فيها عمل غير محفوظ أو للطباعة
+NOT_LIVE = {"login", "pos", "purchase_new", "plan_new", "payment_new", "charge_new", "visit_new", "consent",
+            "receipt", "certificate", "payslip", "payslips_all", "settings", "settings_images",
+            "sms_campaign", "backup_page", "update_now", "setup_pair", "devices", "permissions"}
 
 
 @app.route("/api/stamp")

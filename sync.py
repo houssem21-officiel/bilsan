@@ -307,17 +307,74 @@ class DeviceDisabled(Exception):
     pass
 
 
+# ---------------------------------------------------------------- الاتصال بالحاسوب المركزي (سريع)
+# 1) نحفظ عنوان IP لاسم bilsan-central: في Windows البحث عن الاسم داخل الشبكة قد يأخذ عدة ثوانٍ في كل مرة.
+# 2) نبقي الاتصال مفتوحًا بين العمليات بدل فتح اتصال جديد كل مرة.
+import http.client  # noqa: E402
+import socket  # noqa: E402
+from urllib.parse import urlsplit  # noqa: E402
+
+_net = {"ip": None, "ip_at": 0.0, "conn": None}
+LAST_MS = [0]
+
+
+def _resolve(host):
+    if re.match(r"^[0-9.]+$", host) or host in ("localhost",):
+        return host
+    if _net["ip"] and time.time() - _net["ip_at"] < 600:
+        return _net["ip"]
+    try:
+        ip = socket.getaddrinfo(host, None, socket.AF_INET, socket.SOCK_STREAM)[0][4][0]
+    except OSError:
+        ip = None
+    if not ip:
+        raise urlerr.URLError(f"getaddrinfo failed: {host}")
+    _net["ip"], _net["ip_at"] = ip, time.time()
+    return ip
+
+
+def _conn(fresh=False):
+    u = urlsplit(NODE["central_url"])
+    if fresh or not _net["conn"]:
+        if _net["conn"]:
+            try:
+                _net["conn"].close()
+            except Exception:
+                pass
+        if fresh:
+            _net["ip"] = None  # ربما تغيّر عنوان حاسوب المديرة
+        _net["conn"] = http.client.HTTPConnection(_resolve(u.hostname), u.port or 80, timeout=25)
+        _net["host"] = u.netloc
+        _net["base"] = (u.path or "").rstrip("/")
+    return _net["conn"]
+
+
 def _post(path, data, timeout=25):
     body = json.dumps(data, ensure_ascii=False).encode("utf-8")
-    req = urlreq.Request(NODE["central_url"] + path, data=body, method="POST",
-                         headers={"Content-Type": "application/json", "X-Sync-Key": NODE.get("key", "")})
-    try:
-        with urlreq.urlopen(req, timeout=timeout) as r:
-            return json.loads(r.read().decode("utf-8"))
-    except urlerr.HTTPError as e:
-        if e.code == 423:  # المديرة أوقفت هذا الحاسوب
-            raise DeviceDisabled()
-        raise
+    hdr = {"Content-Type": "application/json", "X-Sync-Key": NODE.get("key", ""), "Connection": "keep-alive"}
+    t0 = time.time()
+    for attempt in (0, 1):
+        try:
+            c = _conn(fresh=attempt == 1)
+            c.timeout = timeout
+            if c.sock:
+                c.sock.settimeout(timeout)
+            hdr["Host"] = _net["host"]
+            c.request("POST", _net["base"] + path, body=body, headers=hdr)
+            r = c.getresponse()
+            raw = r.read()
+            if r.status == 423:  # المديرة أوقفت هذا الحاسوب
+                raise DeviceDisabled()
+            if r.status >= 400:
+                raise urlerr.HTTPError(path, r.status, r.reason, None, None)
+            LAST_MS[0] = int((time.time() - t0) * 1000)
+            return json.loads(raw.decode("utf-8"))
+        except (DeviceDisabled, urlerr.HTTPError):
+            raise
+        except (OSError, http.client.HTTPException, urlerr.URLError):
+            _net["conn"] = None
+            if attempt == 1:
+                raise
 
 
 APP_VERSION = "0"  # يضبطه app.py
