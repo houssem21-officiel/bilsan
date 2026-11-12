@@ -308,7 +308,7 @@ TEMPLATES["clients.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 <a class="btn light" href="#" onclick="document.getElementById('newc').style.display='block';return false">+ زبون جديد</a></form></div>
 {{ new_client_box('') }}
 <div class="card"><table><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الفرع</th><th>تاريخ التسجيل</th></tr>
-{% for c in rows %}<tr><td>{{ c.id }}</td><td><a href="{{ url_for('client_view', cid=c.id) }}">{{ avatar(c.name) }}{{ c.name }}</a></td><td>{{ c.phone }}</td><td>{{ c.branch or '' }}</td><td>{{ (c.created_at or '')[:10] }}</td></tr>
+{% for c in rows %}<tr><td>{{ c.id|rid }}</td><td><a href="{{ url_for('client_view', cid=c.id) }}">{{ avatar(c.name) }}{{ c.name }}</a></td><td>{{ c.phone }}</td><td>{{ c.branch or '' }}</td><td>{{ (c.created_at or '')[:10] }}</td></tr>
 {% else %}<tr><td colspan="5" class="mut">لا يوجد زبائن</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["client_view.html"] = r"""{% extends "base.html" %}{% block body %}
@@ -675,7 +675,7 @@ TEMPLATES["branch_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="stat"><div class="l">الأقسام والموظفون</div><div>{% for k in depts %}<span class="tag">{{ DEPTS[k] }}</span> {% endfor %}</div>
 <div class="mut">{% for u in staff %}{{ u.full_name or u.username }} ({{ ROLES[u.role] }}){{ '، ' if not loop.last }}{% else %}لا يوجد موظفون بعد{% endfor %}</div></div></div>
 <div class="card"><h2>مبالغ تنتظر التحصيل ({{ pending|length }})</h2><table><tr><th>#</th><th>القسم</th><th>الزبون</th><th>البيان</th><th>المبلغ</th></tr>
-{% for c in pending %}<tr><td>{{ c.id }}</td><td>{{ DEPTS[c.dept] }}</td><td>{{ c.client or '-' }}</td><td>{{ c.description }}</td><td>{{ c.amount|money }}</td></tr>
+{% for c in pending %}<tr><td>{{ c.id|rid }}</td><td>{{ DEPTS[c.dept] }}</td><td>{{ c.client or '-' }}</td><td>{{ c.description }}</td><td>{{ c.amount|money }}</td></tr>
 {% else %}<tr><td colspan="5" class="mut">لا شيء</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>عمليات الصندوق اليوم</h2><table><tr><th>الوصل</th><th>الوقت</th><th>الزبون</th><th>النوع</th><th>البيان</th><th>استلمه</th><th>المبلغ</th></tr>
 {% for p in pays %}<tr class="{{ 'cx' if p.cancelled }}"><td><a href="{{ url_for('receipt', pid=p.id) }}">{{ p.id|rid }}</a></td><td>{{ p.created_at[11:16] }}</td><td>{{ p.client or '-' }}</td><td>{{ PAY_KINDS[p.kind] }}</td><td>{{ p.description }}</td><td>{{ p.by_name or '' }}</td><td>{{ p.amount|money }}</td></tr>
@@ -1452,7 +1452,7 @@ TEMPLATES["purchases.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 <div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ فاتورة / طلبية شراء</a>{% if cu.role=='admin' %}<a class="btn light" href="{{ url_for('suppliers') }}">الموردون</a>{% endif %}</div>
 <div class="card"><form class="row" style="margin-bottom:10px">{{ branch_filter(br) }}<button class="btn light">عرض</button></form>
 <table><tr><th>#</th><th>التاريخ</th><th>المورد</th>{% if not br %}<th>الفرع</th>{% endif %}<th>أدخلها</th><th>المجموع</th><th>المدفوع</th><th>الحالة</th></tr>
-{% for p in rows %}<tr class="{{ 'cx' if p.status=='cancelled' }}"><td><a href="{{ url_for('purchase_view', pid=p.id) }}">{{ p.id }}</a></td><td>{{ p.day }}</td><td>{{ p.supplier or '-' }}</td>{% if not br %}<td>{{ p.branch }}</td>{% endif %}<td>{{ p.by_name or '' }}</td>
+{% for p in rows %}<tr class="{{ 'cx' if p.status=='cancelled' }}"><td><a href="{{ url_for('purchase_view', pid=p.id) }}">{{ p.id|rid }}</a></td><td>{{ p.day }}</td><td>{{ p.supplier or '-' }}</td>{% if not br %}<td>{{ p.branch }}</td>{% endif %}<td>{{ p.by_name or '' }}</td>
 <td>{{ p.total|money }}</td><td>{{ p.paid|money }}</td><td><span class="tag {{ 'amber' if p.status=='ordered' else '' }}">{{ PURCHASE_STATUS[p.status] }}</span></td></tr>
 {% else %}<tr><td colspan="8" class="mut">لا توجد طلبيات</td></tr>{% endfor %}</table></div>
 {% if who %}<div class="card"><h2>{{ ic('key') }}من يقدر يدخل المشتريات؟</h2>
@@ -1500,7 +1500,7 @@ TEMPLATES["purchase_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card">
 <div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #c99a5b;padding-bottom:8px;margin-bottom:10px">
 <img src="{{ url_for('static', filename='logo_full.jpg') }}" style="width:64px;border-radius:6px"><div><b>{{ center }}</b><div class="mut">{{ p.branch }}</div></div>
-<div style="margin-inline-start:auto;text-align:left"><b>طلبية شراء رقم {{ p.id }}</b><div>{{ p.day }}</div></div></div>
+<div style="margin-inline-start:auto;text-align:left"><b>طلبية شراء رقم {{ p.id|rid }}</b><div>{{ p.day }}</div></div></div>
 <p>المورد: <b>{{ p.supplier or '-' }}</b> {{ p.sphone or '' }} {{ p.saddress or '' }} — الحالة: <span class="tag amber">{{ PURCHASE_STATUS[p.status] }}</span>{% if p.notes %} — {{ p.notes }}{% endif %}</p>
 <form method="post">
 <table><tr><th>المنتج</th><th>الكمية</th><th>سعر الوحدة</th><th>المجموع</th>{% if p.status=='ordered' %}<th class="noprint">الكمية التي وصلت</th><th class="noprint">السعر الفعلي</th>{% endif %}</tr>

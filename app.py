@@ -2935,7 +2935,7 @@ def purchase_view(pid):
                 c = fnum(f.get(f"rc_{i['id']}"), i["unit_cost"])
                 db.execute("UPDATE purchase_items SET qty=?, unit_cost=? WHERE id=?", (q, c, i["id"]))
                 if q > 0:
-                    move_stock(db, i["product_id"], p["branch_id"], q, f"شراء — طلبية {pid}", u["id"])
+                    move_stock(db, i["product_id"], p["branch_id"], q, f"شراء — طلبية {rid_filter(pid)}", u["id"])
                     if c > 0:
                         db.execute("UPDATE products SET cost_price=? WHERE id=?", (c, i["product_id"]))
             db.execute("UPDATE purchases SET status='received', received_at=? WHERE id=?", (now_str(), pid))
@@ -2945,9 +2945,9 @@ def purchase_view(pid):
                 db.execute("""INSERT INTO expenses(branch_id,day,category,description,amount,method,supplier_id,purchase_id,
                     created_by,created_at,from_cash,role) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
                            (p["branch_id"], date.today().isoformat(), "شراء سلع (منتجات)",
-                            f"طلبية {pid} — {p['supplier'] or ''}", amount, "cash" if worker else f.get("method", "cash"),
+                            f"طلبية {rid_filter(pid)} — {p['supplier'] or ''}", amount, "cash" if worker else f.get("method", "cash"),
                             p["supplier_id"], pid, u["id"], now_str(), 1 if worker else 0, u["role"] if worker else None))
-            audit("استلام سلعة", f"طلبية {pid} — {p['supplier'] or ''}", p["branch_id"])
+            audit("استلام سلعة", f"طلبية {rid_filter(pid)} — {p['supplier'] or ''}", p["branch_id"])
             flash("تم استلام الطلبية: المخزون زاد، وسعر الشراء تحدّث", "ok")
         elif act == "pay":
             if u["role"] != "admin":
@@ -2957,7 +2957,7 @@ def purchase_view(pid):
                 db.execute("""INSERT INTO expenses(branch_id,day,category,description,amount,method,supplier_id,purchase_id,
                     created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)""",
                            (p["branch_id"], date.today().isoformat(), "شراء سلع (منتجات)",
-                            f"تسديد طلبية {pid} — {p['supplier'] or ''}", amount, f.get("method", "cash"),
+                            f"تسديد طلبية {rid_filter(pid)} — {p['supplier'] or ''}", amount, f.get("method", "cash"),
                             p["supplier_id"], pid, u["id"], now_str()))
                 flash("تم تسجيل الدفع للمورد", "ok")
         elif act == "cancel" and p["status"] == "ordered":
