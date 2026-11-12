@@ -308,7 +308,10 @@ def init_db():
     con.execute("CREATE TABLE IF NOT EXISTS pair_codes(code TEXT PRIMARY KEY, user_id INTEGER, expires TEXT)")
     for k, v in DEFAULT_SETTINGS.items():
         con.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (k, v))
+    add_col("products", "needs_review", "INTEGER DEFAULT 0")
+    add_col("products", "added_by", "INTEGER")
     sync.install(con)
+    sync.migrate_v2(con)
     # فهارس لتبقى السرعة جيدة حتى مع بيانات عشرات السنين
     for sql in INDEXES:
         con.execute(sql)
@@ -1414,8 +1417,57 @@ def products():
     edit = db.execute("SELECT * FROM products WHERE id=?", (request.args.get("edit"),)).fetchone() \
         if request.args.get("edit") else None
     soon = (date.today() + timedelta(days=int(fnum(setting("expiry_days"), 30)))).isoformat()
+    review = db.execute("""SELECT p.*, u.full_name AS by_name, b.name AS by_branch FROM products p
+        LEFT JOIN users u ON u.id=p.added_by LEFT JOIN branches b ON b.id=u.branch_id
+        WHERE p.needs_review=1 ORDER BY p.id DESC""").fetchall()
     return render_template("products.html", rows=rows, branches=branches, show=show, stock=stock, edit=edit,
-                           br=br, q=q, soon=soon, default_min=setting("default_min_qty"))
+                           br=br, q=q, soon=soon, default_min=setting("default_min_qty"), review=review)
+
+
+@app.route("/api/products/quick", methods=["POST"])
+@login_required()
+def product_quick():
+    """منتج جديد غير مسجّل، من شاشة البيع أو الشراء. ما يضيفه العامل يظهر للمديرة لتراجعه."""
+    u = current_user()
+    if not (u["role"] == "admin" or has_perm("pos") or has_perm("purchases")):
+        abort(403)
+    db = get_db()
+    f = request.get_json(force=True, silent=True) or request.form
+    name = (f.get("name") or "").strip()
+    if not name:
+        return {"ok": False, "error": "اكتب اسم المنتج"}, 400
+    barcode = (f.get("barcode") or "").strip()
+    ex = db.execute("SELECT * FROM products WHERE active=1 AND (lower(trim(name))=lower(?) OR (?<>'' AND barcode=?))",
+                    (name, barcode, barcode)).fetchone()
+    if ex:
+        p = ex
+    else:
+        price, cost = fnum(f.get("price")), fnum(f.get("cost"))
+        pid = db.execute("""INSERT INTO products(name,barcode,category,price,active,cost_price,needs_review,added_by)
+            VALUES(?,?,?,?,1,?,?,?)""", (name, barcode or None, (f.get("category") or "").strip() or None, price, cost,
+                                         0 if u["role"] == "admin" else 1, u["id"])).lastrowid
+        dm = setting("default_min_qty")
+        for b in active_branches():
+            if dm not in (None, ""):
+                set_min(db, pid, b["id"], fnum(dm))
+        audit("منتج جديد", f"{name} — سعر البيع {price:g}، سعر الشراء {cost:g}"
+              + (" (أضافه عامل، بانتظار مراجعة المديرة)" if u["role"] != "admin" else ""))
+        db.commit()
+        p = db.execute("SELECT * FROM products WHERE id=?", (pid,)).fetchone()
+    br = work_branch()
+    st = db.execute("SELECT qty FROM stock WHERE product_id=? AND branch_id=?", (p["id"], br)).fetchone()
+    return {"ok": True, "existed": bool(ex), "product": dict(id=p["id"], name=p["name"], price=p["price"] or 0,
+            cost_price=p["cost_price"] or 0, category=p["category"] or "", barcode=p["barcode"] or "",
+            qty=(st["qty"] if st else 0), ic=icons.item_icon(p["name"], "product"))}
+
+
+@app.route("/products/<int(signed=True):pid>/reviewed", methods=["POST"])
+@login_required("admin")
+def product_reviewed(pid):
+    db = get_db()
+    db.execute("UPDATE products SET needs_review=0 WHERE id=?", (pid,))
+    db.commit()
+    return redirect(request.referrer or url_for("products"))
 
 
 @app.route("/products/<int(signed=True):pid>/stock", methods=["POST"])
@@ -2801,10 +2853,11 @@ def purchases():
     br = scope_branch()
     if current_user()["role"] != "admin":
         br = current_user()["branch_id"]
-    q = """SELECT p.*, s.name AS supplier, b.name AS branch,
+    q = """SELECT p.*, s.name AS supplier, b.name AS branch, uu.full_name AS by_name,
         (SELECT COALESCE(SUM(qty*unit_cost),0) FROM purchase_items i WHERE i.purchase_id=p.id) AS total,
         (SELECT COALESCE(SUM(amount),0) FROM expenses e WHERE e.purchase_id=p.id) AS paid
-        FROM purchases p LEFT JOIN suppliers s ON s.id=p.supplier_id JOIN branches b ON b.id=p.branch_id WHERE 1=1"""
+        FROM purchases p LEFT JOIN suppliers s ON s.id=p.supplier_id JOIN branches b ON b.id=p.branch_id
+        LEFT JOIN users uu ON uu.id=p.created_by WHERE 1=1"""
     args = []
     if br:
         q += " AND p.branch_id=?"
@@ -2813,7 +2866,14 @@ def purchases():
         q += " AND p.supplier_id=?"
         args.append(request.args["supplier"])
     rows = db.execute(q + " ORDER BY p.id DESC LIMIT 300", args).fetchall()
-    return render_template("purchases.html", rows=rows, br=br)
+    who = []
+    if current_user()["role"] == "admin":  # المديرة تختار من يقدر يدخل المشتريات
+        for b in active_branches():
+            for place in ["reception"] + [k for k in branch_depts(b["id"]) if k in ("laser", "beauty")]:
+                pp = place_perms(b["id"], place)
+                who.append(dict(branch_id=b["id"], branch=b["name"], role=place, place=PLACES[place],
+                                purchases=pp.get("purchases"), expenses=pp.get("expenses")))
+    return render_template("purchases.html", rows=rows, br=br, who=who)
 
 
 @app.route("/purchases/new", methods=["GET", "POST"])

@@ -440,9 +440,11 @@ TEMPLATES["pos.html"] = r"""{% extends "base.html" %}{% from "macros.html" impor
 <h1>{{ page_icon() }}بيع المنتجات</h1>
 {% if cu.role=='admin' %}<div class="card"><form class="row"><label>البيع باسم فرع<select name="branch" onchange="this.form.submit()">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label></form></div>{% endif %}
 <div style="display:grid;grid-template-columns:minmax(0,3fr) minmax(280px,2fr);gap:16px">
-<div class="card"><input id="search" placeholder="ابحث عن منتج أو امسح الباركود" style="width:100%;margin-bottom:10px" autofocus>
+<div class="card"><div style="display:flex;gap:8px;margin-bottom:10px"><input id="search" placeholder="ابحث عن منتج أو امسح الباركود" style="flex:1" autofocus>
+<button type="button" class="btn gold" onclick="qpShow(true,document.getElementById('search').value.trim())">{{ ic('products') }} منتج جديد غير مسجّل</button></div>
+<div id="nores" class="mut" style="display:none;margin-bottom:8px">ما لقيناش هذا المنتج. <a href="#" onclick="qpShow(true,document.getElementById('search').value.trim());return false">أضفه كمنتج جديد</a></div>
 <table id="plist"><tr><th>المنتج</th><th>الفئة</th><th>السعر</th><th>المخزون</th><th></th></tr></table>
-{% if not prods %}<p class="mut">لا توجد منتجات بعد. يضيفها المدير من صفحة «المنتجات والمخزون».</p>{% endif %}</div>
+{% if not prods %}<p class="mut">لا توجد منتجات بعد. اضغط «منتج جديد غير مسجّل» لإضافة واحد.</p>{% endif %}</div>
 <div class="card"><h2>السلة</h2>
 <table id="cart"><tr><th>المنتج</th><th>الكمية</th><th>السعر</th><th>المجموع</th><th></th></tr></table>
 <p style="font-size:20px">المجموع: <b id="total">0.00</b> {{ cur }}</p>
@@ -452,12 +454,17 @@ TEMPLATES["pos.html"] = r"""{% extends "base.html" %}{% from "macros.html" impor
 <div class="row" style="margin-top:10px"><label>الدفع<select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
 <button class="btn">تأكيد البيع</button></div></form></div></div>
 {{ new_client_box(request.path) }}
+{% include "quick_product.html" %}
 <script>
-var P={{ prods|tojson }}, cart=[];
+var P={{ prods|tojson }}, cart=[], QP_NEED_PRICE=true;
+function qpDone(p,existed){if(!P.find(x=>x.id==p.id))P.unshift(p);add(p);var s=document.getElementById('search');s.value='';renderP('');
+ if(existed)alert('هذا المنتج مسجّل من قبل، أضفناه للسلة')}
 function fm(n){return (Math.round(n*100)/100).toFixed(2)}
 function esc(s){var d=document.createElement('div');d.textContent=s==null?'':s;return d.innerHTML}
 function renderP(q){var t=document.getElementById('plist');t.querySelectorAll('tr.p').forEach(r=>r.remove());
- P.filter(p=>!q||p.name.indexOf(q)>-1||(p.barcode||'')==q||(p.category||'').indexOf(q)>-1).slice(0,80).forEach(function(p){
+ var L=P.filter(p=>!q||p.name.indexOf(q)>-1||(p.barcode||'')==q||(p.category||'').indexOf(q)>-1);
+ document.getElementById('nores').style.display=(q&&!L.length)?'':'none';
+ L.slice(0,80).forEach(function(p){
   var r=t.insertRow();r.className='p';r.innerHTML='<td><span class="itm"><svg class="ic"><use href="#i-'+p.ic+'"/></svg></span>'+esc(p.name)+'</td><td class="mut">'+esc(p.category)+'</td><td>'+fm(p.price)+'</td><td>'+
   '<span class="tag '+(p.qty<=0?'red':p.qty<=3?'amber':'')+'">'+p.qty+'</span></td><td><button class="btn sm" type="button">+</button></td>';
   r.querySelector('button').onclick=function(){add(p)}})}
@@ -471,9 +478,35 @@ function renderC(){var t=document.getElementById('cart'),tot=0;t.querySelectorAl
   r.querySelector('button').onclick=function(){cart.splice(i,1);renderC()}});
  document.getElementById('total').textContent=fm(tot)}
 var s=document.getElementById('search');s.oninput=function(){renderP(s.value.trim())};
-s.onkeydown=function(e){if(e.key=='Enter'){e.preventDefault();var p=P.find(x=>x.barcode&&x.barcode==s.value.trim());if(p){add(p);s.value='';renderP('')}}};
+s.onkeydown=function(e){if(e.key=='Enter'){e.preventDefault();var v=s.value.trim(),p=P.find(x=>x.barcode&&x.barcode==v);
+ if(p){add(p);s.value='';renderP('')}else if(v){qpShow(true,v)}}};
 renderP('');
 </script>{% endblock %}"""
+
+TEMPLATES["quick_product.html"] = r"""<div id="qp" class="card" style="display:none;border:2px dashed var(--gold,#e4ab74)">
+<h2>{{ ic('products') }}منتج جديد غير مسجّل</h2>
+<p class="mut" style="margin-top:-6px">يُضاف إلى قائمة المنتجات مباشرة{% if cu.role!='admin' %}، والمديرة تراجعه وتقدر تعدّل سعره{% endif %}.</p>
+<div class="row"><label>الاسم<input id="qp_name" style="min-width:220px"></label>
+<label>سعر البيع<input id="qp_price" type="number" min="0" step="any" style="width:110px"></label>
+<label>سعر الشراء<input id="qp_cost" type="number" min="0" step="any" style="width:110px"></label>
+<label>الفئة<input id="qp_cat" style="width:130px" placeholder="عسل، زيوت..."></label>
+<label>الباركود<input id="qp_bar" style="width:130px" placeholder="اختياري"></label>
+<button type="button" class="btn gold" onclick="qpSave()">إضافة</button><button type="button" class="btn light" onclick="qpShow(false)">إلغاء</button></div>
+<div id="qp_err" class="flash err" style="display:none;margin-top:8px"></div></div>
+<script>
+function qpShow(on,pre){var b=document.getElementById('qp');b.style.display=on?'':'none';if(on){
+ document.getElementById('qp_name').value='';document.getElementById('qp_bar').value='';document.getElementById('qp_price').value='';document.getElementById('qp_cost').value='';
+ if(pre){if(/^\d{6,}$/.test(pre))document.getElementById('qp_bar').value=pre;else document.getElementById('qp_name').value=pre}
+ document.getElementById('qp_err').style.display='none';b.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('qp_name').focus()}}
+function qpSave(){var e=document.getElementById('qp_err');var d={name:document.getElementById('qp_name').value.trim(),
+ price:document.getElementById('qp_price').value,cost:document.getElementById('qp_cost').value,
+ category:document.getElementById('qp_cat').value.trim(),barcode:document.getElementById('qp_bar').value.trim(),branch:'{{ br or "" }}'};
+ if(!d.name){e.textContent='اكتب اسم المنتج';e.style.display='';return}
+ if(QP_NEED_PRICE&&!(parseFloat(d.price)>0)){e.textContent='اكتب سعر البيع';e.style.display='';return}
+ fetch('{{ url_for("product_quick") }}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)})
+ .then(function(r){return r.json()}).then(function(r){if(!r.ok){e.textContent=r.error||'خطأ';e.style.display='';return}
+  qpShow(false);qpDone(r.product,r.existed)}).catch(function(){e.textContent='تعذّر الحفظ';e.style.display=''})}
+</script>"""
 
 TEMPLATES["receipt.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card" style="max-width:420px;margin:auto" id="rc">
@@ -515,6 +548,13 @@ TEMPLATES["cashbox.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 
 TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}المنتجات والمخزون{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+{% if review %}<div class="card" style="border:2px solid var(--gold,#e4ab74)"><h2>{{ ic('alert') }}منتجات جديدة أضافها العمال ({{ review|length }})</h2>
+<p class="mut">أُضيفت من شاشة البيع أو الشراء. راجع الاسم والسعر، ثم اضغط «تمت المراجعة».</p>
+<table><tr><th>المنتج</th><th>سعر البيع</th><th>سعر الشراء</th><th>أضافه</th><th></th></tr>
+{% for p in review %}<tr><td>{{ item_ic(p.name, 'product') }}{{ p.name }}</td><td>{{ p.price|money }}</td><td>{{ (p.cost_price or 0)|money }}</td>
+<td>{{ p.by_name or '' }}<div class="mut">{{ p.by_branch or '' }}</div></td>
+<td style="white-space:nowrap"><a class="btn light sm" href="{{ url_for('products', edit=p.id) }}">تعديل</a>
+<form method="post" action="{{ url_for('product_reviewed', pid=p.id) }}" style="display:inline"><button class="btn sm">تمت المراجعة ✓</button></form></td></tr>{% endfor %}</table></div>{% endif %}
 <div class="card"><h2>{{ 'تعديل منتج' if edit else 'منتج جديد' }}</h2>
 <form method="post">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
 <div class="row">
@@ -1398,10 +1438,21 @@ TEMPLATES["purchases.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 <h1>{{ page_icon() }}طلبيات الشراء</h1>
 <div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ فاتورة / طلبية شراء</a>{% if cu.role=='admin' %}<a class="btn light" href="{{ url_for('suppliers') }}">الموردون</a>{% endif %}</div>
 <div class="card"><form class="row" style="margin-bottom:10px">{{ branch_filter(br) }}<button class="btn light">عرض</button></form>
-<table><tr><th>#</th><th>التاريخ</th><th>المورد</th>{% if not br %}<th>الفرع</th>{% endif %}<th>المجموع</th><th>المدفوع</th><th>الحالة</th></tr>
-{% for p in rows %}<tr class="{{ 'cx' if p.status=='cancelled' }}"><td><a href="{{ url_for('purchase_view', pid=p.id) }}">{{ p.id }}</a></td><td>{{ p.day }}</td><td>{{ p.supplier or '-' }}</td>{% if not br %}<td>{{ p.branch }}</td>{% endif %}
+<table><tr><th>#</th><th>التاريخ</th><th>المورد</th>{% if not br %}<th>الفرع</th>{% endif %}<th>أدخلها</th><th>المجموع</th><th>المدفوع</th><th>الحالة</th></tr>
+{% for p in rows %}<tr class="{{ 'cx' if p.status=='cancelled' }}"><td><a href="{{ url_for('purchase_view', pid=p.id) }}">{{ p.id }}</a></td><td>{{ p.day }}</td><td>{{ p.supplier or '-' }}</td>{% if not br %}<td>{{ p.branch }}</td>{% endif %}<td>{{ p.by_name or '' }}</td>
 <td>{{ p.total|money }}</td><td>{{ p.paid|money }}</td><td><span class="tag {{ 'amber' if p.status=='ordered' else '' }}">{{ PURCHASE_STATUS[p.status] }}</span></td></tr>
-{% else %}<tr><td colspan="7" class="mut">لا توجد طلبيات</td></tr>{% endfor %}</table></div>{% endblock %}"""
+{% else %}<tr><td colspan="8" class="mut">لا توجد طلبيات</td></tr>{% endfor %}</table></div>
+{% if who %}<div class="card"><h2>{{ ic('key') }}من يقدر يدخل المشتريات؟</h2>
+<p class="mut">شغّل أو أوقف لكل مكان. يصل لحاسوبه في ثوانٍ. «الدفع من الصندوق» يسمح له يسجّل المبلغ اللي خلّصه للمورد كمصروف.</p>
+<style>.sw{position:relative;display:inline-block;width:46px;height:24px}.sw input{opacity:0;width:0;height:0}
+.sl{position:absolute;inset:0;background:#cfc6b8;border-radius:24px;cursor:pointer;transition:.2s}
+.sl:before{content:"";position:absolute;width:18px;height:18px;right:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
+.sw input:checked+.sl{background:#2a6153}.sw input:checked+.sl:before{transform:translateX(-22px)}</style>
+<table><tr><th>الفرع</th><th>المكان</th><th style="text-align:center">إدخال واستلام المشتريات</th><th style="text-align:center">الدفع من الصندوق (مصاريف)</th></tr>
+{% for w in who %}<tr><td>{{ w.branch }}</td><td>{{ w.place }}</td>
+{% for k in ('purchases','expenses') %}<td style="text-align:center"><label class="sw"><input type="checkbox" {{ 'checked' if w[k] }}
+ onchange="var c=this;fetch('{{ url_for('permissions') }}',{method:'POST',headers:{'X-Requested-With':'fetch','Content-Type':'application/x-www-form-urlencoded'},body:'branch_id={{ w.branch_id }}&role={{ w.role }}&perm={{ k }}&enabled='+(c.checked?1:0)}).then(function(r){if(!r.ok)throw 0}).catch(function(){c.checked=!c.checked;alert('تعذّر الحفظ')})"><span class="sl"></span></label></td>{% endfor %}</tr>{% endfor %}</table></div>{% endif %}
+{% endblock %}"""
 
 TEMPLATES["purchase_new.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}طلبية شراء جديدة</h1>
@@ -1411,10 +1462,18 @@ TEMPLATES["purchase_new.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>للفرع<select name="branch_id">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
 <label>التاريخ<input type="date" name="day" value="{{ today }}"></label><label>ملاحظة<input name="notes"></label></div>
 <table style="margin-top:12px" id="lines"><tr><th>المنتج</th><th>الكمية</th><th>سعر الشراء للوحدة</th><th></th></tr></table>
-<p><button type="button" class="btn light sm" onclick="addLine()">+ سطر</button></p>
+<p><button type="button" class="btn light sm" onclick="addLine()">+ سطر</button>
+<button type="button" class="btn gold sm" onclick="qpShow(true)">{{ ic('products') }} منتج جديد غير مسجّل</button></p>
 <button class="btn gold">حفظ الطلبية</button></form></div>
+{% include "quick_product.html" %}
 <script>
-var P={{ prods|tojson }}, PRE={{ pre|tojson }};
+var P={{ prods|tojson }}, PRE={{ pre|tojson }}, QP_NEED_PRICE=false;
+function qpDone(p,existed){if(!P.find(x=>x.id==p.id))P.push(p);
+ var empty=[].find.call(document.querySelectorAll('#lines select'),function(s){return !s.value});
+ if(empty){var o=document.createElement('option');o.value=p.id;o.dataset.c=p.cost_price||0;o.textContent=p.name;empty.appendChild(o);empty.value=p.id;empty.onchange()}
+ else addLine(p.id);
+ document.querySelectorAll('#lines select').forEach(function(s){if(![].some.call(s.options,function(o){return o.value==p.id})){var o=document.createElement('option');o.value=p.id;o.dataset.c=p.cost_price||0;o.textContent=p.name;s.appendChild(o)}});
+ if(existed)alert('هذا المنتج مسجّل من قبل، اخترناه في الطلبية')}
 function addLine(pid,q){var t=document.getElementById('lines'),r=t.insertRow();
  var opts='<option value="">—</option>'+P.map(function(p){return '<option value="'+p.id+'" data-c="'+(p.cost_price||0)+'"'+(p.id==pid?' selected':'')+'>'+p.name.replace(/</g,'&lt;')+'</option>'}).join('');
  r.innerHTML='<td><select name="product_id" style="min-width:260px">'+opts+'</select></td><td><input name="qty" style="width:80px" value="'+(q||'')+'"></td><td><input name="cost" style="width:100px"></td><td><button type="button" class="btn red sm">×</button></td>';

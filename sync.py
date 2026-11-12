@@ -24,11 +24,16 @@ from paths import DATA_DIR as BASE_DIR  # node.json يوضع مع البيانا
 SYNC_TABLES = ["branches", "departments", "posts", "users", "services", "products", "clients",
                "appointments", "plans", "charges", "payments", "sale_items", "stock_moves",
                "employees", "attendance", "grants", "visits", "visit_items", "courses", "course_trainees",
-               "client_notes", "client_photos", "perms", "audit", "cash_days", "expenses"]
+               "client_notes", "client_photos", "perms", "audit", "cash_days", "expenses",
+               "suppliers", "purchases", "purchase_items"]
+# جداول أضيفت للمزامنة في النسخة 19.5 (المشتريات): تحتاج تحويل البيانات القديمة مرة واحدة
+V2_TABLES = ["suppliers", "purchases", "purchase_items"]
 # جداول عامة يرسلها المركزي كاملة للفرع
-CATALOG = ["branches", "departments", "posts", "users", "services", "products", "clients", "client_notes", "perms"]
+CATALOG = ["branches", "departments", "posts", "users", "services", "products", "clients", "client_notes", "perms",
+           "suppliers"]
 # جداول خاصة بفرع (فيها branch_id)
-BRANCH_OWNED = ["appointments", "plans", "charges", "payments", "stock_moves", "employees", "visits", "courses", "client_photos", "audit", "cash_days", "expenses"]
+BRANCH_OWNED = ["appointments", "plans", "charges", "payments", "stock_moves", "employees", "visits", "courses", "client_photos", "audit", "cash_days", "expenses",
+                "purchases"]
 # جداول يرسلها الفرع للمركزي فقط (مصاريف المديرة وسجل العمليات لا تنزل إلى حاسوب الفرع)
 PUSH_ONLY = {"audit", "expenses"}
 # جداول تابعة عبر جدول آخر
@@ -38,6 +43,7 @@ VIA = {
     "grants": "employee_id IN (SELECT id FROM employees WHERE branch_id=?)",
     "visit_items": "visit_id IN (SELECT id FROM visits WHERE branch_id=?)",
     "course_trainees": "course_id IN (SELECT id FROM courses WHERE branch_id=?)",
+    "purchase_items": "purchase_id IN (SELECT id FROM purchases WHERE branch_id=?)",
 }
 # إعدادات لا تُنقل من المركزي إلى الفرع
 LOCAL_SETTINGS = {"last_stock_sms", "sync_key", "backup_dir", "backup_dir2", "backup_last", "backup_last_size",
@@ -120,6 +126,29 @@ def install(con):
             BEGIN INSERT INTO _deleted(tbl,rid,at) VALUES('{t}', OLD.id, {now}); END""")
     con.execute("CREATE INDEX IF NOT EXISTS idx_deleted_at ON _deleted(at)")
     con.execute("CREATE INDEX IF NOT EXISTS idx_deleted_rcv ON _deleted(_rcv)")
+
+
+def migrate_v2(con):
+    """مرة واحدة: المشتريات والموردون أصبحوا يتزامنون.
+    - في حاسوب الفرع: ما سُجّل محليًا يأخذ أرقامًا سالبة خاصة به ثم يُرسل للمركزي.
+    - في الحاسوب المركزي: الموجود يُعلَّم ليُرسل للحواسيب."""
+    if state_get(con, "mig_v2"):
+        return
+    if NODE:
+        refs = {"suppliers": [("purchases", "supplier_id"), ("expenses", "supplier_id")],
+                "purchases": [("purchase_items", "purchase_id"), ("expenses", "purchase_id")],
+                "purchase_items": []}
+        for t in V2_TABLES:
+            for (old,) in con.execute(f"SELECT id FROM {t} WHERE id>0 ORDER BY id").fetchall():
+                new = con.next_node_id(t)
+                con.execute(f"UPDATE {t} SET id=? WHERE id=?", (new, old))
+                for rt, col in refs[t]:
+                    con.execute(f"UPDATE {rt} SET {col}=? WHERE {col}=?", (new, old))
+            con.execute(f"UPDATE {t} SET _dirty=1 WHERE id<0")
+    else:
+        for t in V2_TABLES:
+            con.execute(f"UPDATE {t} SET _rcv=? WHERE _rcv IS NULL", (utcnow(),))
+    state_set(con, "mig_v2", "1")
 
 
 def state_get(con, k, default=""):
