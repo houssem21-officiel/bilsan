@@ -310,6 +310,7 @@ def init_db():
         con.execute("INSERT OR IGNORE INTO settings(key,value) VALUES(?,?)", (k, v))
     add_col("products", "needs_review", "INTEGER DEFAULT 0")
     add_col("products", "added_by", "INTEGER")
+    add_col("products", "review_note", "TEXT")
     sync.install(con)
     sync.migrate_v2(con)
     # فهارس لتبقى السرعة جيدة حتى مع بيانات عشرات السنين
@@ -478,7 +479,9 @@ PERMS = [
     ("courses", "الدورات والشهادات", ("reception",)),
     ("attendance", "حضور العمال", ("reception",)),
     ("stock_alerts", "تنبيهات المخزون", ("reception",)),
-    ("purchases", "إدخال فاتورة شراء (استلام سلعة)", ()),
+    ("products_edit", "إضافة المنتجات وتعديلها وتعديل المخزون", ("reception",)),
+    ("sale_prices", "تعديل أسعار بيع المنتجات", ("reception",)),
+    ("purchases", "إدخال فاتورة شراء (استلام سلعة)", ("reception",)),
     ("expenses", "إخراج مبلغ من الصندوق (مصروف)", ()),
     ("medical", "الملف الطبي وصور قبل/بعد", ("laser", "beauty")),
     ("consent", "طباعة وثيقة الموافقة", ("reception", "laser", "beauty")),
@@ -1370,30 +1373,41 @@ def stock_alerts(branch_id=None):
 
 
 @app.route("/products", methods=["GET", "POST"])
-@login_required("admin")
+@perm_required("products_edit")
 def products():
+    """المنتجات والمخزون. المديرة: كل الفروع. الاستقبال: فرعه فقط، بلا سعر الشراء،
+    وكل منتج جديد أو سعر تبدّل يظهر للمديرة لتراجعه."""
     db = get_db()
     u = current_user()
-    branches = active_branches()
+    admin = u["role"] == "admin"
+    can_price = admin or has_perm("sale_prices")
+    branches = active_branches() if admin else [b for b in active_branches() if b["id"] == u["branch_id"]]
     if request.method == "POST":
         pid = request.form.get("id")
-        vals = (request.form.get("name", "").strip(), request.form.get("barcode", "").strip(),
-                request.form.get("category", "").strip(), fnum(request.form.get("price")),
-                request.form.get("expiry") or None,
-                1 if request.form.get("active", "1") == "1" else 0, fnum(request.form.get("cost_price")))
-        if not vals[0]:
+        old = db.execute("SELECT * FROM products WHERE id=?", (pid,)).fetchone() if pid else None
+        name = request.form.get("name", "").strip()
+        if not name:
             flash("اسم المنتج مطلوب", "err")
             return redirect(url_for("products"))
-        if pid:
-            old = db.execute("SELECT price FROM products WHERE id=?", (pid,)).fetchone()
-            if old and old["price"] != vals[3]:
-                audit("تغيير سعر منتج", f"{vals[0]}: {old['price']:g} ← {vals[3]:g}")
+        price = fnum(request.form.get("price")) if can_price else (old["price"] if old else 0)
+        cost = fnum(request.form.get("cost_price")) if admin else (old["cost_price"] if old else 0) or 0
+        vals = (name, request.form.get("barcode", "").strip(), request.form.get("category", "").strip(), price,
+                request.form.get("expiry") or None, 1 if request.form.get("active", "1") == "1" else 0, cost)
+        if old:
+            note = None
+            if old["price"] != price:
+                audit("تغيير سعر منتج", f"{name}: {old['price']:g} ← {price:g}")
+                note = f"السعر تبدّل: {old['price']:g} ← {price:g}"
             db.execute("UPDATE products SET name=?,barcode=?,category=?,price=?,expiry=?,active=?,cost_price=? WHERE id=?",
                        vals + (pid,))
+            if note and not admin:
+                db.execute("UPDATE products SET needs_review=1, review_note=?, added_by=? WHERE id=?", (note, u["id"], pid))
             flash("تم تعديل المنتج", "ok")
         else:
-            pid = db.execute("INSERT INTO products(name,barcode,category,price,expiry,active,cost_price) VALUES(?,?,?,?,?,?,?)",
-                             vals).lastrowid
+            pid = db.execute("""INSERT INTO products(name,barcode,category,price,expiry,active,cost_price,needs_review,added_by,review_note)
+                VALUES(?,?,?,?,?,?,?,?,?,?)""", vals + (0 if admin else 1, u["id"], None if admin else "منتج جديد")).lastrowid
+            if not admin:
+                audit("منتج جديد", f"{name} — سعر البيع {price:g}")
             for b in branches:
                 q = fnum(request.form.get(f"qty_{b['id']}"))
                 if q:
@@ -1405,7 +1419,7 @@ def products():
                 set_min(db, pid, b["id"], fnum(m))
         db.commit()
         return redirect(url_for("products"))
-    br = scope_branch()
+    br = scope_branch() if admin else u["branch_id"]
     show = [b for b in branches if not br or b["id"] == br]
     q = request.args.get("q", "").strip()
     sql = "SELECT * FROM products"
@@ -1420,9 +1434,10 @@ def products():
     soon = (date.today() + timedelta(days=int(fnum(setting("expiry_days"), 30)))).isoformat()
     review = db.execute("""SELECT p.*, u.full_name AS by_name, b.name AS by_branch FROM products p
         LEFT JOIN users u ON u.id=p.added_by LEFT JOIN branches b ON b.id=u.branch_id
-        WHERE p.needs_review=1 ORDER BY p.id DESC""").fetchall()
+        WHERE p.needs_review=1 ORDER BY p.id DESC""").fetchall() if admin else []
     return render_template("products.html", rows=rows, branches=branches, show=show, stock=stock, edit=edit,
-                           br=br, q=q, soon=soon, default_min=setting("default_min_qty"), review=review)
+                           br=br, q=q, soon=soon, default_min=setting("default_min_qty"), review=review,
+                           can_price=can_price, admin=admin)
 
 
 @app.route("/api/products/quick", methods=["POST"])
@@ -1447,6 +1462,8 @@ def product_quick():
         pid = db.execute("""INSERT INTO products(name,barcode,category,price,active,cost_price,needs_review,added_by)
             VALUES(?,?,?,?,1,?,?,?)""", (name, barcode or None, (f.get("category") or "").strip() or None, price, cost,
                                          0 if u["role"] == "admin" else 1, u["id"])).lastrowid
+        if u["role"] != "admin":
+            db.execute("UPDATE products SET review_note='منتج جديد' WHERE id=?", (pid,))
         dm = setting("default_min_qty")
         for b in active_branches():
             if dm not in (None, ""):
@@ -1466,16 +1483,18 @@ def product_quick():
 @login_required("admin")
 def product_reviewed(pid):
     db = get_db()
-    db.execute("UPDATE products SET needs_review=0 WHERE id=?", (pid,))
+    db.execute("UPDATE products SET needs_review=0, review_note=NULL WHERE id=?", (pid,))
     db.commit()
     return redirect(request.referrer or url_for("products"))
 
 
 @app.route("/products/<int(signed=True):pid>/stock", methods=["POST"])
-@login_required("admin")
+@perm_required("products_edit")
 def product_stock(pid):
     db = get_db()
     bid = int(request.form["branch_id"])
+    if current_user()["role"] != "admin" and bid != current_user()["branch_id"]:
+        abort(403)  # الاستقبال يعدّل مخزون فرعه فقط
     q = fnum(request.form.get("qty"))
     if q:
         audit("تعديل مخزون", f"منتج {pid}: {q:+g} — {branch_name(bid)}", bid)
@@ -2886,8 +2905,8 @@ def purchase_new():
     db = get_db()
     if request.method == "POST":
         f = request.form
-        pids, qtys, costs = f.getlist("product_id"), f.getlist("qty"), f.getlist("cost")
-        lines = [(int(p), fnum(q), fnum(c)) for p, q, c in zip(pids, qtys, costs) if p and fnum(q) > 0]
+        pids, qtys = f.getlist("product_id"), f.getlist("qty")
+        lines = [(int(p), fnum(q), 0.0) for p, q in zip(pids, qtys) if p and p.lstrip("-").isdigit() and fnum(q) > 0]
         if not lines:
             flash("أضف منتجًا واحدًا على الأقل بكمية", "err")
             return redirect(url_for("purchase_new"))
@@ -2922,7 +2941,7 @@ def purchase_view(pid):
         WHERE p.id=?""", (pid,)).fetchone() or abort(404)
     if u["role"] != "admin" and p["branch_id"] != u["branch_id"]:
         abort(403)
-    items = db.execute("""SELECT i.*, pr.name, pr.cost_price FROM purchase_items i JOIN products pr ON pr.id=i.product_id
+    items = db.execute("""SELECT i.*, pr.name, pr.cost_price, pr.price FROM purchase_items i JOIN products pr ON pr.id=i.product_id
         WHERE i.purchase_id=? ORDER BY i.id""", (pid,)).fetchall()
     total = round(sum(i["qty"] * i["unit_cost"] for i in items), 2)
     paid = db.execute("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE purchase_id=?", (pid,)).fetchone()[0]
@@ -2930,14 +2949,26 @@ def purchase_view(pid):
         f = request.form
         act = f.get("action")
         if act == "receive" and p["status"] == "ordered":
+            can_price = u["role"] == "admin" or has_perm("sale_prices")
+            changed = []
             for i in items:
-                q = fnum(f.get(f"rq_{i['id']}"), i["qty"])  # الكمية التي وصلت فعلًا
-                c = fnum(f.get(f"rc_{i['id']}"), i["unit_cost"])
+                q = fnum(f.get(f"rq_{i['id']}"), i["qty"])  # الكمية التي وصلت فعلًا (قد تكون أقل)
+                c = fnum(f.get(f"rc_{i['id']}"), i["unit_cost"])  # سعر الشراء: اختياري
                 db.execute("UPDATE purchase_items SET qty=?, unit_cost=? WHERE id=?", (q, c, i["id"]))
                 if q > 0:
                     move_stock(db, i["product_id"], p["branch_id"], q, f"شراء — طلبية {rid_filter(pid)}", u["id"])
                     if c > 0:
                         db.execute("UPDATE products SET cost_price=? WHERE id=?", (c, i["product_id"]))
+                sp = f.get(f"sp_{i['id']}")
+                if can_price and sp not in (None, "") and fnum(sp) > 0 and fnum(sp) != (i["price"] or 0):
+                    new = fnum(sp)
+                    db.execute("UPDATE products SET price=? WHERE id=?", (new, i["product_id"]))
+                    changed.append(f"{i['name']}: {(i['price'] or 0):g} ← {new:g}")
+                    if u["role"] != "admin":
+                        db.execute("UPDATE products SET needs_review=1, review_note=?, added_by=? WHERE id=?",
+                                   (f"السعر تبدّل عند الاستلام: {(i['price'] or 0):g} ← {new:g}", u["id"], i["product_id"]))
+            if changed:
+                audit("تغيير سعر بيع عند الاستلام", f"طلبية {rid_filter(pid)}: " + "، ".join(changed), p["branch_id"])
             db.execute("UPDATE purchases SET status='received', received_at=? WHERE id=?", (now_str(), pid))
             amount = fnum(f.get("paid_now")) if has_perm("expenses") else 0
             if amount > 0:
@@ -2969,8 +3000,7 @@ def purchase_view(pid):
                 if q <= 0:
                     db.execute("DELETE FROM purchase_items WHERE id=?", (i["id"],))
                 else:
-                    db.execute("UPDATE purchase_items SET qty=?, unit_cost=? WHERE id=?",
-                               (q, fnum(f.get(f"c_{i['id']}"), i["unit_cost"]), i["id"]))
+                    db.execute("UPDATE purchase_items SET qty=? WHERE id=?", (q, i["id"]))
             flash("تم حفظ الطلبية", "ok")
         db.commit()
         return redirect(url_for("purchase_view", pid=pid))

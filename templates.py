@@ -114,6 +114,7 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 {% if perm('debts') %}<a href="{{ url_for('debts') }}">{{ ic('debt') }}الديون</a>{% endif %}
 {% if perm('cash_close') and cu.role!='admin' %}<a href="{{ url_for('cash_close') }}">{{ ic('lock') }}إغلاق صندوق اليوم</a>{% endif %}
 {% if perm('expenses') and cu.role!='admin' %}<a href="{{ url_for('expenses') }}">{{ ic('expense') }}إخراج مبلغ (مصروف)</a>{% endif %}
+{% if perm('products_edit') and cu.role!='admin' %}<a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>{% endif %}
 {% if perm('purchases') and cu.role!='admin' %}<a href="{{ url_for('purchases') }}">{{ ic('invoice') }}فواتير الشراء</a>{% endif %}
 {% if perm('courses') %}<a href="{{ url_for('courses') }}">{{ ic('course') }}الدورات والشهادات</a>{% endif %}
 {% if perm('attendance') %}<a href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}
@@ -553,10 +554,10 @@ TEMPLATES["cashbox.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 
 TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}المنتجات والمخزون{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
-{% if review %}<div class="card" style="border:2px solid var(--gold,#e4ab74)"><h2>{{ ic('alert') }}منتجات جديدة أضافها العمال ({{ review|length }})</h2>
-<p class="mut">أُضيفت من شاشة البيع أو الشراء. راجع الاسم والسعر، ثم اضغط «تمت المراجعة».</p>
-<table><tr><th>المنتج</th><th>سعر البيع</th><th>سعر الشراء</th><th>أضافه</th><th></th></tr>
-{% for p in review %}<tr><td>{{ item_ic(p.name, 'product') }}{{ p.name }}</td><td>{{ p.price|money }}</td><td>{{ (p.cost_price or 0)|money }}</td>
+{% if review %}<div class="card" style="border:2px solid var(--gold,#e4ab74)"><h2>{{ ic('alert') }}منتجات جديدة أو أسعار بدّلها العمال ({{ review|length }})</h2>
+<p class="mut">راجع الاسم والسعر، ثم اضغط «تمت المراجعة».</p>
+<table><tr><th>المنتج</th><th>سعر البيع</th><th>سعر الشراء</th><th>من</th><th></th></tr>
+{% for p in review %}<tr><td>{{ item_ic(p.name, 'product') }}{{ p.name }}{% if p.review_note %}<div><span class="tag amber">{{ p.review_note }}</span></div>{% endif %}</td><td>{{ p.price|money }}</td><td>{{ (p.cost_price or 0)|money }}</td>
 <td>{{ p.by_name or '' }}<div class="mut">{{ p.by_branch or '' }}</div></td>
 <td style="white-space:nowrap"><a class="btn light sm" href="{{ url_for('products', edit=p.id) }}">تعديل</a>
 <form method="post" action="{{ url_for('product_reviewed', pid=p.id) }}" style="display:inline"><button class="btn sm">تمت المراجعة ✓</button></form></td></tr>{% endfor %}</table></div>{% endif %}
@@ -566,8 +567,8 @@ TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>الاسم<input name="name" value="{{ edit.name if edit else '' }}" required></label>
 <label>الفئة<input name="category" value="{{ edit.category or '' if edit else '' }}" placeholder="أعشاب، زيوت، عسل، تجميل..." list="cats"></label>
 <datalist id="cats">{% for c in rows|map(attribute='category')|unique %}{% if c %}<option value="{{ c }}">{% endif %}{% endfor %}</datalist>
-<label>سعر البيع ({{ cur }})<input name="price" value="{{ '%g'|format(edit.price) if edit else '' }}" style="width:110px"></label>
-<label>سعر الشراء ({{ cur }})<input name="cost_price" value="{{ '%g'|format(edit.cost_price or 0) if edit else '' }}" style="width:110px"></label>
+<label>سعر البيع ({{ cur }})<input name="price" value="{{ '%g'|format(edit.price) if edit else '' }}" style="width:110px" {% if not can_price %}readonly title="السعر تحدده المديرة"{% endif %}></label>
+{% if admin %}<label>سعر الشراء ({{ cur }})<input name="cost_price" value="{{ '%g'|format(edit.cost_price or 0) if edit else '' }}" style="width:110px"></label>{% endif %}
 <label>الباركود<input name="barcode" value="{{ edit.barcode or '' if edit else '' }}"></label>
 <label>تاريخ انتهاء الصلاحية<input type="date" name="expiry" value="{{ edit.expiry or '' if edit else '' }}"></label>
 {% if edit %}<label>الحالة<select name="active"><option value="1">نشط</option><option value="0" {{ 'selected' if not edit.active }}>موقوف</option></select></label>{% endif %}
@@ -576,19 +577,20 @@ TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
 {% for b in branches %}{% set st = stock.get((edit.id, b.id)) if edit else None %}<tr><td>{{ b.name }}</td>
 {% if not edit %}<td><input name="qty_{{ b.id }}" style="width:90px" placeholder="0"></td>{% endif %}
 <td><input name="min_{{ b.id }}" style="width:90px" value="{{ '%g'|format(st.min_qty or 0) if st else default_min }}"></td></tr>{% endfor %}</table>
-<p class="row"><button class="btn">حفظ</button>{% if edit %}<a class="btn light" href="{{ url_for('products') }}">إلغاء</a>{% endif %}</p></form></div>
-<div class="card"><h2>استيراد قائمة منتجات من Excel</h2>
+<p class="row"><button class="btn">حفظ</button>{% if edit %}<a class="btn light" href="{{ url_for('products') }}">إلغاء</a>{% endif %}</p>
+{% if not admin %}<p class="mut">المنتج الجديد وأي تبديل في السعر يظهران للمديرة لتراجعهما.</p>{% endif %}</form></div>
+{% if admin %}<div class="card"><h2>استيراد قائمة منتجات من Excel</h2>
 <form method="post" action="{{ url_for('products_import') }}" enctype="multipart/form-data" class="row">
 <input type="file" name="file" accept=".csv" required><button class="btn light">استيراد</button>
 <a class="btn light" href="{{ url_for('products_template') }}">تحميل قائمة المنتجات (Excel)</a></form>
 <p class="mut">حمّل القائمة: فيها كل المنتجات بأسعارها. اكتب أمام كل منتج الكمية الموجودة في كل فرع وحد التنبيه،
-احفظها بصيغة CSV UTF-8 ثم استوردها. المنتجات الموجودة تُحدَّث (والكمية تُضاف للمخزون)، والجديدة تُضاف.</p></div>
+احفظها بصيغة CSV UTF-8 ثم استوردها. المنتجات الموجودة تُحدَّث (والكمية تُضاف للمخزون)، والجديدة تُضاف.</p></div>{% endif %}
 <div class="card"><form class="row" style="margin-bottom:10px"><label>بحث<input name="q" value="{{ q }}"></label>
-<label>الفرع<select name="branch"><option value="">كل الفروع</option>{% for b in branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>
+{% if admin %}<label>الفرع<select name="branch"><option value="">كل الفروع</option>{% for b in branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
 <button class="btn light">عرض</button></form>
-<table><tr><th>المنتج</th><th>الفئة</th><th>السعر</th><th>الشراء</th><th>الصلاحية</th>{% for b in show %}<th>{{ b.name }}<div class="mut">الكمية / الحد</div></th>{% endfor %}<th>تعديل الكمية أو الحد</th><th></th></tr>
+<table><tr><th>المنتج</th><th>الفئة</th><th>السعر</th>{% if admin %}<th>الشراء</th>{% endif %}<th>الصلاحية</th>{% for b in show %}<th>{{ b.name }}<div class="mut">الكمية / الحد</div></th>{% endfor %}<th>تعديل الكمية أو الحد</th><th></th></tr>
 {% for p in rows %}<tr class="{{ 'cx' if not p.active }}"><td>{{ item_ic(p.name, 'product') }}{{ p.name }}</td><td>{{ p.category or '' }}</td><td>{{ p.price|money }}</td>
-<td class="mut">{{ (p.cost_price or 0)|money }}</td>
+{% if admin %}<td class="mut">{{ (p.cost_price or 0)|money }}</td>{% endif %}
 <td>{% if p.expiry %}<span class="tag {{ 'red' if p.expiry<today else 'amber' if p.expiry<=soon else '' }}">{{ p.expiry }}</span>{% endif %}</td>
 {% for b in show %}{% set st = stock.get((p.id,b.id)) %}{% set q = st.qty if st else 0 %}{% set m = st.min_qty or 0 if st else 0 %}
 <td><span class="tag {{ 'red' if q<=0 else 'amber' if m and q<=m }}">{{ '%g'|format(q) }}</span> <span class="mut">/ {{ '%g'|format(m) }}</span></td>{% endfor %}
@@ -1474,7 +1476,8 @@ TEMPLATES["purchase_new.html"] = r"""{% extends "base.html" %}{% block body %}
 {% if cu.role=='admin' %}<a class="btn light sm" href="{{ url_for('suppliers') }}">+ مورد جديد</a>
 <label>للفرع<select name="branch_id">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
 <label>التاريخ<input type="date" name="day" value="{{ today }}"></label><label>ملاحظة<input name="notes"></label></div>
-<table style="margin-top:12px" id="lines"><tr><th>المنتج</th><th>الكمية</th><th>سعر الشراء للوحدة</th><th></th></tr></table>
+<table style="margin-top:12px" id="lines"><tr><th>المنتج</th><th>الكمية المطلوبة</th><th></th></tr></table>
+<p class="mut">اكتب الكميات فقط. كي توصل السلعة، تأكد من الكمية اللي وصلت فعلًا وبدّل سعر البيع إذا تبدّل.</p>
 <p><button type="button" class="btn light sm" onclick="addLine()">+ سطر</button>
 <button type="button" class="btn gold sm" onclick="qpShow(true)">{{ ic('products') }} منتج جديد غير مسجّل</button></p>
 <button class="btn gold">حفظ الطلبية</button></form></div>
@@ -1489,9 +1492,8 @@ function qpDone(p,existed){if(!P.find(x=>x.id==p.id))P.push(p);
  if(existed)alert('هذا المنتج مسجّل من قبل، اخترناه في الطلبية')}
 function addLine(pid,q){var t=document.getElementById('lines'),r=t.insertRow();
  var opts='<option value="">—</option>'+P.map(function(p){return '<option value="'+p.id+'" data-c="'+(p.cost_price||0)+'"'+(p.id==pid?' selected':'')+'>'+p.name.replace(/</g,'&lt;')+'</option>'}).join('');
- r.innerHTML='<td><select name="product_id" style="min-width:260px">'+opts+'</select></td><td><input name="qty" style="width:80px" value="'+(q||'')+'"></td><td><input name="cost" style="width:100px"></td><td><button type="button" class="btn red sm">×</button></td>';
- var s=r.querySelector('select'),c=r.querySelector('input[name=cost]');function fc(){var o=s.selectedOptions[0];c.value=o&&o.dataset.c&&o.dataset.c!='0'?o.dataset.c:''}
- s.onchange=fc;fc();r.querySelector('button').onclick=function(){r.remove()}}
+ r.innerHTML='<td><select name="product_id" style="min-width:260px">'+opts+'</select></td><td><input name="qty" style="width:80px" value="'+(q||'')+'"></td><td><button type="button" class="btn red sm">×</button></td>';
+ var s=r.querySelector('select');s.onchange=function(){};r.querySelector('button').onclick=function(){r.remove()}}
 if(PRE.length){PRE.forEach(function(x){addLine(x[0],x[1])})}else{addLine();addLine();addLine()}
 </script>{% endblock %}"""
 
@@ -1503,21 +1505,24 @@ TEMPLATES["purchase_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <div style="margin-inline-start:auto;text-align:left"><b>طلبية شراء رقم {{ p.id|rid }}</b><div>{{ p.day }}</div></div></div>
 <p>المورد: <b>{{ p.supplier or '-' }}</b> {{ p.sphone or '' }} {{ p.saddress or '' }} — الحالة: <span class="tag amber">{{ PURCHASE_STATUS[p.status] }}</span>{% if p.notes %} — {{ p.notes }}{% endif %}</p>
 <form method="post">
-<table><tr><th>المنتج</th><th>الكمية</th><th>سعر الوحدة</th><th>المجموع</th>{% if p.status=='ordered' %}<th class="noprint">الكمية التي وصلت</th><th class="noprint">السعر الفعلي</th>{% endif %}</tr>
+{% set can_price = cu.role=='admin' or perm('sale_prices') %}
+<table><tr><th>المنتج</th><th>الكمية المطلوبة</th>{% if p.status=='ordered' %}<th class="noprint">الكمية اللي وصلت</th>{% if can_price %}<th class="noprint">سعر البيع</th>{% endif %}<th class="noprint">سعر الشراء <span class="mut">(اختياري)</span></th>
+{% elif cu.role=='admin' %}<th>سعر الشراء</th><th>المجموع</th>{% endif %}</tr>
 {% for i in items %}<tr><td>{{ i.name }}</td>
 <td>{% if p.status=='ordered' %}<input name="q_{{ i.id }}" value="{{ '%g'|format(i.qty) }}" style="width:70px">{% else %}{{ '%g'|format(i.qty) }}{% endif %}</td>
-<td>{% if p.status=='ordered' %}<input name="c_{{ i.id }}" value="{{ '%g'|format(i.unit_cost) }}" style="width:90px">{% else %}{{ i.unit_cost|money }}{% endif %}</td>
-<td>{{ (i.qty*i.unit_cost)|money }}</td>
-{% if p.status=='ordered' %}<td class="noprint"><input name="rq_{{ i.id }}" value="{{ '%g'|format(i.qty) }}" style="width:70px"></td><td class="noprint"><input name="rc_{{ i.id }}" value="{{ '%g'|format(i.unit_cost) }}" style="width:90px"></td>{% endif %}</tr>{% endfor %}
-<tr style="background:#efe2cf"><td colspan="3"><b>المجموع</b></td><td><b>{{ total|money }} {{ cur }}</b></td>{% if p.status=='ordered' %}<td colspan="2" class="noprint"></td>{% endif %}</tr></table>
+{% if p.status=='ordered' %}<td class="noprint"><input name="rq_{{ i.id }}" value="{{ '%g'|format(i.qty) }}" style="width:70px" title="إذا وصلت أقل، اكتب الكمية الحقيقية"></td>
+{% if can_price %}<td class="noprint"><input name="sp_{{ i.id }}" value="{{ '%g'|format(i.price or 0) }}" style="width:90px" title="سعر البيع الحالي: بدّلو إذا تبدّل"></td>{% endif %}
+<td class="noprint"><input name="rc_{{ i.id }}" value="{{ '%g'|format(i.unit_cost) if i.unit_cost else '' }}" placeholder="من فاتورة المورد" style="width:110px"></td>
+{% elif cu.role=='admin' %}<td>{{ i.unit_cost|money }}</td><td>{{ (i.qty*i.unit_cost)|money }}</td>{% endif %}</tr>{% endfor %}
+{% if cu.role=='admin' and p.status!='ordered' and total %}<tr style="background:#efe2cf"><td colspan="3"><b>المجموع</b></td><td><b>{{ total|money }} {{ cur }}</b></td></tr>{% endif %}</table>
 {% if p.status=='ordered' %}<div class="row noprint" style="margin-top:12px"><button class="btn light" name="action" value="edit">حفظ تعديل الطلبية</button>
 {% if perm('expenses') %}<label>المدفوع للمورد الآن (من الصندوق)<input name="paid_now" style="width:100px" placeholder="0"></label>{% endif %}
 <select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
 <button class="btn gold" name="action" value="receive" onclick="return confirm('تأكيد استلام السلعة؟ تُضاف الكميات إلى مخزون الفرع')">استلام السلعة</button>
 <button class="btn red" name="action" value="cancel" onclick="return confirm('إلغاء الطلبية؟')">إلغاء</button></div>
-<p class="mut noprint">عند الاستلام: اكتب الكمية التي وصلت فعلًا والسعر الفعلي. تُضاف للمخزون، ويتحدّث سعر الشراء، والمدفوع يُسجَّل في المصاريف.</p>{% endif %}
+<p class="mut noprint">عند الاستلام: اكتب الكمية اللي وصلت فعلًا (ممكن أقل من المطلوبة)، وبدّل سعر البيع إذا تبدّل. الكميات تتزاد للمخزون، وأي تبديل في السعر يبان للمديرة.</p>{% endif %}
 </form>
-{% if p.status=='received' %}<p>المدفوع للمورد: <b>{{ paid|money }}</b> — الباقي: <b style="color:{{ '#b3261e' if total-paid>0 else 'inherit' }}">{{ (total-paid)|money }}</b></p>
+{% if p.status=='received' and total %}<p>المدفوع للمورد: <b>{{ paid|money }}</b> — الباقي: <b style="color:{{ '#b3261e' if total-paid>0 else 'inherit' }}">{{ (total-paid)|money }}</b></p>
 {% if total-paid > 0 and cu.role=='admin' %}<form method="post" class="row noprint"><input type="hidden" name="action" value="pay"><label>دفع للمورد<input name="amount" value="{{ '%g'|format(total-paid) }}" style="width:100px"></label>
 <select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select><button class="btn">تسجيل الدفع</button></form>{% endif %}{% endif %}
 <div class="mut" style="margin-top:20px">{{ now }}</div></div>{% endblock %}"""
