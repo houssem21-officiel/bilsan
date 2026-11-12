@@ -3985,6 +3985,16 @@ def sync_auth():
     return data, int(b)
 
 
+@app.route("/sync/wait", methods=["POST"])
+def sync_wait():
+    """الحاسوب الفرعي ينتظر هنا حتى تتسجل معلومة جديدة (حتى 25 ثانية)."""
+    data, _ = sync_auth()
+    old = data.get("s", -1)
+    if old == -1 or old != sync.STAMP[0]:
+        return {"s": sync.STAMP[0]}
+    return {"s": sync.wait_change(old, 25)}
+
+
 @app.route("/sync/hello", methods=["POST"])
 def sync_hello():
     sync_auth()
@@ -4176,7 +4186,12 @@ NOT_LIVE = {"login", "pos", "purchase_new", "plan_new", "payment_new", "charge_n
 
 @app.route("/api/stamp")
 def api_stamp():
-    """s: أي معلومة جديدة (تتحدث الصفحات الحية). p: تغيّرت المهام/الصلاحيات (تتحدث كل الصفحات)."""
+    """s: أي معلومة جديدة (تتحدث الصفحات الحية). p: تغيّرت المهام/الصلاحيات (تتحدث كل الصفحات).
+    مع wait=1: ينتظر حتى 20 ثانية إلى أن يتغيّر شيء (أخف وأسرع من السؤال كل ثانيتين)."""
+    if request.args.get("wait") and request.args.get("s", "").lstrip("-").isdigit():
+        old = int(request.args["s"])
+        if old == sync.STAMP[0]:
+            sync.wait_change(old, 20)
     p = ""
     if current_user():
         try:
@@ -4334,7 +4349,7 @@ def run_server(port=None):
     print(f"\n  {DEFAULT_SETTINGS['center_name']}\n  البرنامج يعمل على: http://localhost:{port}\n")
     try:
         from waitress import serve
-        serve(app, host=host, port=port, threads=8)
+        serve(app, host=host, port=port, threads=32, channel_timeout=60)
     except ImportError:
         app.run(host=host, port=port, threaded=True)
 

@@ -258,8 +258,20 @@ WAKE = threading.Event()    # يوقظ المزامنة فورًا بعد أي �
 _last_hello = [0.0]
 
 
+COND = threading.Condition()
+
+
 def bump():
-    STAMP[0] += 1
+    with COND:
+        STAMP[0] += 1
+        COND.notify_all()
+
+
+def wait_change(old, timeout=25):
+    """ينتظر حتى تتغيّر المعلومات (أو تنتهي المهلة). يعيد الرقم الحالي."""
+    with COND:
+        COND.wait_for(lambda: STAMP[0] != old, timeout)
+        return STAMP[0]
 
 
 def central_push(con, branch_id, payload):
@@ -476,13 +488,50 @@ def sync_now(connect):
         return node_sync_once(connect)
 
 
-def node_loop(connect, every=3):
-    """كل 3 ثوانٍ، وفورًا بعد أي عملية في هذا الحاسوب. عند انقطاع الاتصال ننتظر أكثر."""
+def watch_central():
+    """اتصال انتظار دائم مع الحاسوب المركزي: يرجع فور ما تتسجل معلومة جديدة هناك،
+    فيستقبلها هذا الحاسوب في أقل من ثانية بدل الانتظار."""
+    stamp = -1
+    conn = None
+    while True:
+        try:
+            if conn is None:
+                u = urlsplit(NODE["central_url"])
+                conn = http.client.HTTPConnection(_resolve(u.hostname), u.port or 80, timeout=40)
+                host, base = u.netloc, (u.path or "").rstrip("/")
+            body = json.dumps({"branch_id": NODE["branch_id"], "device": NODE.get("device"), "s": stamp}).encode()
+            conn.request("POST", base + "/sync/wait", body=body, headers={
+                "Content-Type": "application/json", "X-Sync-Key": NODE.get("key", ""), "Host": host,
+                "Connection": "keep-alive"})
+            r = conn.getresponse()
+            raw = r.read()
+            if r.status != 200:
+                raise OSError(f"wait {r.status}")
+            new = json.loads(raw.decode("utf-8")).get("s", stamp)
+            if new != stamp:
+                if stamp != -1:
+                    WAKE.set()  # معلومة جديدة في المركزي: نستقبلها الآن
+                stamp = new
+        except Exception:
+            try:
+                if conn:
+                    conn.close()
+            except Exception:
+                pass
+            conn = None
+            stamp = -1
+            time.sleep(5)
+
+
+def node_loop(connect, every=20):
+    """فورًا بعد أي عملية هنا، وفورًا عند وصول جديد في المركزي (watch_central)،
+    ومرة كل 20 ثانية احتياطًا. عند انقطاع الاتصال نعيد المحاولة كل 10 ثوانٍ."""
+    threading.Thread(target=watch_central, daemon=True).start()
     while True:
         ok = False
         try:
             ok, _ = sync_now(connect)
         except Exception as e:
             print("sync error:", e)
-        WAKE.wait(every if ok else 15)
+        WAKE.wait(every if ok else 10)
         WAKE.clear()

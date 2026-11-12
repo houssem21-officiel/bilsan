@@ -176,10 +176,12 @@ document.querySelectorAll('.picker').forEach(function(pk){
 document.addEventListener('input',function(){dirty=true});document.addEventListener('change',function(){dirty=true});
 function busy(){return dirty||document.querySelector('details[open].dd')}
 function reload(){try{sessionStorage.setItem('bil_y',window.scrollY)}catch(e){}location.reload()}
-setInterval(function(){fetch('/api/stamp',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
+/* انتظار دائم: الخادم يرد فور ما تتسجل معلومة جديدة */
+function poll(){fetch('/api/stamp?wait='+(s===null?'':'1')+'&s='+(s===null?'':s),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
  if(p!==null&&d.p!==p&&!busy()){reload();return}
  if(live&&s!==null&&d.s!==s&&!busy()){reload();return}
- s=d.s;p=d.p}).catch(function(){})},2500);
+ s=d.s;p=d.p;setTimeout(poll,200)}).catch(function(){setTimeout(poll,3000)})}
+poll();
 try{var y=sessionStorage.getItem('bil_y');if(y){window.scrollTo(0,+y);sessionStorage.removeItem('bil_y')}}catch(e){}
 })();</script>{% endif %}
 </body></html>"""
