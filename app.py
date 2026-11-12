@@ -2102,7 +2102,10 @@ def visit_new():
         if not f.get("client_id"):
             flash("اختر الزبون أو سجّله أولًا", "err")
             return redirect(url_for("visit_new"))
-        target = f.get("target") if f.get("target") in VISIT_TARGETS else "director"
+        target = f.get("target")
+        if target not in VISIT_TARGETS:
+            flash("اختر إلى أين يذهب الزبون (المديرة، التجميل، الليزر...)", "err")
+            return redirect(url_for("visit_new", client_id=f.get("client_id")))
         vid = db.execute("""INSERT INTO visits(client_id,branch_id,target,request,status,created_by,created_at)
             VALUES(?,?,?,?,'waiting',?,?)""", (int(f["client_id"]), br, target, f.get("request", "").strip(),
                                               u["id"], now_str())).lastrowid

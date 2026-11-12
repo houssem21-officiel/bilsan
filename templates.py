@@ -1093,8 +1093,15 @@ document.getElementById('selsum').textContent=s.toFixed(2);var a=document.getEle
 TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box with context %}{% block body %}
 <h1>{{ page_icon() }}استقبال زبون — زيارة جديدة</h1>
 <div class="card"><form method="post">
-<div class="row">{{ client_picker(sel_client, True) }}
-<label>يُرسَل إلى<select name="target">{% for k,v in targets.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label></div>
+<div class="row">{{ client_picker(sel_client, True) }}</div>
+<h2 style="margin-top:14px">إلى أين يذهب الزبون؟</h2>
+<style>.tgts{display:flex;gap:10px;flex-wrap:wrap}.tgts label{cursor:pointer}.tgts input{position:absolute;opacity:0}
+.tgts span{display:flex;align-items:center;gap:8px;padding:12px 18px;border-radius:12px;border:2px solid #d9cbb3;background:#fff;font-weight:bold;font-size:16px;color:#0f4c45}
+.tgts span .ic{width:24px;height:24px}.tgts input:checked+span{border-color:#0f4c45;background:#0f4c45;color:#f3d6a8;box-shadow:0 4px 12px rgba(15,76,69,.35)}
+.tgts input:focus-visible+span{outline:3px solid #e4ab74}</style>
+<div class="tgts" id="tgts">{% for k,v in targets.items() %}<label><input type="radio" name="target" value="{{ k }}" required{% if targets|length==1 %} checked{% endif %}>
+<span>{{ ic({'director':'shield','reception':'reception','laser':'laser','beauty':'face'}[k]) }}{{ v }}</span></label>{% endfor %}</div>
+<div class="mut" style="margin-top:6px">كي تختار خدمة تحت، يتختار القسم تاعها وحدو. تقدر تبدّلو.</div>
 {% if sel_client %}<div class="row" style="margin-top:10px;gap:18px">
 {% if sel_client.chronic %}<span class="tag red">أمراض مزمنة: {{ sel_client.chronic }}</span>{% endif %}
 {% if sel_client.allergies %}<span class="tag red">حساسية: {{ sel_client.allergies }}</span>{% endif %}
@@ -1102,8 +1109,9 @@ TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 <a class="btn light sm" href="{{ url_for('client_view', cid=sel_client.id) }}">تعديل معلومات الزبون</a></div>{% endif %}
 <h2 style="margin-top:16px">ماذا يريد الزبون؟</h2>
 <table style="max-width:640px"><tr><th>الخدمة</th><th>السعر ({{ cur }})</th></tr>
-{% for i in range(3) %}<tr><td><select name="service_id" onchange="var o=this.selectedOptions[0];this.closest('tr').querySelector('input').value=o.dataset.p||''"><option value="">—</option>
-{% for s in services %}<option value="{{ s.id }}" data-p="{{ '%g'|format(s.price) }}">{{ s.name }} ({{ DEPTS[s.dept] }})</option>{% endfor %}</select></td>
+{% for i in range(3) %}<tr><td><select name="service_id" onchange="var o=this.selectedOptions[0];this.closest('tr').querySelector('input').value=o.dataset.p||'';
+ var r=document.querySelector('#tgts input[value='+(o.dataset.d||'x')+']');if(r&&o.dataset.d!='reception')r.checked=true"><option value="">—</option>
+{% for s in services %}<option value="{{ s.id }}" data-p="{{ '%g'|format(s.price) }}" data-d="{{ s.dept }}">{{ s.name }} ({{ DEPTS[s.dept] }})</option>{% endfor %}</select></td>
 <td><input name="price" {% if locked %}readonly title="السعر تحدده المديرة"{% endif %} style="width:110px"></td></tr>{% endfor %}</table>
 <p><label style="display:block">طلب الزبون / ملاحظة للمعالج<textarea name="request" rows="2" placeholder="مثلاً: حجامة للظهر، يشتكي من صداع..."></textarea></label></p>
 <button class="btn gold">إرسال الزبون</button></form></div>
