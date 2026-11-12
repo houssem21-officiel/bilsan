@@ -164,14 +164,19 @@ document.querySelectorAll('.picker').forEach(function(pk){
   document.addEventListener('click',function(e){if(!pk.contains(e.target))list.style.display='none'});
 });
 </script>
-{% if cu and live_page() %}<script>
-/* تحديث تلقائي: إذا وصلت معلومة جديدة (من حاسوب آخر أو من هنا) تتحدث الصفحة وحدها،
-   إلا إذا كان المستخدم يكتب في خانة */
-(function(){var s=null,dirty=false;
+{% if cu %}<script>
+/* تحديث تلقائي:
+   - صفحات المتابعة (الرئيسية، التحصيل، المواعيد...) تتحدث وحدها كي توصل معلومة جديدة.
+   - كل الصفحات تتحدث كي تشغّل المديرة أو توقف مهمة، باش تبان أو تختفي فورًا.
+   ما تتحدثش إذا كان العامل يكتب في خانة. */
+(function(){var s=null,p=null,dirty=false,live={{ 'true' if live_page() else 'false' }};
 document.addEventListener('input',function(){dirty=true});
-function busy(){var a=document.activeElement;return dirty||(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))||document.querySelector('details[open].dd')}
+function busy(){return dirty||document.querySelector('details[open].dd')}
+function reload(){try{sessionStorage.setItem('bil_y',window.scrollY)}catch(e){}location.reload()}
 setInterval(function(){fetch('/api/stamp',{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
- if(s!==null&&d.s!==s&&!busy()){var y=window.scrollY;sessionStorage.setItem('bil_y',y);location.reload()}s=d.s}).catch(function(){})},2500);
+ if(p!==null&&d.p!==p&&!busy()){reload();return}
+ if(live&&s!==null&&d.s!==s&&!busy()){reload();return}
+ s=d.s;p=d.p}).catch(function(){})},2500);
 try{var y=sessionStorage.getItem('bil_y');if(y){window.scrollTo(0,+y);sessionStorage.removeItem('bil_y')}}catch(e){}
 })();</script>{% endif %}
 </body></html>"""
@@ -1453,10 +1458,11 @@ TEMPLATES["permissions.html"] = r"""{% extends "base.html" %}{% block body %}
 td.c{text-align:center}</style>
 <h1>{{ page_icon() }}صلاحيات العمال</h1>
 <div class="card mut">كل مكان (استقبال، غرفة ليزر، غرفة تجميل) في كل فرع له صلاحياته. كل من يعمل في ذلك المكان يأخذها.
-المهمة المغلقة تختفي من شاشة العامل ولا يستطيع فتحها. التغيير فوري، ويصل إلى حاسوب سكيكدة خلال 30 ثانية.
+المهمة المغلقة تختفي من شاشة العامل ولا يستطيع فتحها. التغيير يظهر في حاسوب العامل خلال ثوانٍ (إذا كان متصلًا)، وشاشته تتحدث وحدها.
 <b>الصندوق والمجاميع والتقارير والرواتب والأسعار والإعدادات للمديرة وحدها دائمًا.</b></div>
 {% for d in data %}<div class="card" id="b{{ d.b.id }}"><h2>{{ d.b.name }}</h2>
-<table><tr><th>المهمة</th>{% for p in d.places %}<th class="c">{{ PLACES[p] }}<div class="mut">{{ d.staff.get(p,0) }} عامل</div></th>{% endfor %}</tr>
+<table><tr><th>المهمة</th>{% for p in d.places %}<th class="c">{{ PLACES[p] }}<div class="mut">{{ d.staff.get(p,0) }} عامل</div>
+{% for dv in d.devices.get(p, []) %}<div style="font-size:12px;font-weight:normal" title="آخر اتصال: {{ dv.last_seen or 'لم يتصل بعد' }}">{{ '🟢' if dv.online else '🔴' }} {{ dv.full_name }}{% if not dv.online %} <span class="mut">(غير متصل: يأخذ التغيير عند اتصاله)</span>{% endif %}</div>{% endfor %}</th>{% endfor %}</tr>
 {% for k,label,_ in PERMS %}<tr><td>{{ label }}</td>{% for p in d.places %}<td class="c">
 <label class="sw"><input type="checkbox" {{ 'checked' if d.perms[p][k] }} onchange="tg(this,{{ d.b.id }},'{{ p }}','{{ k }}')"><span class="sl"></span></label></td>{% endfor %}</tr>{% endfor %}</table></div>{% endfor %}
 <script>function tg(el,b,r,k){var fd=new URLSearchParams({branch_id:b,role:r,perm:k,enabled:el.checked?'1':'0'});

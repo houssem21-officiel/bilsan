@@ -2938,7 +2938,14 @@ def permissions():
         places = ["reception"] + [k for k in branch_depts(br["id"]) if k in ("laser", "beauty")]
         staff = {r["role"]: r["n"] for r in db.execute(
             "SELECT role, COUNT(*) n FROM users WHERE branch_id=? AND active=1 GROUP BY role", (br["id"],))}
-        data.append(dict(b=br, places=places, staff=staff, perms={p: place_perms(br["id"], p) for p in places}))
+        devs = {}
+        lim = (datetime.now() - timedelta(minutes=2)).strftime("%Y-%m-%d %H:%M:%S")
+        for dv in db.execute("SELECT full_name, role, last_seen FROM users WHERE device=1 AND active=1 AND branch_id=?",
+                             (br["id"],)):
+            devs.setdefault(dv["role"], []).append(dict(full_name=dv["full_name"], last_seen=dv["last_seen"],
+                                                         online=bool(dv["last_seen"] and dv["last_seen"] >= lim)))
+        data.append(dict(b=br, places=places, staff=staff, devices=devs,
+                         perms={p: place_perms(br["id"], p) for p in places}))
     return render_template("permissions.html", data=data, PERMS=PERMS, PLACES=PLACES)
 
 
@@ -4105,7 +4112,16 @@ LIVE_PAGES = {"dashboard", "reception", "cashbox", "cash_daily", "appointments",
 
 @app.route("/api/stamp")
 def api_stamp():
-    return {"s": sync.STAMP[0]}
+    """s: أي معلومة جديدة (تتحدث الصفحات الحية). p: تغيّرت المهام/الصلاحيات (تتحدث كل الصفحات)."""
+    p = ""
+    if current_user():
+        try:
+            r = get_db().execute("SELECT COALESCE(MAX(_upd),'') || ':' || COUNT(*) || ':' || COALESCE(SUM(enabled),0) FROM perms").fetchone()
+        except sqlite3.OperationalError:
+            r = get_db().execute("SELECT COUNT(*) || ':' || COALESCE(SUM(enabled),0) FROM perms").fetchone()
+        u = current_user()
+        p = f"{r[0]}:{u['active']}"
+    return {"s": sync.STAMP[0], "p": p}
 
 
 @app.before_request
