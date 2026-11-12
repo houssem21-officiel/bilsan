@@ -77,6 +77,10 @@ NODE = load_node()
 _INS = re.compile(r"^\s*INSERT\s+(OR\s+\w+\s+)?INTO\s+(\w+)\s*\(([^)]*)\)\s*VALUES\s*\(", re.I | re.S)
 
 
+_ID_LOCK = threading.Lock()
+_ID_NEXT = {}
+
+
 class BilConn(sqlite3.Connection):
     """اتصال قاعدة البيانات: في وضع الفرع يعطي كل سطر جديد رقمًا سالبًا خاصًا بالفرع."""
     applying = False
@@ -93,10 +97,16 @@ class BilConn(sqlite3.Connection):
         return super().execute(sql, params)
 
     def next_node_id(self, table):
+        """رقم جديد لا يتكرر حتى لو سجّل عاملان في نفس اللحظة (نحجز الأرقام في الذاكرة تحت قفل)."""
         b = NODE["slot"]
         hi, lo = -(b * SPAN) - 1, -((b + 1) * SPAN) + 1
-        r = super().execute(f"SELECT MIN(id) FROM {table} WHERE id BETWEEN ? AND ?", (lo, hi)).fetchone()[0]
-        return hi if r is None else r - 1
+        with _ID_LOCK:
+            r = super().execute(f"SELECT MIN(id) FROM {table} WHERE id BETWEEN ? AND ?", (lo, hi)).fetchone()[0]
+            cand = hi if r is None else r - 1
+            if table in _ID_NEXT:
+                cand = min(cand, _ID_NEXT[table])
+            _ID_NEXT[table] = cand - 1
+            return cand
 
 
 def setup_connection(con):
@@ -520,6 +530,7 @@ def watch_central():
                 pass
             conn = None
             stamp = -1
+            _net["ip"] = None  # ربما تغيّر عنوان حاسوب المديرة
             time.sleep(5)
 
 
