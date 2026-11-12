@@ -13,6 +13,7 @@ jobs:
         run: |
           mkdir out && cd out
           curl -fsSL -o tailscale-setup.exe https://pkgs.tailscale.com/stable/tailscale-setup-latest.exe
+          curl -fsSL -o tailscale-amd64.msi https://pkgs.tailscale.com/stable/tailscale-setup-latest-amd64.msi || true
           ls -la
           git init -q -b tools
           git config user.name "bilsan-build"; git config user.email "build@users.noreply.github.com"
