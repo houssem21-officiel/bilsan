@@ -339,7 +339,7 @@ def node_sync_once(connect):
     con = connect()
     try:
         # 0) نسخة البرنامج في الحاسوب المركزي (للتحديث التلقائي)
-        if time.time() - _last_hello[0] > 60:  # مرة في الدقيقة تكفي
+        if time.time() - _last_hello[0] > 20:  # كل 20 ثانية تكفي
             hello = _post("/sync/hello", {"branch_id": NODE["branch_id"], "device": NODE.get("device"),
                                           "version": APP_VERSION}, timeout=15)
             state_set(con, "central_version", hello.get("version", "0"))

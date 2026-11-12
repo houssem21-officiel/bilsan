@@ -139,7 +139,10 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 </nav>
 {% endif %}
 <main>
-{% if NODE and node_status %}{% if node_status.err %}<div class="flash err noprint">غير متصل بالحاسوب المركزي — البرنامج يعمل عاديًا والعمليات محفوظة هنا ({{ node_status.pending }} عملية تنتظر الإرسال)، وستُرسل تلقائيًا عند رجوع الإنترنت.
+{% if NODE and node_status %}{% if node_status.update %}<div class="flash noprint" style="background:#fff4df;border:1px solid #e4ab74;color:#6b4a12">{{ ic('sync') }}
+<b>نسخة جديدة من البرنامج جاهزة في حاسوب المديرة.</b> هذا الحاسوب يتحدّث وحده عند تشغيله أو بعد 5 دقائق بلا استعمال.
+العمليات المسجّلة هنا تُرسل عاديًا. <a href="{{ url_for('update_now') }}" onclick="return confirm('تحديث البرنامج الآن؟ يتوقف دقيقة ثم يرجع وحده.')"><b>حدّث الآن</b></a></div>
+{% elif node_status.err %}<div class="flash err noprint">غير متصل بالحاسوب المركزي — البرنامج يعمل عاديًا والعمليات محفوظة هنا ({{ node_status.pending }} عملية تنتظر الإرسال)، وستُرسل تلقائيًا عند رجوع الإنترنت.
 <a href="{{ url_for('sync_now_route') }}">إعادة المحاولة الآن</a></div>
 {% elif node_status.ok %}<div class="mut noprint" style="color:var(--goldl);margin-bottom:8px">متصل بالحاسوب المركزي — آخر مزامنة {{ node_status.ok[11:16] }}{% if node_status.pending %} · {{ node_status.pending }} عملية تنتظر الإرسال{% endif %} · <a style="color:var(--goldl)" href="{{ url_for('sync_now_route') }}">مزامنة الآن</a></div>{% endif %}{% endif %}
 {% if bk and bk.warn %}<div class="flash err noprint">تنبيه: لم تُصنع نسخة احتياطية منذ أكثر من يومين{% if bk.err %} ({{ bk.err }}){% endif %}. <a href="{{ url_for('backup_page') }}">النسخ الاحتياطي</a></div>{% endif %}

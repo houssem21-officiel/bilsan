@@ -582,6 +582,7 @@ def inject():
 def node_status():
     db = get_db()
     return dict(ok=sync.state_get(db, "last_ok"), err=sync.state_get(db, "last_error"),
+                update=sync.central_is_newer(db),
                 pending=sync.pending_count(db), first=not db.execute("SELECT 1 FROM users").fetchone())
 
 
@@ -4247,6 +4248,32 @@ def apply_update():
     subprocess.Popen(["cmd", "/c", bat] if os.name == "nt" else ["sh", bat], creationflags=flags, close_fds=True)
     time.sleep(0.5)
     os._exit(0)
+
+
+@app.route("/update-now")
+@login_required()
+def update_now():
+    """زر «حدّث الآن» في الحاسوب الفرعي."""
+    if not sync.NODE:
+        abort(404)
+    con = connect()
+    try:
+        sync.state_set(con, "update_tried", "")
+        con.commit()
+    finally:
+        con.close()
+
+    def go():
+        time.sleep(1)
+        try:
+            apply_update()
+        except Exception as e:  # noqa: BLE001
+            print("update error:", e)
+    threading.Thread(target=go, daemon=True).start()
+    return ("<!doctype html><meta charset=utf-8><meta http-equiv=refresh content='45;url=/'>"
+            "<body style='font-family:Tahoma;background:#0f4c45;color:#f3d6a8;display:flex;align-items:center;"
+            "justify-content:center;height:100vh;margin:0;text-align:center'><div><h2>جاري تحديث البرنامج...</h2>"
+            "<p>انتظر دقيقة، الصفحة ترجع وحدها.</p></div>")
 
 
 def update_loop():
