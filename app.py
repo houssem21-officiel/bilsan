@@ -329,6 +329,7 @@ def init_db():
     add_col("visit_items", "appt_id", "INTEGER")
     add_col("visits", "appointment_id", "INTEGER")
     add_col("stock_moves", "dept", "TEXT")
+    add_col("stock_moves", "visit_id", "INTEGER")
     sync.install(con)
     sync.migrate_v2(con)
     # فهارس لتبقى السرعة جيدة حتى مع بيانات عشرات السنين
@@ -1525,11 +1526,11 @@ def receipt(pid):
 
 
 # ---------------------------------------------------------------- نقطة البيع (منتجات)
-def move_stock(db, product_id, branch_id, qty, reason, uid=None, kind=None, dept=None):
+def move_stock(db, product_id, branch_id, qty, reason, uid=None, kind=None, dept=None, visit_id=None):
     db.execute("INSERT OR IGNORE INTO stock(product_id,branch_id,qty) VALUES(?,?,0)", (product_id, branch_id))
     db.execute("UPDATE stock SET qty=qty+? WHERE product_id=? AND branch_id=?", (qty, product_id, branch_id))
-    db.execute("INSERT INTO stock_moves(product_id,branch_id,qty,reason,user_id,created_at,kind,dept) VALUES(?,?,?,?,?,?,?,?)",
-               (product_id, branch_id, qty, reason, uid, now_str(), kind, dept))
+    db.execute("""INSERT INTO stock_moves(product_id,branch_id,qty,reason,user_id,created_at,kind,dept,visit_id)
+        VALUES(?,?,?,?,?,?,?,?,?)""", (product_id, branch_id, qty, reason, uid, now_str(), kind, dept, visit_id))
 
 
 @app.route("/pos", methods=["GET", "POST"])
@@ -1867,6 +1868,38 @@ def product_quick():
     return {"ok": True, "existed": bool(ex), "product": dict(id=p["id"], name=p["name"], price=p["price"] or 0,
             cost_price=p["cost_price"] or 0, category=p["category"] or "", barcode=p["barcode"] or "",
             qty=(st["qty"] if st else 0), ic=icons.item_icon(p["name"], "product"))}
+
+
+@app.route("/sessions/profit")
+@login_required("admin")
+def sessions_profit():
+    """فائدة كل حصة: سعر الحصة، المواد المستعملة، والفائدة الصافية."""
+    db = get_db()
+    d1 = request.args.get("from") or date.today().isoformat()
+    d2 = request.args.get("to") or d1
+    br = scope_branch()
+    room = request.args.get("room", "")
+    q = """SELECT v.id FROM visits v WHERE v.status IN ('done','paid') AND substr(v.created_at,1,10) BETWEEN ? AND ?"""
+    args = [d1, d2]
+    if br:
+        q += " AND v.branch_id=?"
+        args.append(br)
+    rows, tot = [], {}
+    for (vid,) in db.execute(q + " ORDER BY v.id DESC LIMIT 1000", args).fetchall():
+        v, items, _ = visit_data(vid)
+        rk = visit_room(v)
+        if room and rk != room:
+            continue
+        e = session_economics(db, v, items)
+        label = (f"{v['plan_title']} — حصة {v['session_no']}/{v['plan_n']}" if v["plan_id"] else
+                 "، ".join(i["description"] for i in items if i["kind"] == "service")[:80] or (v["request"] or ""))
+        rows.append(dict(v=v, e=e, room=rk, label=label))
+        t = tot.setdefault(rk, {"n": 0, "income": 0, "cost": 0, "profit": 0})
+        t["n"] += 1
+        for k in ("income", "cost", "profit"):
+            t[k] += e[k]
+    grand = {k: sum(t[k] for t in tot.values()) for k in ("n", "income", "cost", "profit")}
+    return render_template("sessions_profit.html", rows=rows, tot=tot, grand=grand, d1=d1, d2=d2, br=br, room=room)
 
 
 @app.route("/stock/use", methods=["GET", "POST"])
@@ -2493,6 +2526,33 @@ def queue_count():
     return get_db().execute(q, args).fetchone()["n"]
 
 
+def visit_room(v):
+    return {"director": "director", "laser": "laser", "beauty": "beauty"}.get(v["target"], "hijama")
+
+
+def session_economics(db, v, items):
+    """سعر الحصة كلها، المواد المستعملة (بسعر الشراء)، وفائدة الحصة الصافية."""
+    mats = db.execute("""SELECT m.id, m.qty, p.name, COALESCE(p.cost_price,0) AS unit, -m.qty*COALESCE(p.cost_price,0) AS cost,
+        u.full_name AS by_name FROM stock_moves m JOIN products p ON p.id=m.product_id LEFT JOIN users u ON u.id=m.user_id
+        WHERE m.visit_id=? AND m.kind='use' ORDER BY m.id""", (v["id"],)).fetchall()
+    income = sum(i["qty"] * i["unit_price"] for i in items)
+    prepaid = 0
+    if v["appointment_id"]:  # حصة مخلّصة مسبقًا (باقة): نحسب ثمنها في دخل الحصة
+        ap = db.execute("SELECT price, paid FROM appointments WHERE id=?", (v["appointment_id"],)).fetchone()
+        if ap and not any((i["appt_id"] == v["appointment_id"] and i["unit_price"] > 0) for i in items):
+            prepaid = ap["price"] or 0
+    # المنتجات المبيعة في الحصة: نطرح سعر شرائها حتى تبقى الفائدة صافية
+    sold_cost = 0
+    for i in items:
+        if i["product_id"]:
+            c = db.execute("SELECT COALESCE(cost_price,0) FROM products WHERE id=?", (i["product_id"],)).fetchone()
+            sold_cost += (c[0] if c else 0) * i["qty"]
+    cost = sum(m["cost"] for m in mats) + sold_cost
+    total_income = round(income + prepaid, 2)
+    return dict(mats=mats, income=total_income, prepaid=prepaid, mat_cost=round(sum(m["cost"] for m in mats), 2),
+                sold_cost=round(sold_cost, 2), cost=round(cost, 2), profit=round(total_income - cost, 2))
+
+
 def visit_data(vid):
     db = get_db()
     v = db.execute("""SELECT v.*, c.name AS client, c.phone, c.birth_date, c.gender, c.address, c.chronic,
@@ -2668,6 +2728,24 @@ def visit_view(vid):
                 db.execute("DELETE FROM visit_items WHERE id=?", (it["id"],))
                 audit("حذف بند من زيارة", f"{it['description']} — {it['qty']*it['unit_price']:g}", v["branch_id"])
                 flash("تم الحذف", "ok")
+        elif act == "use_mat" and (can_treat or u["role"] == "admin") and v["status"] != "cancelled":
+            n = 0
+            for pid_, q in zip(request.form.getlist("mat_id"), request.form.getlist("mat_qty")):
+                q = fnum(q)
+                if pid_.lstrip("-").isdigit() and q > 0:
+                    pr = db.execute("SELECT name FROM products WHERE id=?", (pid_,)).fetchone()
+                    if pr:
+                        move_stock(db, int(pid_), v["branch_id"], -q, f"استهلاك في حصة {rid_filter(vid)} — {v['client']}",
+                                   u["id"], kind="use", dept=visit_room(v), visit_id=vid)
+                        n += 1
+            flash(f"تم تسجيل {n} مادة مستعملة" if n else "اختر المادة والكمية", "ok" if n else "err")
+        elif act == "unuse_mat" and (can_treat or u["role"] == "admin"):
+            m = db.execute("SELECT * FROM stock_moves WHERE id=? AND visit_id=? AND kind='use'",
+                           (request.form.get("move_id"), vid)).fetchone()
+            if m:
+                db.execute("UPDATE stock SET qty=qty-? WHERE product_id=? AND branch_id=?", (m["qty"], m["product_id"], m["branch_id"]))
+                db.execute("DELETE FROM stock_moves WHERE id=?", (m["id"],))
+                flash("تم حذف المادة ورجعت للمخزون", "ok")
         elif act == "start" and can_treat and v["status"] == "waiting":
             db.execute("UPDATE visits SET status='treating', started_at=? WHERE id=?", (now_str(), vid))
         elif act == "finish" and can_treat and v["status"] in ("waiting", "treating"):
@@ -2715,8 +2793,11 @@ def visit_view(vid):
         ORDER BY p.name""", (v["branch_id"],)).fetchall()
     vnotes = db.execute("""SELECT n.*, u.full_name AS by_name FROM client_notes n LEFT JOIN users u ON u.id=n.created_by
         WHERE n.client_id=? ORDER BY n.id DESC LIMIT 8""", (v["client_id"],)).fetchall() if has_perm("medical") else []
+    mats_list = db.execute("""SELECT p.id, p.name, COALESCE(s.qty,0) AS qty FROM products p LEFT JOIN stock s
+        ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1 AND p.usage IN ('use','both')
+        ORDER BY p.usage='both', p.name""", (v["branch_id"],)).fetchall()
     return render_template("visit_view.html", v=v, items=items, total=total, services=services_for(v["branch_id"]),
-                           vnotes=vnotes,
+                           vnotes=vnotes, eco=session_economics(db, v, items), mats_list=mats_list,
                            prods=prods, can_treat=can_treat, can_edit=can_edit)
 
 
@@ -4647,7 +4728,7 @@ PAGE_ICONS = {
     "suppliers": "truck", "services": "services", "branches": "branch", "branch_edit": "branch",
     "devices": "monitor", "users": "users", "sms_page": "sms", "sms_campaign": "sms",
     "settings": "settings", "change_password": "key", "staff": "staff", "staff_view": "staff",
-    "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream", "approvals": "key", "stock_use": "cream",
+    "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream", "approvals": "key", "sessions_profit": "reports", "stock_use": "cream",
 }
 
 

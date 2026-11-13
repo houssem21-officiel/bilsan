@@ -131,6 +131,7 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 <a href="{{ url_for('backup_page') }}">{{ ic('backup') }}النسخ الاحتياطي</a>
 <a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>
 <a href="{{ url_for('stock_use') }}">{{ ic('cream') }}استهلاك مواد العمل</a>
+<a href="{{ url_for('sessions_profit') }}">{{ ic('reports') }}فائدة كل حصة</a>
 <a href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات والموردون</a>
 <a href="{{ url_for('services') }}">{{ ic('services') }}الخدمات والأسعار</a>
 <a href="{{ url_for('branches') }}">{{ ic('branch') }}الفروع والغرف</a>
@@ -1271,6 +1272,26 @@ TEMPLATES["visit_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <a class="btn light" href="{{ url_for('client_view', cid=v.client_id) }}#">الملف الكامل والصور</a>
 <a class="btn light" href="{{ url_for('consent', cid=v.client_id, procedure=v.request or '') }}">وثيقة الموافقة</a></form>
 {% for n in vnotes %}<div style="margin-top:6px"><span class="mut">{{ n.created_at[:10] }} · {{ n.by_name or '' }}:</span> {{ n.note }}</div>{% endfor %}</div>{% endif %}
+{% if (can_treat or cu.role=='admin') and v.status!='cancelled' %}<div class="card"><h2>{{ ic('cream') }}المواد المستعملة في هذه الحصة</h2>
+<p class="mut">اختار المواد اللي استعملتها (كريم، جل، إبر، قطن...). تنقص من المخزون وتنحسب على الحصة.</p>
+{% if eco.mats %}<table style="max-width:760px"><tr><th>المادة</th><th>الكمية</th>{% if cu.role=='admin' %}<th>سعر الشراء</th><th>التكلفة</th>{% endif %}<th>سجّلها</th><th></th></tr>
+{% for m in eco.mats %}<tr><td>{{ item_ic(m.name,'product') }}{{ m.name }}</td><td>{{ '%g'|format(-m.qty) }}</td>
+{% if cu.role=='admin' %}<td class="mut">{{ m.unit|money }}</td><td>{{ m.cost|money }}</td>{% endif %}<td class="mut">{{ m.by_name or '' }}</td>
+<td><form method="post" onsubmit="return confirm('حذف هذه المادة؟ ترجع للمخزون')"><input type="hidden" name="action" value="unuse_mat"><input type="hidden" name="move_id" value="{{ m.id }}"><button class="btn red sm">×</button></form></td></tr>{% endfor %}</table>{% endif %}
+{% if mats_list %}<form method="post" style="margin-top:10px"><input type="hidden" name="action" value="use_mat">
+<div id="matrows">{% for i in range(2) %}<div class="row" style="margin-bottom:6px"><select name="mat_id" style="min-width:260px"><option value="">— اختار مادة —</option>
+{% for m in mats_list %}<option value="{{ m.id }}">{{ m.name }} (الموجود {{ '%g'|format(m.qty) }})</option>{% endfor %}</select>
+<input name="mat_qty" type="number" min="0" step="any" placeholder="الكمية" style="width:90px"></div>{% endfor %}</div>
+<button type="button" class="btn light sm" onclick="var r=document.querySelector('#matrows .row').cloneNode(true);r.querySelectorAll('input').forEach(x=>x.value='');r.querySelector('select').value='';document.getElementById('matrows').appendChild(r)">+ مادة أخرى</button>
+<button class="btn">تسجيل المواد</button></form>
+{% else %}<p class="mut">ما كاين حتى مادة من نوع «مواد العمل». المديرة ولا الاستقبال يبدّلو نوع المواد في صفحة المنتجات.</p>{% endif %}</div>{% endif %}
+{% if cu.role=='admin' %}<div class="card" style="border-inline-start:6px solid {{ '#2a8a57' if eco.profit>=0 else '#b3261e' }}"><h2>{{ ic('reports') }}فائدة هذه الحصة</h2>
+<table style="max-width:520px">
+<tr><td>سعر الحصة كاملة{% if eco.prepaid %} <span class="mut">(منها {{ eco.prepaid|money }} حصة من باقة مخلّصة)</span>{% endif %}</td><td><b>{{ eco.income|money }}</b></td></tr>
+<tr><td>المواد المستعملة</td><td style="color:#b3261e">− {{ eco.mat_cost|money }}</td></tr>
+{% if eco.sold_cost %}<tr><td>سعر شراء المنتجات المبيعة</td><td style="color:#b3261e">− {{ eco.sold_cost|money }}</td></tr>{% endif %}
+<tr style="background:#efe2cf"><td><b>فائدة الحصة الصافية</b></td><td><b style="font-size:18px;color:{{ '#145c32' if eco.profit>=0 else '#b3261e' }}">{{ eco.profit|money }} {{ cur }}</b></td></tr></table>
+<p class="mut">المواد تنحسب بسعر الشراء المسجّل في المنتجات. <a href="{{ url_for('sessions_profit') }}">فائدة كل الحصص</a></p></div>{% endif %}
 {% if can_edit %}<div class="card"><h2>إضافة شيء قمت به</h2>
 <form method="post" class="row"><input type="hidden" name="action" value="add">
 <label>النوع<select name="kind" id="kind" onchange="sw()"><option value="service">خدمة</option><option value="product">منتج من المخزون</option>{% if not locked %}<option value="other">شيء آخر (أكتبه)</option><option value="discount">تخفيض (اكتب المبلغ في السعر)</option>{% endif %}</select></label>
@@ -1821,3 +1842,23 @@ TEMPLATES["approvals.html"] = r"""{% extends "base.html" %}{% block body %}
 <button class="btn sm" name="decision" value="approved">✓ موافقة</button><button class="btn red sm" name="decision" value="rejected">✗ رفض</button></form>
 {% elif r.status=='approved' %}<span class="tag" style="background:#e2f5e9;color:#145c32">موافق</span>{% else %}<span class="tag red">مرفوض</span>{% if r.note %} <span class="mut">{{ r.note }}</span>{% endif %}{% endif %}</td></tr>
 {% else %}<tr><td colspan="8" class="mut">لا توجد طلبات</td></tr>{% endfor %}</table></div>{% endblock %}"""
+
+
+TEMPLATES["sessions_profit.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
+<h1>{{ page_icon() }}فائدة كل حصة</h1>
+<div class="card"><form class="row"><label>من<input type="date" name="from" value="{{ d1 }}"></label><label>إلى<input type="date" name="to" value="{{ d2 }}"></label>
+{{ branch_filter(br) }}<label>الغرفة<select name="room"><option value="">الكل</option>{% for k,v in USE_ROOMS.items() if k!='reception' %}<option value="{{ k }}" {{ 'selected' if room==k }}>{{ v }}</option>{% endfor %}</select></label>
+<button class="btn">عرض</button></form></div>
+<div class="grid" style="margin-bottom:16px">
+<div class="stat"><div class="l">الحصص</div><div class="n">{{ grand.n }}</div></div>
+<div class="stat"><div class="l">سعر الحصص</div><div class="n">{{ grand.income|money }}</div></div>
+<div class="stat"><div class="l">المواد المستعملة</div><div class="n" style="color:#b3261e">{{ grand.cost|money }}</div></div>
+<div class="stat"><div class="l">الفائدة الصافية</div><div class="n" style="color:#145c32">{{ grand.profit|money }}</div></div></div>
+{% if tot %}<div class="card"><h2>حسب الغرفة</h2><table><tr><th>الغرفة</th><th>الحصص</th><th>سعر الحصص</th><th>المواد</th><th>الفائدة</th><th>متوسط فائدة الحصة</th></tr>
+{% for k,t in tot.items() %}<tr><td>{{ USE_ROOMS.get(k,k) }}</td><td>{{ t.n }}</td><td>{{ t.income|money }}</td><td>{{ t.cost|money }}</td><td><b>{{ t.profit|money }}</b></td><td>{{ (t.profit/(t.n or 1))|money }}</td></tr>{% endfor %}</table></div>{% endif %}
+<div class="card"><table><tr><th>الحصة</th><th>التاريخ</th><th>الزبون</th><th>الغرفة</th><th>الخدمة</th><th>سعر الحصة</th><th>المواد</th><th>الفائدة</th></tr>
+{% for r in rows %}<tr><td><a href="{{ url_for('visit_view', vid=r.v.id) }}">{{ r.v.id|rid }}</a></td><td>{{ r.v.created_at[:16] }}</td><td>{{ r.v.client }}</td>
+<td>{{ USE_ROOMS.get(r.room, r.room) }}</td><td>{{ r.label }}</td><td>{{ r.e.income|money }}</td>
+<td style="color:#b3261e">{% if r.e.cost %}− {{ r.e.cost|money }}{% else %}<span class="mut">—</span>{% endif %}</td>
+<td><b style="color:{{ '#145c32' if r.e.profit>=0 else '#b3261e' }}">{{ r.e.profit|money }}</b></td></tr>
+{% else %}<tr><td colspan="8" class="mut">لا توجد حصص منتهية في هذه الفترة</td></tr>{% endfor %}</table></div>{% endblock %}"""
