@@ -149,7 +149,7 @@ DEFAULT_SETTINGS = {
     "center_name": "مركز الطب البديل بيلسان",
     "currency": "دج",
     "sms_enabled": "0",
-    "sms_url": "https://api.sms-gate.app/3rdparty/v1/message",
+    "sms_url": "https://api.sms-gate.app/3rdparty/v1/messages",
     "sms_user": "",
     "sms_pass": "",
     "sms_hours_before": "24",
@@ -4605,29 +4605,39 @@ def send_sms(con, phone, message):
     s = {r["key"]: r["value"] for r in con.execute("SELECT * FROM settings")}
     if s.get("sms_enabled") != "1" or not s.get("sms_url"):
         return False, "بوابة SMS غير مفعلة"
-    body = json.dumps({"message": message, "phoneNumbers": [norm_phone(phone)]}).encode("utf-8")
     url = s["sms_url"].strip()
     urls = [url]
     # الإصدارات الجديدة من SMS Gateway تستعمل /messages بدل /message
     if url.rstrip("/").endswith("/message"):
-        urls.append(url.rstrip("/") + "s")
+        urls.insert(0, url.rstrip("/") + "s")
+    # الشكل الجديد (textMessage) ثم القديم (message) إذا البوابة قديمة
+    bodies = [{"textMessage": {"text": message}, "phoneNumbers": [norm_phone(phone)]},
+              {"message": message, "phoneNumbers": [norm_phone(phone)]}]
     err = ""
     for u in urls:
-        req = urlreq.Request(u, data=body, method="POST", headers={"Content-Type": "application/json"})
-        if s.get("sms_user"):
-            tok = base64.b64encode(f"{s['sms_user'].strip()}:{s.get('sms_pass', '').strip()}".encode()).decode()
-            req.add_header("Authorization", "Basic " + tok)
-        try:
-            with urlreq.urlopen(req, timeout=20) as r:
-                return 200 <= r.status < 300, r.read(500).decode("utf-8", "replace")
-        except urlerr.HTTPError as e:
-            err = f"HTTP {e.code}"
-            if e.code == 401:
-                return False, "اسم المستخدم أو كلمة المرور خاطئة (انسخهما من تطبيق SMS Gateway)"
-            if e.code not in (404, 405):
-                return False, err
-        except Exception as e:
-            return False, str(e)[:300]
+        for body in bodies:
+            req = urlreq.Request(u, data=json.dumps(body).encode("utf-8"), method="POST",
+                                 headers={"Content-Type": "application/json"})
+            if s.get("sms_user"):
+                tok = base64.b64encode(f"{s['sms_user'].strip()}:{s.get('sms_pass', '').strip()}".encode()).decode()
+                req.add_header("Authorization", "Basic " + tok)
+            try:
+                with urlreq.urlopen(req, timeout=20) as r:
+                    return 200 <= r.status < 300, r.read(500).decode("utf-8", "replace")
+            except urlerr.HTTPError as e:
+                try:
+                    detail = e.read(300).decode("utf-8", "replace")
+                except Exception:
+                    detail = ""
+                err = f"HTTP {e.code} {detail}".strip()
+                if e.code == 401:
+                    return False, "اسم المستخدم أو كلمة المرور خاطئة (انسخهما من تطبيق SMS Gateway)"
+                if e.code in (404, 405):
+                    break  # الرابط غالط: نجربو الرابط الآخر
+                if e.code not in (400, 422):
+                    return False, err
+            except Exception as e:
+                return False, str(e)[:300]
     return False, err
 
 
