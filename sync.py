@@ -25,12 +25,12 @@ SYNC_TABLES = ["branches", "departments", "posts", "users", "services", "product
                "appointments", "plans", "charges", "payments", "sale_items", "stock_moves",
                "employees", "attendance", "grants", "visits", "visit_items", "courses", "course_trainees",
                "client_notes", "client_photos", "perms", "audit", "cash_days", "expenses",
-               "suppliers", "purchases", "purchase_items", "approvals", "service_materials"]
+               "suppliers", "purchases", "purchase_items", "approvals", "service_materials", "skin_cards"]
 # جداول أضيفت للمزامنة في النسخة 19.5 (المشتريات): تحتاج تحويل البيانات القديمة مرة واحدة
 V2_TABLES = ["suppliers", "purchases", "purchase_items"]
 # جداول عامة يرسلها المركزي كاملة للفرع
 CATALOG = ["branches", "departments", "posts", "users", "services", "products", "clients", "client_notes", "perms",
-           "suppliers", "service_materials"]
+           "suppliers", "service_materials", "skin_cards"]
 # جداول خاصة بفرع (فيها branch_id)
 BRANCH_OWNED = ["appointments", "plans", "charges", "payments", "stock_moves", "employees", "visits", "courses", "client_photos", "audit", "cash_days", "expenses",
                 "purchases", "approvals"]
@@ -49,6 +49,20 @@ VIA = {
 LOCAL_SETTINGS = {"last_stock_sms", "sync_key", "backup_dir", "backup_dir2", "backup_last", "backup_last_size",
                   "backup_error", "backup_every_hours", "last_birthday_run"}
 SPAN = 10 ** 9
+
+
+# ساعة المركز: توقيت الجزائر (UTC+1) محسوب من UTC، ومصحّح على ساعة الحاسوب المركزي.
+# هكذا حتى إذا حاسوب عندو منطقة زمنية غالطة ولا ساعة متأخرة، العمليات تتسجّل في نهارها الصحيح.
+CLOCK_SKEW = [0.0]   # ثواني: ساعة المركزي − ساعة هاذ الحاسوب
+TZ_HOURS = [1.0]
+
+
+def center_now():
+    return datetime.utcnow() + timedelta(seconds=CLOCK_SKEW[0], hours=TZ_HOURS[0])
+
+
+def center_today():
+    return center_now().date()
 
 
 def utcnow():
@@ -291,7 +305,7 @@ def central_push(con, branch_id, payload):
         bump()
     recompute_stock(con, branch_id)
     con.execute("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)",
-                (f"sync_last_{branch_id}", datetime.now().strftime("%Y-%m-%d %H:%M:%S")))
+                (f"sync_last_{branch_id}", center_now().strftime("%Y-%m-%d %H:%M:%S")))
     con.commit()
     return n
 
@@ -419,8 +433,14 @@ def node_sync_once(connect):
     try:
         # 0) نسخة البرنامج في الحاسوب المركزي (للتحديث التلقائي)
         if time.time() - _last_hello[0] > 20:  # كل 20 ثانية تكفي
+            t0 = time.time()
             hello = _post("/sync/hello", {"branch_id": NODE["branch_id"], "device": NODE.get("device"),
                                           "version": APP_VERSION}, timeout=15)
+            if hello.get("epoch"):
+                CLOCK_SKEW[0] = round(float(hello["epoch"]) - (t0 + time.time()) / 2, 1)
+                state_set(con, "clock_skew", str(CLOCK_SKEW[0]))
+            if hello.get("tz") is not None:
+                TZ_HOURS[0] = float(hello["tz"])
             state_set(con, "central_version", hello.get("version", "0"))
             con.commit()
             _last_hello[0] = time.time()
@@ -468,7 +488,7 @@ def node_sync_once(connect):
             state_set(con, "last_pull", res["now"])
             con.commit()
             break
-        state_set(con, "last_ok", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        state_set(con, "last_ok", center_now().strftime("%Y-%m-%d %H:%M:%S"))
         state_set(con, "last_error", "في انتظار تحديث البرنامج" if central_is_newer(con) else "")
         state_set(con, "disabled", "")
         con.commit()
@@ -481,7 +501,7 @@ def node_sync_once(connect):
     except Exception as e:
         try:
             state_set(con, "last_error", str(e)[:200])
-            state_set(con, "last_try", datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+            state_set(con, "last_try", center_now().strftime("%Y-%m-%d %H:%M:%S"))
             con.commit()
         except Exception:
             pass

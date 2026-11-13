@@ -30,7 +30,7 @@ h1{font-size:21px;color:var(--g9);margin:0 0 14px}
 h2{font-size:17px;color:var(--g8);margin:0 0 12px}
 a{color:var(--g7)}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th{background:#efe2cf;color:var(--g9);text-align:right;padding:8px;border-bottom:1px solid var(--line)}
+th{background:#efe2cf;color:var(--g9);text-align:start;padding:8px;border-bottom:1px solid var(--line)}
 td{padding:7px 8px;border-bottom:1px solid #ece2d3;vertical-align:middle}
 tr.cx td{color:#999;text-decoration:line-through}
 input,select,textarea{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:0}
@@ -56,6 +56,9 @@ main>.row .btn.light{background:rgba(251,247,240,.9)}
 .flash.err{background:#fdecea;color:var(--red);border:1px solid #f3c1bc}
 .flash a{color:inherit}
 .tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;background:#e3efe8;color:var(--g9)}
+.langs{display:inline-flex;gap:4px;align-items:center}.langs a{padding:1px 7px;border-radius:6px;border:1px solid rgba(228,171,116,.5);text-decoration:none;font-size:12px}.langs a.on{background:var(--gold);color:#173f36!important;font-weight:bold}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.chip{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:4px;padding:4px 10px;border:1px solid #e0d2bb;border-radius:20px;background:#fffaf2;cursor:pointer;font-size:13px}
+.chip:has(input:checked){background:#f3e3c8;border-color:#c99a5b;font-weight:bold}
 .tag.amber{background:#fbeedd;color:var(--amber)}.tag.red{background:#fdecea;color:var(--red)}
 .tag.gray{background:#eee;color:#555}
 .mut{color:var(--mut);font-size:13px}
@@ -71,7 +74,7 @@ border-radius:8px;width:100%;max-height:240px;overflow:auto;display:none}
 .ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.22em;flex:none}
 nav a .ic,.dd summary .ic,.ddm a .ic{color:var(--gold);margin-inline-end:6px}
 nav a.on .ic{color:inherit}
-.ddm a{display:flex!important;align-items:center;direction:rtl;justify-content:flex-start}
+.ddm a{display:flex!important;align-items:center;justify-content:flex-start}
 h1 .ic.pg{box-sizing:border-box;width:1.7em;height:1.7em;padding:.3em;margin-inline-end:.45em;border-radius:14px;vertical-align:middle;
  color:#0f4c45;background:linear-gradient(135deg,#f7e2bd,#e4ab74);box-shadow:0 3px 10px rgba(228,171,116,.45),inset 0 1px 0 rgba(255,255,255,.6);stroke-width:1.9}
 h2 .ic{color:var(--gold);margin-inline-end:6px}
@@ -95,11 +98,12 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 {% if cu.role=='admin' %}<form action="{{ url_for('view_branch') }}" style="margin:0"><select name="b" onchange="this.form.submit()" style="background:rgba(255,255,255,.08);color:var(--goldl);border-color:rgba(228,171,116,.5)">
 <option value="" style="color:#000">الحاسوب المركزي — كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" style="color:#000" {{ 'selected' if view_branch==b.id }}>عرض: {{ b.name }}</option>{% endfor %}</select></form>{% endif %}
 <div class="who">{{ cu.full_name or cu.username }} — {{ ROLES[cu.role] }}{% if cu.branch_id %} — {{ branch_name(cu.branch_id) }}{% endif %}
- | <a href="{{ url_for('change_password') }}">{{ ic('key') }} كلمة المرور</a> | <a href="{{ url_for('logout') }}">{{ ic('logout') }} خروج</a></div></header>
+ | <a href="{{ url_for('change_password') }}">{{ ic('key') }} كلمة المرور</a> | <a href="{{ url_for('logout') }}">{{ ic('logout') }} خروج</a>
+ | <span class="langs">{% for k, v in [('ar','ع'),('fr','FR'),('en','EN')] %}<a href="{{ url_for('set_lang', code=k) }}" class="{{ 'on' if cur_lang==k }}" title="{{ LANGS[k] }}">{{ v }}</a>{% endfor %}</span></div></header>
 <nav>
 {% set ep = request.endpoint %}
 <a href="{{ url_for('dashboard') }}" class="{{ 'on' if ep in ('dashboard','branch_view') }}">{{ ic('home') }}الرئيسية</a>
-{% if cu.role in ('admin','laser','beauty') %}<a href="{{ url_for('visit_queue') }}" class="{{ 'on' if ep in ('visit_queue','visit_view') }}">{{ ic('queue') }}{{ 'زبائن المديرة' if cu.role=='admin' else 'قائمة الانتظار' }}{% if queue_count %} <span class="badge">{{ queue_count }}</span>{% endif %}</a>{% endif %}
+{% if cu.role in ('admin','laser','beauty') %}<a href="{{ url_for('visit_queue') }}" class="{{ 'on' if ep in ('visit_queue','visit_view') }}">{{ ic('queue') }}{{ 'كل الغرف الآن' if cu.role=='admin' else 'قائمة الانتظار' }}{% if queue_count %} <span class="badge">{{ queue_count }}</span>{% endif %}</a>{% endif %}
 {% if perm('reception_visits') %}<a href="{{ url_for('visit_new') }}" class="{{ 'on' if ep in ('visit_new','visits_list') }}">{{ ic('reception') }}استقبال زبون</a>{% endif %}
 {% if perm('collect') %}<a href="{{ url_for('reception') }}" class="{{ 'on' if ep in ('reception','receipt') }}">{{ ic('cash') }}{{ 'الاستقبال والتحصيل' if cu.role in ('admin','reception') else 'التحصيل' }}</a>
 {% elif cu.role in ('laser','beauty') %}<a href="{{ url_for('charge_new') }}" class="{{ 'on' if ep=='charge_new' }}">{{ ic('send') }}إرسال مبلغ للاستقبال</a>{% endif %}
@@ -146,6 +150,7 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 </nav>
 {% endif %}
 <main>
+{% if NODE and node_status and node_status.clock_off >= 5 %}<div class="flash noprint" style="background:#fff4df;border:1px solid #e4ab74;color:#6b4a12">🕒 ساعة هاذ الحاسوب غالطة بـ {{ node_status.clock_off }} دقيقة. البرنامج يسجّل بساعة الحاسوب المركزي (ما كاين حتى مشكل)، بصّح صلّحوها في Windows: الإعدادات ← الوقت واللغة ← المنطقة الزمنية (UTC+01:00) West Central Africa + «ضبط الوقت تلقائيًا».</div>{% endif %}
 {% if NODE and node_status %}{% if node_status.newver %}<div class="flash noprint" style="background:#fff4df;border:1px solid #e4ab74;color:#6b4a12">{{ ic('sync') }}
 <b>نسخة جديدة من البرنامج جاهزة في حاسوب المديرة.</b> هذا الحاسوب يتحدّث وحده عند تشغيله أو بعد 5 دقائق بلا استعمال.
 العمليات المسجّلة هنا تُرسل عاديًا. <a href="{{ url_for('update_now') }}" onclick="return confirm('تحديث البرنامج الآن؟ يتوقف دقيقة ثم يرجع وحده.')"><b>حدّث الآن</b></a></div>
@@ -234,7 +239,8 @@ TEMPLATES["login.html"] = r"""{% extends "base.html" %}{% block body %}
 <input name="password" type="password" placeholder="كلمة سر الحاسوب" required autofocus style="text-align:center;font-size:20px">
 {% else %}<input name="username" placeholder="اسم المستخدم" required autofocus>
 <input name="password" type="password" placeholder="كلمة المرور" required>{% endif %}
-<button class="btn">دخول</button></form></div></div>
+<button class="btn">دخول</button></form>
+<div class="langs" style="margin-top:12px;justify-content:center">{% for k, v in [('ar','العربية'),('fr','Français'),('en','English')] %}<a href="{{ url_for('set_lang', code=k) }}" class="{{ 'on' if cur_lang==k }}">{{ v }}</a>{% endfor %}</div></div></div>
 {% endblock %}"""
 
 TEMPLATES["password.html"] = r"""{% extends "base.html" %}{% block body %}
@@ -256,7 +262,7 @@ TEMPLATES["dash_admin.html"] = r"""{% extends "base.html" %}{% block body %}
 <span class="itm" style="background:#fff">{{ ic(icn) }}</span>{{ txt }}<span style="margin-inline-start:auto">←</span></a>{% endfor %}
 {% if not alerts %}<p class="mut">لا طلبات، لا فرق في الصندوق، لا نقص في المخزون، كل الحواسيب متصلة.</p>{% endif %}</div>
 <div class="grid" style="margin-bottom:16px">
-<a class="stat" href="{{ url_for('visit_queue') }}" style="text-decoration:none"><div class="l">زبائن ينتظرونك الآن</div><div class="n">{{ waiting }}</div></a>
+<a class="stat" href="{{ url_for('visit_queue') }}" style="text-decoration:none"><div class="l">زبائن في الغرف الآن (التجميل، الحجامة، الليزر)</div><div class="n">{{ waiting }}</div></a>
 <div class="stat"><div class="l">مجموع مداخيل اليوم (كل الفروع)</div><div class="n">{{ grand|money }} {{ cur }}</div></div></div>
 {% if rooms %}<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:16px">
 {% for bname, b in rooms.items() %}<div class="card" style="margin:0"><h2>{{ ic('branch') }}{{ bname }} — {{ b.total|money }}</h2>
@@ -348,6 +354,7 @@ TEMPLATES["client_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <a class="btn light sm" href="{{ url_for('plan_new', client_id=c.id) }}">+ خطة حصص</a>
 {% if perm('pos') %}<a class="btn light sm" href="{{ url_for('pos', client_id=c.id) }}">بيع منتجات</a>{% endif %}
 {% if perm('direct_payment') %}<a class="btn light sm" href="{{ url_for('payment_new', client_id=c.id) }}">دفعة مباشرة</a>{% endif %}</p></div>
+{% if perm('medical') %}{% set cid = c.id %}{% include "skin_card.html" %}{% endif %}
 {% if perm('medical') or perm('consent') %}<div class="card"><h2>الملف الطبي</h2>
 <div class="row" style="margin-bottom:10px">
 {% if perm('consent') %}<form class="row" action="{{ url_for('consent', cid=c.id) }}"><label>وثيقة الموافقة على<input name="procedure" list="procs2" style="width:240px" placeholder="اختر الإجراء"></label>
@@ -782,6 +789,8 @@ TEMPLATES["services.html"] = r"""{% extends "base.html" %}{% block body %}
 <div style="flex-basis:100%;border-top:1px dashed #d9cbb3;margin-top:6px;padding-top:8px"><b>{{ ic('cream') }} المواد المعتادة لهذه الخدمة:</b>
 <span class="mut">كل حصة من هذه الخدمة تتعمّر فيها هاذ المواد وحدها، والغرفة غير تأكّد (وتبدّل الكمية إذا لزم).</span></div>
 <input type="hidden" name="mats_form" value="1">
+<label style="flex-basis:100%">{{ ic('print') }} نصائح بعد الجلسة (تتطبع للزبونة) <span class="mut">— إذا تخليها فارغة يخرجو نصائح جاهزة حسب نوع الخدمة</span>
+<textarea name="aftercare" rows="3" placeholder="كل نصيحة في سطر">{{ edit.aftercare or '' if edit else '' }}</textarea></label>
 <div id="smrows" style="flex-basis:100%">{% set cur_m = smats.get(edit.id, []) if edit else [] %}
 {% for r in cur_m + [None, None] %}<div class="row" style="margin-bottom:6px"><select name="sm_id" style="min-width:260px"><option value="">— مادة —</option>
 {% for m in mat_products %}<option value="{{ m.id }}" {{ 'selected' if r and r.product_id==m.id }}>{{ m.name }}</option>{% endfor %}</select>
@@ -868,7 +877,7 @@ TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card"><h2>الأسعار</h2>
 <p><label><input type="checkbox" name="staff_can_edit_prices" value="1" {{ 'checked' if s.staff_can_edit_prices=='1' }}> السماح للعمال (الاستقبال والأقسام) بتغيير السعر عند التحصيل</label></p>
 <p class="mut">إذا لم يُفعَّل: الأسعار تُعدَّل من المديرة فقط في «الخدمات والأسعار» و«المنتجات»، والعمال يستعملونها كما هي.</p></div>
-<div class="card"><h2>المديرة</h2><div class="row"><label>فرع المديرة (تصلها زيارات هذا الفرع في «زبائن المديرة»)<select name="director_branch"><option value="">—</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if s.director_branch==b.id|string }}>{{ b.name }}</option>{% endfor %}</select></label></div></div>
+<div class="card"><h2>المديرة</h2><div class="row"><label>فرع المديرة<select name="director_branch"><option value="">—</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if s.director_branch==b.id|string }}>{{ b.name }}</option>{% endfor %}</select></label></div></div>
 <div class="card"><h2>العمال والرواتب</h2>
 <p><b>طريقة الحضور:</b>
 <label style="margin-inline-end:14px"><input type="radio" name="attendance_mode" value="absences" {{ 'checked' if (s.attendance_mode or 'absences')=='absences' }}> العامل حاضر تلقائيًا، نسجّل الغياب فقط (مستحسن)</label>
@@ -1126,7 +1135,7 @@ function fmt(x){return Number(x).toLocaleString('fr-FR',{maximumFractionDigits:2
 function fillPkg(){var o=document.getElementById('svc').selectedOptions[0];if(!o||!o.value)return;
  document.getElementById('n').value=o.dataset.n||1;document.getElementById('iv').value=(+o.dataset.i||7);
  if(ADMIN&&document.getElementById('pm'))document.getElementById('pm').value=o.dataset.pay;
- if(!document.getElementById('d0').value){var d=new Date();document.getElementById('d0').value=d.toISOString().slice(0,10)}
+ if(!document.getElementById('d0').value){document.getElementById('d0').value='{{ now_hm()[:10] }}'}
  dates()}
 function price(){var o=document.getElementById('svc').selectedOptions[0];if(!o||!o.value){return}
  var n=+document.getElementById('n').value||1,t=(+o.dataset.t>0&&n==(+o.dataset.n||1))?+o.dataset.t:(+o.dataset.p)*n;
@@ -1209,7 +1218,7 @@ TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 .tgts span .ic{width:24px;height:24px}.tgts input:checked+span{border-color:#0f4c45;background:#0f4c45;color:#f3d6a8;box-shadow:0 4px 12px rgba(15,76,69,.35)}
 .tgts input:focus-visible+span{outline:3px solid #e4ab74}</style>
 <div class="tgts" id="tgts">{% for k,v in targets.items() %}<label><input type="radio" name="target" value="{{ k }}" required{% if targets|length==1 %} checked{% endif %}>
-<span>{{ ic({'director':'shield','reception':'reception','laser':'laser','beauty':'face'}[k]) }}{{ v }}</span></label>{% endfor %}</div>
+<span>{{ ic({'director':'shield','reception':'hijama','laser':'laser','beauty':'face'}[k]) }}{{ v }}</span></label>{% endfor %}</div>
 <div class="mut" style="margin-top:6px">كي تختار خدمة تحت، يتختار القسم تاعها وحدو. تقدر تبدّلو.</div>
 {% if sel_client %}<div class="row" style="margin-top:10px;gap:18px">
 {% if sel_client.chronic %}<span class="tag red">أمراض مزمنة: {{ sel_client.chronic }}</span>{% endif %}
@@ -1227,7 +1236,7 @@ TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 {{ new_client_box(request.path) }}{% endblock %}"""
 
 TEMPLATES["visit_queue.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ page_icon() }}{{ 'زبائن المديرة' if tgt=='director' else 'قائمة الانتظار' }}{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<h1>{{ page_icon() }}{{ 'كل الغرف الآن' if tgt=='all' else 'قائمة الانتظار' }}{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 {% if not tgt %}<div class="card">لا توجد قائمة انتظار لهذا المستخدم.</div>{% else %}
 <div class="card"><div class="mut noprint" style="margin-bottom:8px">تتحدث القائمة تلقائيًا كل 5 ثوانٍ.</div>
 <div id="qrows">…</div></div>
@@ -1240,14 +1249,14 @@ function load(){fetch('{{ url_for("visit_queue_rows") }}',{cache:'no-store'}).th
 load();setInterval(load,5000);
 </script>{% endif %}{% endblock %}"""
 
-TEMPLATES["visit_queue_rows.html"] = r"""<table><tr><th>#</th><th>الوصول</th><th>الزبون</th><th>السن</th><th>طلبه</th><th>تنبيه صحي</th><th>الحالة</th><th></th></tr>
-{% for v in rows %}<tr class="v"><td>{{ v.id|rid }}</td><td>{{ v.created_at[11:16] }}</td>
+TEMPLATES["visit_queue_rows.html"] = r"""<table><tr><th>#</th><th>الوصول</th>{% if all_rooms %}<th>الغرفة</th>{% endif %}<th>الزبون</th><th>السن</th><th>طلبه</th><th>تنبيه صحي</th><th>الحالة</th><th></th></tr>
+{% for v in rows %}<tr class="v"><td>{{ v.id|rid }}</td><td>{{ v.created_at[11:16] }}</td>{% if all_rooms %}<td><b>{{ VISIT_TARGETS.get(v.target,'') }}</b><div class="mut">{{ v.branch }}</div></td>{% endif %}
 <td><b>{{ v.client }}</b><div class="mut">{{ v.phone or '' }}{% if v.gender %} · {{ v.gender }}{% endif %}</div></td>
 <td>{{ v.birth_date|age }}</td><td>{{ v.request or '' }}{% if v.n_items %} <span class="tag">{{ v.n_items }} بند</span>{% endif %}</td>
 <td>{% if v.chronic %}<span class="tag red">{{ v.chronic }}</span>{% endif %}{% if v.allergies %} <span class="tag red">حساسية: {{ v.allergies }}</span>{% endif %}</td>
 <td><span class="tag {{ 'amber' if v.status=='waiting' else '' }}">{{ VISIT_STATUS[v.status] }}</span></td>
 <td><a class="btn sm" href="{{ url_for('visit_view', vid=v.id) }}">فتح الملف</a></td></tr>
-{% else %}<tr><td colspan="8" class="mut">لا يوجد زبائن في الانتظار</td></tr>{% endfor %}</table>"""
+{% else %}<tr><td colspan="9" class="mut">لا يوجد زبائن في الانتظار</td></tr>{% endfor %}</table>"""
 
 TEMPLATES["visits.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}الزيارات</h1>
@@ -1288,9 +1297,16 @@ TEMPLATES["visit_view.html"] = r"""{% extends "base.html" %}{% block body %}
 {% else %}<tr><td colspan="7" class="mut">لا شيء بعد</td></tr>{% endfor %}
 <tr style="background:#efe2cf"><td colspan="4"><b>المجموع</b></td><td colspan="3"><b>{{ total|money }} {{ cur }}</b></td></tr></table></div>
 
-{% if perm('medical') %}<div class="card"><h2>الملف الطبي للزبون</h2>
+{% if perm('medical') %}{% set cid = v.client_id %}{% include "skin_card.html" %}
+<div class="card"><h2>{% if v.target in ('beauty','laser') %}{{ ic('face') }}تفاصيل الجلسة والملف{% else %}الملف الطبي للزبون{% endif %}</h2>
 <form method="post" action="{{ url_for('client_note', cid=v.client_id) }}" class="row"><input type="hidden" name="visit_id" value="{{ v.id }}">
-<label style="flex:1">ملاحظة هذه الجلسة<textarea name="note" rows="2"></textarea></label><button class="btn">حفظ الملاحظة</button>
+{% if v.target in ('beauty','laser') %}<div style="flex-basis:100%"><b>المنطقة المعالجة:</b>
+<div class="chips">{% for x in TREAT_AREAS %}<label class="chip"><input type="checkbox" name="area" value="{{ x }}"> {{ x }}</label>{% endfor %}</div></div>
+<label>رد فعل البشرة<select name="reaction"><option value="">—</option>{% for x in SKIN_REACTIONS %}<option>{{ x }}</option>{% endfor %}</select></label>
+<label>الجهاز / الإعدادات<input name="settings" placeholder="مثلا: طاقة 18، 3 تمريرات" style="width:200px"></label>
+<label style="flex:1">التوصية للجلسة الجاية<input name="advice" placeholder="مثلا: نزيدو التركيز على الخدود"></label>{% endif %}
+<label style="flex:1;flex-basis:100%">ملاحظة هذه الجلسة<textarea name="note" rows="2"></textarea></label><button class="btn">حفظ الملاحظة</button>
+<a class="btn gold" href="{{ url_for('visit_aftercare', vid=v.id) }}" target="_blank">{{ ic('print') }} نصائح بعد الجلسة</a>
 <a class="btn light" href="{{ url_for('client_view', cid=v.client_id) }}#">الملف الكامل والصور</a>
 <a class="btn light" href="{{ url_for('consent', cid=v.client_id, procedure=v.request or '') }}">وثيقة الموافقة</a></form>
 {% for n in vnotes %}<div style="margin-top:6px"><span class="mut">{{ n.created_at[:10] }} · {{ n.by_name or '' }}:</span> {{ n.note }}</div>{% endfor %}</div>{% endif %}
@@ -1821,6 +1837,9 @@ TEMPLATES["tiles.html"] = r"""<div class="tiles noprint">
 <a class="tile" href="{{ url_for('permissions') }}">{{ ic('key') }}الصلاحيات</a>
 {% if not NODE %}<a class="tile" href="{{ url_for('devices') }}">{{ ic('monitor') }}الحواسيب</a>{% endif %}
 {% else %}
+{% if cu.role in ('laser','beauty','reception') %}<a class="tile" href="{{ url_for('visit_queue') }}">{{ ic('face' if cu.role=='beauty' else 'laser' if cu.role=='laser' else 'hijama') }}{{ 'زبوناتي الآن' if cu.role!='reception' else 'غرفة الحجامة الآن' }}</a>
+<a class="tile" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }}الحصص اللي فاتت</a>{% endif %}
+{% if perm('stock_use') and cu.role in ('laser','beauty') %}<a class="tile" href="{{ url_for('stock_use') }}">{{ ic('cream') }}المواد المستعملة</a>{% endif %}
 {% if perm('attendance') %}<a class="tile" href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}
 {% if perm('courses') %}<a class="tile" href="{{ url_for('courses') }}">{{ ic('course') }}الدورات</a>{% endif %}
 {% if perm('cash_close') %}<a class="tile" href="{{ url_for('cash_close') }}">{{ ic('lock') }}إغلاق الصندوق</a>{% endif %}
@@ -1978,3 +1997,40 @@ TEMPLATES["appts_missed.html"] = r"""{% extends "base.html" %}{% block body %}
 <td><a class="btn gold sm" href="{{ url_for('appt_reschedule', aid=a.id) }}">{{ ic('calendar') }} موعد جديد</a>
 <form method="post" action="{{ url_for('appt_status', aid=a.id) }}" style="display:inline" onsubmit="return confirm('إلغاء هاذ الموعد نهائيًا؟')"><input type="hidden" name="status" value="cancelled"><button class="btn light sm">إلغاء</button></form></td></tr>
 {% else %}<tr><td colspan="7" class="mut">✅ ما كاين حتى حصة فاتت بلا موعد جديد</td></tr>{% endfor %}</table></div>{% endblock %}"""
+
+
+TEMPLATES["skin_card.html"] = r"""<div class="card" style="border-inline-start:6px solid {{ '#b3261e' if skin and skin.contra else '#c99a5b' }}">
+<h2>{{ ic('face') }}بطاقة البشرة</h2>
+{% if skin %}<div class="row" style="gap:18px">
+<div>نوع البشرة: <b>{{ skin.skin_type or '—' }}</b></div><div>الفوتوتايب: <b>{{ skin.phototype or '—' }}</b></div>
+{% if skin.concerns %}<div>المشاكل: {% for x in skin.concerns.split('، ') %}<span class="tag">{{ x }}</span> {% endfor %}</div>{% endif %}</div>
+{% if skin.contra %}<div style="background:#fdecea;color:#8a1c1c;border-radius:8px;padding:6px 10px;margin-top:8px;font-weight:bold">⚠ انتبهي قبل العلاج: {{ skin.contra }}</div>{% endif %}
+{% if skin.sensitivities %}<div style="margin-top:6px">حساسية من: <b>{{ skin.sensitivities }}</b></div>{% endif %}
+{% if skin.routine %}<div class="mut">روتين العناية: {{ skin.routine }}</div>{% endif %}
+{% if skin.notes %}<div class="mut">{{ skin.notes }}</div>{% endif %}
+<div class="mut" style="font-size:12px">آخر تعديل: {{ skin.updated_at[:16] }}</div>
+{% else %}<p class="mut">ما كاينش بطاقة بشرة لهاذ الزبونة. عمّريها في أول جلسة (تبقى في ملفها للجلسات الجاية).</p>{% endif %}
+<details{% if not skin %} open{% endif %} style="margin-top:8px"><summary class="btn light sm" style="display:inline-block">{{ 'تعديل البطاقة' if skin else 'تعمير البطاقة' }}</summary>
+<form method="post" action="{{ url_for('client_skin', cid=cid) }}" style="margin-top:10px">
+<div class="row"><label>نوع البشرة<select name="skin_type"><option value="">—</option>{% for x in SKIN_TYPES %}<option {{ 'selected' if skin and skin.skin_type==x }}>{{ x }}</option>{% endfor %}</select></label>
+<label>الفوتوتايب (لون البشرة)<select name="phototype"><option value="">—</option>{% for x in PHOTOTYPES %}<option {{ 'selected' if skin and skin.phototype==x }}>{{ x }}</option>{% endfor %}</select></label></div>
+<p><b>مشاكل البشرة:</b></p><div class="chips">{% for x in SKIN_CONCERNS %}<label class="chip"><input type="checkbox" name="concerns" value="{{ x }}" {{ 'checked' if skin and skin.concerns and x in skin.concerns.split('، ') }}> {{ x }}</label>{% endfor %}</div>
+<p><b style="color:#b3261e">موانع / انتباه:</b></p><div class="chips">{% for x in SKIN_CONTRA %}<label class="chip"><input type="checkbox" name="contra" value="{{ x }}" {{ 'checked' if skin and skin.contra and x in skin.contra.split('، ') }}> {{ x }}</label>{% endfor %}</div>
+<div class="row"><label style="flex:1">حساسية من مواد معيّنة<input name="sensitivities" value="{{ skin.sensitivities or '' if skin else '' }}"></label>
+<label style="flex:1">روتين العناية الحالي (المنتجات اللي تستعملها)<input name="routine" value="{{ skin.routine or '' if skin else '' }}"></label></div>
+<label>ملاحظات<textarea name="notes" rows="2">{{ skin.notes or '' if skin else '' }}</textarea></label>
+<button class="btn">حفظ البطاقة</button></form></details></div>"""
+
+TEMPLATES["aftercare.html"] = r"""<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><title>نصائح بعد الجلسة</title>
+<style>body{font-family:Tahoma,Arial;max-width:680px;margin:20px auto;color:#3b2a1a}h1{color:#8a5a2b;font-size:22px;margin:4px 0}
+.hd{display:flex;align-items:center;gap:12px;border-bottom:2px solid #c99a5b;padding-bottom:10px;margin-bottom:14px}
+h2{font-size:17px;background:#f6efe3;padding:6px 10px;border-radius:8px}li{margin:6px 0;line-height:1.7}.mut{color:#7a6a58}
+@media print{button{display:none}}</style></head><body>
+<div class="hd"><img src="{{ url_for('static', filename='logo_full.jpg') }}" style="width:70px;border-radius:8px">
+<div><b>{{ center }}</b><div class="mut">{{ v.branch }}</div></div><div style="margin-inline-start:auto;text-align:left" class="mut">{{ v.created_at[:10] }}</div></div>
+<h1>نصائح بعد الجلسة</h1><p>السيدة: <b>{{ v.client }}</b></p>
+{% for name, lines in tips %}<h2>{{ name }}</h2><ul>{% for l in lines if l.strip() %}<li>{{ l }}</li>{% endfor %}</ul>{% else %}
+<p class="mut">ما كاين حتى نصيحة مكتوبة لهاذ الخدمة. المديرة تقدر تكتبها في صفحة «الخدمات».</p>{% endfor %}
+{% if nxt %}<p style="border:1px dashed #c99a5b;border-radius:8px;padding:8px 12px">📅 موعدك الجاي: <b>{{ nxt.start_at[:10] }}</b> على الساعة <b>{{ nxt.start_at[11:16] }}</b></p>{% endif %}
+<p class="mut">لأي سؤال ولا إذا حسّيتي بحاجة غير عادية، اتصلي بالمركز.</p>
+<button onclick="window.print()">طباعة</button><script>setTimeout(function(){window.print()},400)</script></body></html>"""

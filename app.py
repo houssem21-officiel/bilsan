@@ -15,6 +15,8 @@ from markupsafe import Markup
 from werkzeug.security import generate_password_hash, check_password_hash
 import secrets
 import sync
+from sync import center_now, center_today
+import i18n
 import catalog
 import backup
 
@@ -56,7 +58,9 @@ GRANT_KINDS = {"bonus": "منحة", "reward": "مكافأة", "perf": "منحة 
                "advance": "تسبيق على الراتب", "other": "أخرى"}
 VISIT_STATUS = {"waiting": "في الانتظار", "treating": "في العلاج", "done": "انتهى — ينتظر الدفع",
                 "paid": "مدفوعة", "cancelled": "ملغاة"}
-VISIT_TARGETS = {"director": "المديرة", "reception": "الاستقبال (حجامة...)", "laser": "الليزر", "beauty": "التجميل"}
+VISIT_TARGETS = {"beauty": "غرفة التجميل", "reception": "غرفة الحجامة", "laser": "غرفة الليزر",
+                 "director": "المديرة"}  # «المديرة» باقية غير للزيارات القديمة؛ ما عادش تتبعث ليها
+SEND_TARGETS = ("beauty", "reception", "laser")
 CLIENT_FIELDS = ("birth_date", "gender", "address", "chronic", "allergies", "medications")
 EXPENSE_CATS = ["كراء", "كهرباء وماء وغاز", "إنترنت وهاتف", "أجور العمال", "شراء سلع (منتجات)",
                 "مواد ومستلزمات العلاج", "صيانة وإصلاح", "إشهار وتسويق", "نقل", "ضرائب ورسوم", "أخرى"]
@@ -131,6 +135,8 @@ CREATE TABLE IF NOT EXISTS purchases(id INTEGER PRIMARY KEY, supplier_id INTEGER
     status TEXT DEFAULT 'ordered', notes TEXT, created_by INTEGER, created_at TEXT, received_at TEXT);
 CREATE TABLE IF NOT EXISTS purchase_items(id INTEGER PRIMARY KEY, purchase_id INTEGER, product_id INTEGER,
     qty REAL, unit_cost REAL);
+CREATE TABLE IF NOT EXISTS skin_cards(id INTEGER PRIMARY KEY, client_id INTEGER, skin_type TEXT, phototype TEXT,
+    concerns TEXT, contra TEXT, sensitivities TEXT, routine TEXT, notes TEXT, updated_by INTEGER, updated_at TEXT);
 CREATE TABLE IF NOT EXISTS service_materials(id INTEGER PRIMARY KEY, service_id INTEGER, product_id INTEGER, qty REAL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS perms(id INTEGER PRIMARY KEY, branch_id INTEGER, role TEXT, perm TEXT, enabled INTEGER,
     UNIQUE(branch_id, role, perm));
@@ -239,7 +245,7 @@ INDEXES = [
 
 
 def now_str():
-    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    return center_now().strftime("%Y-%m-%d %H:%M:%S")
 
 
 def connect():
@@ -296,6 +302,8 @@ def init_db():
     add_col("expenses", "role", "TEXT")
     add_col("appointments", "confirm_sent_at", "TEXT")
     add_col("appointments", "morning_sent_at", "TEXT")
+    add_col("services", "aftercare", "TEXT")
+    add_col("users", "lang", "TEXT")
     add_col("appointments", "missed", "INTEGER DEFAULT 0")
     add_col("charges", "debt_of", "INTEGER")
     add_col("products", "cost_price", "REAL DEFAULT 0")
@@ -520,6 +528,36 @@ SECTIONS = {"hijama": "غرفة الحجامة", "herbs": "الأعشاب وال
 # أين تُستعمل المادة (للاستهلاك)
 USE_ROOMS = {"hijama": "غرفة الحجامة", "laser": "غرفة الليزر", "beauty": "غرفة التجميل",
              "director": "غرفة المديرة", "reception": "الاستقبال / عام"}
+# ---- غرفة التجميل: بطاقة البشرة
+SKIN_TYPES = ["عادية", "جافة", "دهنية", "مختلطة", "حساسة"]
+PHOTOTYPES = ["I — بيضاء جدًا", "II — بيضاء", "III — قمحية فاتحة", "IV — قمحية", "V — سمراء", "VI — سمراء داكنة"]
+SKIN_CONCERNS = ["حب الشباب", "آثار حب الشباب", "تصبغات / كلف", "تجاعيد وخطوط", "ترهل", "مسام واسعة", "رؤوس سوداء",
+                 "جفاف", "لمعان ودهون", "هالات سوداء", "احمرار", "تساقط الشعر", "شعر زائد", "سيلوليت", "علامات تمدد"]
+SKIN_CONTRA = ["حمل", "رضاعة", "دواء حب الشباب (روكيتان)", "تعرض للشمس مؤخرًا", "تقشير أو ليزر مؤخرًا",
+               "مرض جلدي (إكزيما، صدفية...)", "هربس / جروح في المنطقة", "حساسية من مواد التجميل", "سكري", "مميّع الدم"]
+TREAT_AREAS = ["الوجه", "الجبهة", "حول العينين", "الرقبة", "الصدر", "الإبطين", "الذراعين", "اليدين", "البطن", "الظهر",
+               "الساقين", "المنطقة الحساسة", "فروة الرأس"]
+SKIN_REACTIONS = ["عادية", "احمرار خفيف", "احمرار قوي", "تهيّج / حكة", "تورم", "ألم"]
+AFTERCARE_DEFAULTS = [
+    (("تقشير", "كربون"), "تجنبي الشمس 7 أيام واستعملي واقي الشمس (SPF 50) كل 3 ساعات.\nما تقشريش ولا تحكّي البشرة حتى يطيح التقشير وحدو.\nرطّبي البشرة صباحًا ومساءً.\nبلا مكياج 24 ساعة، وبلا حمام بخار ولا سباحة 3 أيام."),
+    (("هيدرا", "تنظيف", "أوكسيجين"), "بلا مكياج 12 ساعة.\nاشربي الماء بكثرة ورطّبي البشرة.\nواقي الشمس كل نهار.\nما تستعمليش مقشّر ولا منتجات قوية 3 أيام."),
+    (("ميزو", "إبر", "بلازما", "فيلر", "حقن"), "ما تلمسيش ولا تدلكيش المنطقة 24 ساعة.\nبلا مكياج 24 ساعة.\nبلا رياضة ولا حمام ولا سونا يومين.\nالاحمرار والانتفاخ الخفيف عاديين ويروحو في يوم ولا يومين.\nإذا كان ألم قوي ولا حرارة اتصلي بالمركز."),
+    (("ليزر", "إزالة الشعر", "إليكتروليز"), "تجنبي الشمس أسبوعين وحطي واقي الشمس.\nبلا شمع ولا ملقاط بين الجلسات (الحلاقة مسموحة).\nبلا حمام ساخن ولا سونا 48 ساعة.\nرطّبي المنطقة بكريم مهدّئ إذا كان احمرار."),
+    (("تبييض",), "واقي الشمس ضروري كل نهار.\nما تحكّيش المنطقة.\nاستعملي الكريم الموصوف حسب التعليمات.\nالنتيجة تبان مع الحصص."),
+    (("تخسيس", "نحت", "مساج", "تدليك"), "اشربي 2 لتر ماء في النهار.\nقلّلي الملح والسكر.\nامشي 30 دقيقة على الأقل.\nبلا أكل ثقيل ساعتين بعد الجلسة."),
+]
+
+
+def aftercare_for(service):
+    """نصائح ما بعد الجلسة: المكتوبة في الخدمة، وإلا نصائح جاهزة حسب نوعها."""
+    if service["aftercare"]:
+        return service["aftercare"]
+    for keys, txt in AFTERCARE_DEFAULTS:
+        if any(k in (service["name"] or "") for k in keys):
+            return txt.replace("\\n", "\n")
+    return ""
+
+
 PRODUCT_USAGE = {"sale": "للبيع", "use": "للاستعمال (مواد العمل)", "both": "للبيع وللاستعمال"}
 PLACES = {"reception": "الاستقبال", "laser": "غرفة الليزر", "beauty": "غرفة التجميل"}
 
@@ -608,11 +646,11 @@ def inject():
         queue_count=queue_count() if current_user() else 0, posts_for=posts_for, METHODS=METHODS, APPT_STATUS=APPT_STATUS,
         center=setting("center_name"), cur=setting("currency"),
         all_branches=db.execute("SELECT * FROM branches WHERE active=1 ORDER BY id").fetchall(),
-        today=date.today().isoformat(),
+        today=center_today().isoformat(),
         view_branch=session.get("view_branch"),
         alerts_count=len(stock_alerts(scope_branch())) if current_user() else 0,
         branch_name=branch_name,
-        NODE=sync.NODE, perm=has_perm, bk=backup_status() if (current_user() and current_user()["role"] == "admin") else None, PLACES=PLACES, SECTIONS=SECTIONS, napprovals=pending_approvals(get_db()) if (current_user() and current_user()["role"] == "admin" and not sync.NODE) else 0, USE_ROOMS=USE_ROOMS, PRODUCT_USAGE=PRODUCT_USAGE, locked=price_locked() if current_user() else False, can_collect=can_collect() if current_user() else False, node_status=node_status() if sync.NODE else None,
+        NODE=sync.NODE, perm=has_perm, LANGS=i18n.LANGS, cur_lang=current_lang(), bk=backup_status() if (current_user() and current_user()["role"] == "admin") else None, PLACES=PLACES, SECTIONS=SECTIONS, napprovals=pending_approvals(get_db()) if (current_user() and current_user()["role"] == "admin" and not sync.NODE) else 0, USE_ROOMS=USE_ROOMS, PRODUCT_USAGE=PRODUCT_USAGE, SKIN_TYPES=SKIN_TYPES, PHOTOTYPES=PHOTOTYPES, SKIN_CONCERNS=SKIN_CONCERNS, SKIN_CONTRA=SKIN_CONTRA, TREAT_AREAS=TREAT_AREAS, SKIN_REACTIONS=SKIN_REACTIONS, locked=price_locked() if current_user() else False, can_collect=can_collect() if current_user() else False, node_status=node_status() if sync.NODE else None,
     )
 
 
@@ -620,7 +658,8 @@ def node_status():
     db = get_db()
     return dict(ok=sync.state_get(db, "last_ok"), err=sync.state_get(db, "last_error"),
                 newver=sync.central_is_newer(db), ms=sync.LAST_MS[0],
-                pending=sync.pending_count(db), first=not db.execute("SELECT 1 FROM users").fetchone())
+                pending=sync.pending_count(db), first=not db.execute("SELECT 1 FROM users").fetchone(),
+                clock_off=int(abs(sync.CLOCK_SKEW[0]) // 60))
 
 
 def branch_name(bid):
@@ -636,7 +675,7 @@ def age_filter(bd):
         b = datetime.strptime(bd, "%Y-%m-%d").date()
     except (TypeError, ValueError):
         return ""
-    t = date.today()
+    t = center_today()
     return t.year - b.year - ((t.month, t.day) < (b.month, b.day))
 
 
@@ -693,8 +732,13 @@ def login():
             flash("محاولات كثيرة، انتظر دقيقة", "err")
             return render_template("login.html", dev=dev)
         if u and check_password_hash(u["pw_hash"], request.form.get("password", "")):
+            lang, picked = session.get("lang"), session.get("lang_pick")
             session.clear()
             session["uid"] = u["id"]
+            if picked and lang in i18n.LANGS:  # اللغة اللي اختارها في صفحة الدخول تتحفظ في حسابو
+                session["lang"] = lang
+                db.execute("UPDATE users SET lang=? WHERE id=?", (lang, u["id"]))
+                db.commit()
             nxt = request.args.get("next") or url_for("dashboard")
             if not nxt.startswith("/"):
                 nxt = url_for("dashboard")
@@ -720,7 +764,9 @@ def limiter_ok():
 
 @app.route("/logout")
 def logout():
+    lang = current_lang()
     session.clear()
+    session["lang"] = lang  # صفحة الدخول تبقى بنفس اللغة
     return redirect(url_for("login"))
 
 
@@ -749,7 +795,7 @@ def change_password():
 def dashboard():
     db = get_db()
     u = current_user()
-    today = date.today().isoformat()
+    today = center_today().isoformat()
     if u["role"] == "admin" and session.get("view_branch"):
         return redirect(url_for("branch_view", bid=session["view_branch"]))
     if u["role"] == "admin":
@@ -774,7 +820,7 @@ def dashboard():
                                rooms=room_accounts(today, today, None, db.execute(
                                    """SELECT p.*, b.name AS branch FROM payments p JOIN branches b ON b.id=p.branch_id
                                       WHERE p.cancelled=0 AND substr(p.created_at,1,10)=?""", (today,)).fetchall()),
-                               waiting=db.execute("SELECT COUNT(*) FROM visits WHERE target='director' AND status IN ('waiting','treating')").fetchone()[0])
+                               waiting=db.execute("SELECT COUNT(*) FROM visits WHERE status IN ('waiting','treating')").fetchone()[0])
     b = u["branch_id"]
     dept = u["role"] if u["role"] in ("laser", "beauty") else None
     q = """SELECT a.*, c.name AS client, c.phone, s.name AS service, s.price AS sprice, b.name AS branch,
@@ -803,7 +849,7 @@ def director_alerts(db, due=None):
     if n:
         al.append(("red", "key", f"{n} طلب ينتظر موافقتك (تخفيض أو إلغاء)", url_for("approvals")))
     n = db.execute("""SELECT COUNT(*) FROM cash_days WHERE day>=? AND counted IS NOT NULL
-        AND ABS(counted-expected)>=1""", ((date.today() - timedelta(days=2)).isoformat(),)).fetchone()[0]
+        AND ABS(counted-expected)>=1""", ((center_today() - timedelta(days=2)).isoformat(),)).fetchone()[0]
     if n:
         al.append(("red", "safe", f"فرق في عدّ الصندوق ({n})", url_for("cash_daily")))
     n = db.execute("SELECT COUNT(*) FROM products WHERE needs_review=1").fetchone()[0]
@@ -825,17 +871,17 @@ def director_alerts(db, due=None):
         al.append(("red" if late else "amber", "staff", f"{len(due)} أجرة حان وقتها" + (f" ({late} متأخرة)" if late else ""),
                    url_for("staff")))
     if not sync.NODE:
-        lim = (datetime.now() - timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M:%S")
+        lim = (center_now() - timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M:%S")
         off = db.execute("""SELECT full_name FROM users WHERE device=1 AND active=1 AND last_seen IS NOT NULL
             AND last_seen<?""", (lim,)).fetchall()
-        if off and 8 <= datetime.now().hour < 20:
+        if off and 8 <= center_now().hour < 20:
             al.append(("amber", "monitor", "حواسيب غير متصلة: " + "، ".join(o[0] for o in off[:4]), url_for("devices")))
     n = db.execute("""SELECT COUNT(*) FROM appointments WHERE plan_id IS NOT NULL AND status='scheduled'
-        AND start_at IS NOT NULL AND substr(start_at,1,10)<?""", (date.today().isoformat(),)).fetchone()[0]
+        AND start_at IS NOT NULL AND substr(start_at,1,10)<?""", (center_today().isoformat(),)).fetchone()[0]
     if n:
         al.append(("amber", "calendar", f"{n} حصة فاتت وما تسجّلتش (الزبونة ما جاتش؟)", url_for("appts_missed")))
     n = db.execute("SELECT COUNT(*) FROM charges WHERE status='pending' AND substr(created_at,1,10)<?",
-                   (date.today().isoformat(),)).fetchone()[0]
+                   (center_today().isoformat(),)).fetchone()[0]
     if n:
         al.append(("amber", "debt", f"{n} مبلغ من أيام سابقة مازال ما تخلّصش", url_for("reception")))
     return al
@@ -911,6 +957,7 @@ def client_view(cid):
     photos = db.execute("SELECT id,kind,note,created_at FROM client_photos WHERE client_id=? ORDER BY id DESC",
                         (cid,)).fetchall() if can_see_photos() else []
     return render_template("client_view.html", c=c, appts=appts, pays=pays, cplans=cplans, cvisits=cvisits,
+                           skin=skin_card(db, cid) if has_perm("medical") else None,
                            cdebts=cdebts, notes=notes, photos=photos, can_photos=can_see_photos(),
                            services=services_for(current_user()["branch_id"] or work_branch()))
 
@@ -967,7 +1014,7 @@ def appointments():
         db.commit()
         flash("تم تسجيل الموعد", "ok")
         return redirect(url_for("appointments", date=d, branch=br if is_admin() else None))
-    d = request.args.get("date") or date.today().isoformat()
+    d = request.args.get("date") or center_today().isoformat()
     br = scope_branch()
     dept = request.args.get("dept") or (u["role"] if u["role"] in ("laser", "beauty") else "")
     q = """SELECT a.*, c.name AS client, c.phone, s.name AS service, s.price AS sprice, b.name AS branch,
@@ -1022,7 +1069,7 @@ def suggest_slot(db, a, start_day=None):
     """أقرب يوم عمل فيه نفس الساعة فارغة في نفس الغرفة (ولا أقرب ساعة فارغة في ذاك اليوم)."""
     t0 = (a["start_at"] or "")[11:16] or "09:00"
     dur = appt_duration(a["service_id"])
-    d = start_day or (date.today() + timedelta(days=1))
+    d = start_day or (center_today() + timedelta(days=1))
     for _ in range(21):
         d = next_free_day(d)
         times = [t0] + sorted(WORK_SLOTS, key=lambda x: abs(int(x[:2]) * 60 + int(x[3:]) - int(t0[:2]) * 60 - int(t0[3:5])))
@@ -1031,7 +1078,7 @@ def suggest_slot(db, a, start_day=None):
             if not a["post_id"] or not room_conflicts(db, a["post_id"], at, dur, exclude_id=a["id"]):
                 return at
         d += timedelta(days=1)
-    return f"{next_free_day(date.today() + timedelta(days=1)).isoformat()} {t0}"
+    return f"{next_free_day(center_today() + timedelta(days=1)).isoformat()} {t0}"
 
 
 def following_sessions(db, a):
@@ -1082,7 +1129,7 @@ def appt_reschedule(aid):
                       + " — اختر وقتًا آخر أو أشّر على «حجز رغم التعارض».", "err")
                 return redirect(url_for("appt_reschedule", aid=aid, at=at))
         old = a["start_at"]
-        if a["status"] == "scheduled" and old and old < datetime.now().strftime("%Y-%m-%d %H:%M"):
+        if a["status"] == "scheduled" and old and old < center_now().strftime("%Y-%m-%d %H:%M"):
             db.execute("UPDATE appointments SET missed=COALESCE(missed,0)+1 WHERE id=?", (aid,))
         db.execute("""UPDATE appointments SET start_at=?, status='scheduled', sms_sent_at=NULL, morning_sent_at=NULL
             WHERE id=?""", (at, aid))
@@ -1116,7 +1163,7 @@ def appts_missed():
         LEFT JOIN plans pl ON pl.id=a.plan_id JOIN branches b ON b.id=a.branch_id
         WHERE ((a.status='scheduled' AND a.start_at < ?) OR a.status='noshow') AND a.start_at >= ?
         AND NOT EXISTS (SELECT 1 FROM visits v WHERE v.appointment_id=a.id)"""
-    args = [datetime.now().strftime("%Y-%m-%d %H:%M"), (date.today() - timedelta(days=60)).isoformat()]
+    args = [center_now().strftime("%Y-%m-%d %H:%M"), (center_today() - timedelta(days=60)).isoformat()]
     if br:
         q += " AND a.branch_id=?"
         args.append(br)
@@ -1271,7 +1318,7 @@ def reception():
         q += " AND ch.branch_id=?"
         args.append(br)
     pending = db.execute(q + " ORDER BY ch.id", args).fetchall()
-    today = date.today().isoformat()
+    today = center_today().isoformat()
     q2 = """SELECT p.*, c.name AS client FROM payments p LEFT JOIN clients c ON c.id=p.client_id
             WHERE substr(p.created_at,1,10)=?"""
     a2 = [today]
@@ -1595,7 +1642,7 @@ def schedule_next_session(db, appt):
     srv = db.execute("SELECT pkg_interval FROM services WHERE id=?", (appt["service_id"],)).fetchone()
     step = (srv["pkg_interval"] if srv and srv["pkg_interval"] else 0) or 7
     t = (appt["start_at"] or now_str())[11:16] or "09:00"
-    d = next_free_day(date.today() + timedelta(days=step))
+    d = next_free_day(center_today() + timedelta(days=step))
     at = f"{d.isoformat()} {t}"
     db.execute("UPDATE appointments SET start_at=? WHERE id=?", (at, nx["id"]))
     return at
@@ -1706,7 +1753,7 @@ def pos():
 
 # ---------------------------------------------------------------- الصندوق المركزي
 def cash_query(args):
-    d1 = args.get("from") or date.today().isoformat()
+    d1 = args.get("from") or center_today().isoformat()
     d2 = args.get("to") or d1
     q = """SELECT p.*, b.name AS branch, c.name AS client, us.full_name AS by_name FROM payments p
            JOIN branches b ON b.id=p.branch_id LEFT JOIN clients c ON c.id=p.client_id
@@ -1853,7 +1900,7 @@ def stock_alerts(branch_id=None):
     """المنتجات التي وصلت حد التنبيه أو اقترب تاريخ انتهاء صلاحيتها."""
     db = get_db()
     days = int(fnum(setting("expiry_days"), 30))
-    limit = (date.today() + timedelta(days=days)).isoformat()
+    limit = (center_today() + timedelta(days=days)).isoformat()
     q = """SELECT p.id AS product_id, p.name, p.category, p.price, p.expiry, b.id AS branch_id, b.name AS branch,
               COALESCE(s.qty,0) AS qty, COALESCE(s.min_qty,0) AS min_qty
            FROM products p JOIN branches b ON b.active=1
@@ -1871,7 +1918,7 @@ def stock_alerts(branch_id=None):
         d["low"] = d["min_qty"] > 0 and d["qty"] <= d["min_qty"]
         d["out"] = d["qty"] <= 0
         d["expiring"] = bool(d["expiry"]) and d["expiry"] <= limit
-        d["expired"] = bool(d["expiry"]) and d["expiry"] < date.today().isoformat()
+        d["expired"] = bool(d["expiry"]) and d["expiry"] < center_today().isoformat()
         d["suggest"] = max(0, d["min_qty"] * 2 - d["qty"]) if d["low"] else 0
         rows.append(d)
     return rows
@@ -1953,7 +2000,7 @@ def products():
     stock = {(r["product_id"], r["branch_id"]): r for r in db.execute("SELECT * FROM stock")}
     edit = db.execute("SELECT * FROM products WHERE id=?", (request.args.get("edit"),)).fetchone() \
         if request.args.get("edit") else None
-    soon = (date.today() + timedelta(days=int(fnum(setting("expiry_days"), 30)))).isoformat()
+    soon = (center_today() + timedelta(days=int(fnum(setting("expiry_days"), 30)))).isoformat()
     review = db.execute("""SELECT p.*, u.full_name AS by_name, b.name AS by_branch FROM products p
         LEFT JOIN users u ON u.id=p.added_by LEFT JOIN branches b ON b.id=u.branch_id
         WHERE p.needs_review=1 ORDER BY p.id DESC""").fetchall() if admin else []
@@ -2008,7 +2055,7 @@ def product_quick():
 def sessions_profit():
     """فائدة كل حصة: سعر الحصة، المواد المستعملة، والفائدة الصافية."""
     db = get_db()
-    d1 = request.args.get("from") or date.today().isoformat()
+    d1 = request.args.get("from") or center_today().isoformat()
     d2 = request.args.get("to") or d1
     br = scope_branch()
     room = request.args.get("room", "")
@@ -2067,8 +2114,8 @@ def stock_use():
     mats = db.execute("""SELECT p.id, p.name, p.category, p.usage, COALESCE(s.qty,0) AS qty FROM products p
         LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1 AND p.usage IN ('use','both')
         ORDER BY p.usage='both', p.category, p.name""", (br,)).fetchall()
-    d1 = request.args.get("from") or date.today().replace(day=1).isoformat()
-    d2 = request.args.get("to") or date.today().isoformat()
+    d1 = request.args.get("from") or center_today().replace(day=1).isoformat()
+    d2 = request.args.get("to") or center_today().isoformat()
     hist = db.execute("""SELECT m.*, p.name, u.full_name AS by_name, -m.qty*COALESCE(p.cost_price,0) AS cost
         FROM stock_moves m JOIN products p ON p.id=m.product_id LEFT JOIN users u ON u.id=m.user_id
         WHERE m.kind='use' AND m.branch_id=? AND substr(m.created_at,1,10) BETWEEN ? AND ?
@@ -2206,7 +2253,7 @@ def stock_alerts_page():
     elif kind == "expiry":
         rows = [r for r in rows if r["expiring"]]
     return render_template("stock_alerts.html", rows=rows, br=br, kind=kind,
-                           now=datetime.now().strftime("%Y-%m-%d %H:%M"))
+                           now=center_now().strftime("%Y-%m-%d %H:%M"))
 
 
 
@@ -2215,7 +2262,7 @@ def month_bounds(m):
     try:
         d1 = datetime.strptime(m + "-01", "%Y-%m-%d").date()
     except (TypeError, ValueError):
-        d1 = date.today().replace(day=1)
+        d1 = center_today().replace(day=1)
     d2 = (d1.replace(day=28) + timedelta(days=4)).replace(day=1) - timedelta(days=1)
     return d1.strftime("%Y-%m"), d1.isoformat(), d2.isoformat()
 
@@ -2261,7 +2308,7 @@ def emp_period(e, mm):
 
 def current_period_month(e, day=None):
     """الشهر الذي تبدأ فيه فترة الأجرة الحالية للعامل."""
-    day = day or date.today()
+    day = day or center_today()
     p = emp_pay_day(e)
     if day.day >= p:
         return day.strftime("%Y-%m")
@@ -2273,7 +2320,7 @@ def work_dates(e, d1, d2):
     """أيام العمل للعامل في الفترة: من بداية الشهر (أو تاريخ توظيفه) إلى آخره (أو اليوم)، دون أيام الراحة."""
     off = {int(x) for x in (setting("weekly_off") or "").split(",") if x.strip().isdigit()}
     start = datetime.strptime(d1, "%Y-%m-%d").date()
-    end = min(datetime.strptime(d2, "%Y-%m-%d").date(), date.today())
+    end = min(datetime.strptime(d2, "%Y-%m-%d").date(), center_today())
     if e["hire_date"]:
         try:
             start = max(start, datetime.strptime(e["hire_date"][:10], "%Y-%m-%d").date())
@@ -2341,7 +2388,7 @@ def month_summary(branch_id, m, emp_id=None, d2_override=None):
                         lost += 0.5
                     elif st in ("justified", "sick", "leave", "off") and st not in paid:
                         lost += 1
-                elif r["day"] <= date.today().isoformat():  # عمل في يوم الراحة: يُضاف
+                elif r["day"] <= center_today().isoformat():  # عمل في يوم الراحة: يُضاف
                     if st in ("present", "late"):
                         extra += 1
                     elif st == "half":
@@ -2426,7 +2473,7 @@ def staff():
         db.commit()
         return redirect(url_for("employee_view", eid=eid))
     br = scope_branch()
-    t = date.today().isoformat()
+    t = center_today().isoformat()
     q = """SELECT e.*, b.name AS branch, a.status AS today_status, a.check_in, po.name AS post FROM employees e
            JOIN branches b ON b.id=e.branch_id LEFT JOIN posts po ON po.id=e.post_id
            LEFT JOIN attendance a ON a.employee_id=e.id AND a.day=?"""
@@ -2451,10 +2498,10 @@ def attendance():
     br = scope_branch() if u["role"] == "admin" else u["branch_id"]
     if u["role"] == "admin" and not br:
         br = work_branch()
-    d = request.values.get("date") or date.today().isoformat()
-    if u["role"] != "admin" and d != date.today().isoformat():
+    d = request.values.get("date") or center_today().isoformat()
+    if u["role"] != "admin" and d != center_today().isoformat():
         # الاستقبال يسجّل حضور اليوم وأمس فقط
-        if d < (date.today() - timedelta(days=1)).isoformat() or d > date.today().isoformat():
+        if d < (center_today() - timedelta(days=1)).isoformat() or d > center_today().isoformat():
             flash("يمكنك تسجيل حضور اليوم أو أمس فقط", "err")
             return redirect(url_for("attendance"))
     emps = db.execute("""SELECT e.*, po.name AS post FROM employees e LEFT JOIN posts po ON po.id=e.post_id
@@ -2500,7 +2547,7 @@ def employee_view(eid):
         if amount <= 0 or request.form.get("kind") not in GRANT_KINDS:
             flash("أدخل نوع المنحة ومبلغًا صحيحًا", "err")
         else:
-            day = request.form.get("day") or date.today().isoformat()
+            day = request.form.get("day") or center_today().isoformat()
             dm = request.form.get("deduct_month") if request.form["kind"] == "advance" else None
             db.execute("""INSERT INTO grants(employee_id,day,kind,amount,note,created_by,created_at,deduct_month)
                 VALUES(?,?,?,?,?,?,?,?)""",
@@ -2532,7 +2579,7 @@ def payslip(eid):
     d1, d2 = s_["d1"], s_["d2"]
     att = db.execute("SELECT * FROM attendance WHERE employee_id=? AND day BETWEEN ? AND ? ORDER BY day",
                      (eid, d1, d2)).fetchall()
-    return render_template("payslip.html", s=s_, att=att, mm=mm, now=datetime.now().strftime("%Y-%m-%d %H:%M"))
+    return render_template("payslip.html", s=s_, att=att, mm=mm, now=center_now().strftime("%Y-%m-%d %H:%M"))
 
 
 
@@ -2544,11 +2591,11 @@ def employee_leave(eid):
     db = get_db()
     e = db.execute("""SELECT e.*, b.name AS branch, po.name AS post FROM employees e JOIN branches b ON b.id=e.branch_id
         LEFT JOIN posts po ON po.id=e.post_id WHERE e.id=?""", (eid,)).fetchone() or abort(404)
-    last = request.values.get("last_day") or date.today().isoformat()
+    last = request.values.get("last_day") or center_today().isoformat()
     try:
         last_d = datetime.strptime(last, "%Y-%m-%d").date()
     except ValueError:
-        last_d = date.today()
+        last_d = center_today()
         last = last_d.isoformat()
     mm = current_period_month(e, last_d)
     s_ = month_summary(None, mm, emp_id=eid, d2_override=last)[0]
@@ -2567,12 +2614,12 @@ def employee_leave(eid):
         amount = fnum(request.form.get("amount"), total)
         if prev:
             db.execute("""INSERT INTO expenses(branch_id,day,category,description,amount,method,employee_id,month,created_by,created_at)
-                VALUES(?,?,?,?,?,?,?,?,?,?)""", (e["branch_id"], date.today().isoformat(), "أجور العمال",
+                VALUES(?,?,?,?,?,?,?,?,?,?)""", (e["branch_id"], center_today().isoformat(), "أجور العمال",
                                                  f"أجرة {e['name']} — {prev['d1']} إلى {prev['d2']}", prev["net"], "cash",
                                                  eid, prev_mm, current_user()["id"], now_str()))
             amount -= prev["net"]
         db.execute("""INSERT INTO expenses(branch_id,day,category,description,amount,method,employee_id,month,created_by,created_at)
-            VALUES(?,?,?,?,?,?,?,?,?,?)""", (e["branch_id"], date.today().isoformat(), "أجور العمال",
+            VALUES(?,?,?,?,?,?,?,?,?,?)""", (e["branch_id"], center_today().isoformat(), "أجور العمال",
                                              f"تصفية حساب {e['name']} (مغادرة) — {s_['d1']} إلى {last}", round(amount, 2), "cash",
                                              eid, mm, current_user()["id"], now_str()))
         db.execute("UPDATE employees SET active=0, end_date=?, end_reason=? WHERE id=?",
@@ -2583,7 +2630,7 @@ def employee_leave(eid):
         return redirect(url_for("employee_leave", eid=eid, last_day=last, done=1))
     return render_template("leave.html", e=e, s=s_, prev=prev, last=last, mm=mm,
                            total=round(s_["net"] + (prev["net"] if prev else 0), 2),
-                           done=bool(request.args.get("done")), now=datetime.now().strftime("%Y-%m-%d %H:%M"))
+                           done=bool(request.args.get("done")), now=center_now().strftime("%Y-%m-%d %H:%M"))
 
 
 def due_salaries(branch_id=None):
@@ -2595,7 +2642,7 @@ def due_salaries(branch_id=None):
         q += " AND branch_id=?"
         args.append(branch_id)
     out = []
-    today = date.today()
+    today = center_today()
     for e in db.execute(q + " ORDER BY name", args).fetchall():
         cur = current_period_month(e)
         y, m = (int(cur[:4]) - 1, 12) if cur[5:7] == "01" else (int(cur[:4]), int(cur[5:7]) - 1)
@@ -2616,7 +2663,7 @@ def payslips_all():
     """طباعة كشوف كل عمال الفرع دفعة واحدة."""
     mm, d1, d2 = month_bounds(request.args.get("month"))
     rows = month_summary(scope_branch(), mm)
-    return render_template("payslips_all.html", rows=rows, mm=mm, now=datetime.now().strftime("%Y-%m-%d %H:%M"))
+    return render_template("payslips_all.html", rows=rows, mm=mm, now=center_now().strftime("%Y-%m-%d %H:%M"))
 
 
 @app.route("/grants/<int(signed=True):gid>/delete", methods=["POST"])
@@ -2640,7 +2687,7 @@ def staff_report():
     tot = dict(gross=sum(r["gross"] for r in rows), plus=sum(r["plus"] for r in rows),
                days=sum(r["days"] for r in rows), adv=sum(r["advance"] for r in rows), net=sum(r["net"] for r in rows))
     return render_template("staff_report.html", rows=rows, br=br, mm=mm, tot=tot, show_money=show_money,
-                           now=datetime.now().strftime("%Y-%m-%d %H:%M"))
+                           now=center_now().strftime("%Y-%m-%d %H:%M"))
 
 
 
@@ -2650,7 +2697,7 @@ def queue_target():
     """قائمة الانتظار التي يعالجها هذا المستخدم: المديرة = المدير في فرعها، أو قسم الليزر/التجميل."""
     u = current_user()
     if u["role"] == "admin":
-        return "director", int(fnum(setting("director_branch"), 0)) or None
+        return "all", scope_branch()  # المديرة تشوف كل الغرف في كل الفروع
     if u["role"] in ("laser", "beauty"):
         return u["role"], u["branch_id"]
     if u["role"] == "reception":
@@ -2662,8 +2709,8 @@ def queue_count():
     tgt, br = queue_target()
     if not tgt:
         return 0
-    q = "SELECT COUNT(*) n FROM visits WHERE target=? AND status IN ('waiting','treating')"
-    args = [tgt]
+    q = "SELECT COUNT(*) n FROM visits WHERE (target=? OR ?='all') AND status IN ('waiting','treating')"
+    args = [tgt, tgt]
     if br:
         q += " AND branch_id=?"
         args.append(br)
@@ -2770,8 +2817,8 @@ def visit_new():
             flash("اختر الزبون أو سجّله أولًا", "err")
             return redirect(url_for("visit_new"))
         target = f.get("target")
-        if target not in VISIT_TARGETS:
-            flash("اختر إلى أين يذهب الزبون (المديرة، التجميل، الليزر...)", "err")
+        if target not in SEND_TARGETS:
+            flash("اختر الغرفة اللي يروح ليها الزبون (التجميل، الحجامة، الليزر)", "err")
             return redirect(url_for("visit_new", client_id=f.get("client_id")))
         vid = db.execute("""INSERT INTO visits(client_id,branch_id,target,request,status,created_by,created_at)
             VALUES(?,?,?,?,'waiting',?,?)""", (int(f["client_id"]), br, target, f.get("request", "").strip(),
@@ -2788,9 +2835,7 @@ def visit_new():
     sel_client = None
     if request.args.get("client_id"):
         sel_client = db.execute("SELECT * FROM clients WHERE id=?", (request.args["client_id"],)).fetchone()
-    dbr = int(fnum(setting("director_branch"), 0))
-    targets = {k: v for k, v in VISIT_TARGETS.items()
-               if (k == "director" and dbr == br) or (k != "director" and k in branch_depts(br))}
+    targets = {k: VISIT_TARGETS[k] for k in SEND_TARGETS if k == "reception" or k in branch_depts(br)}
     return render_template("visit_new.html", services=services_for(br), sel_client=sel_client, br=br,
                            targets=targets)
 
@@ -2808,15 +2853,16 @@ def visit_queue_rows():
     """جزء الصفحة الذي يتحدث تلقائيًا كل بضع ثوانٍ."""
     db = get_db()
     tgt, br = queue_target()
-    q = """SELECT v.*, c.name AS client, c.phone, c.birth_date, c.gender, c.chronic, c.allergies,
+    q = """SELECT v.*, c.name AS client, c.phone, c.birth_date, c.gender, c.chronic, c.allergies, b.name AS branch,
         (SELECT COUNT(*) FROM visit_items i WHERE i.visit_id=v.id) AS n_items
-        FROM visits v JOIN clients c ON c.id=v.client_id WHERE v.status IN ('waiting','treating') AND v.target=?"""
-    args = [tgt]
+        FROM visits v JOIN clients c ON c.id=v.client_id JOIN branches b ON b.id=v.branch_id
+        WHERE v.status IN ('waiting','treating') AND (v.target=? OR ?='all')"""
+    args = [tgt, tgt]
     if br:
         q += " AND v.branch_id=?"
         args.append(br)
     rows = db.execute(q + " ORDER BY v.id", args).fetchall()
-    return render_template("visit_queue_rows.html", rows=rows)
+    return render_template("visit_queue_rows.html", rows=rows, all_rooms=tgt == "all")
 
 
 @app.route("/visits")
@@ -2824,7 +2870,7 @@ def visit_queue_rows():
 def visits_list():
     db = get_db()
     br = scope_branch()
-    d = request.args.get("date") or date.today().isoformat()
+    d = request.args.get("date") or center_today().isoformat()
     q = """SELECT v.*, c.name AS client, b.name AS branch,
         (SELECT COALESCE(SUM(qty*unit_price),0) FROM visit_items i WHERE i.visit_id=v.id) AS total
         FROM visits v JOIN clients c ON c.id=v.client_id JOIN branches b ON b.id=v.branch_id
@@ -2941,6 +2987,7 @@ def visit_view(vid):
     return render_template("visit_view.html", v=v, items=items, total=total, services=services_for(v["branch_id"]),
                            vnotes=vnotes, eco=session_economics(db, v, items), mats_list=mats_list,
                            mats_default=visit_default_mats(db, v, items),
+                           skin=skin_card(db, v["client_id"]) if has_perm("medical") else None,
                            prods=prods, can_treat=can_treat, can_edit=can_edit)
 
 
@@ -3160,7 +3207,7 @@ def expenses():
         f = request.form
         if f.get("action") == "delete":
             e = db.execute("SELECT * FROM expenses WHERE id=?", (f.get("id"),)).fetchone()
-            if e and (admin or (e["created_by"] == u["id"] and e["day"] == date.today().isoformat())):
+            if e and (admin or (e["created_by"] == u["id"] and e["day"] == center_today().isoformat())):
                 db.execute("DELETE FROM expenses WHERE id=?", (e["id"],))
                 audit("حذف مصروف", f"{e['category']} — {e['description'] or ''} — {e['amount']:g}", e["branch_id"])
                 db.commit()
@@ -3171,11 +3218,11 @@ def expenses():
             flash("أدخل مبلغ المصروف", "err")
         else:
             if admin:
-                br, day = int(f.get("branch_id") or work_branch()), f.get("day") or date.today().isoformat()
+                br, day = int(f.get("branch_id") or work_branch()), f.get("day") or center_today().isoformat()
                 from_cash = 1 if f.get("from_cash") else 0
                 role = f.get("role") if from_cash and f.get("role") in PLACES else None
             else:  # العامل: مصروف من صندوق اليوم في مكانه فقط
-                br, day, from_cash, role = u["branch_id"], date.today().isoformat(), 1, u["role"]
+                br, day, from_cash, role = u["branch_id"], center_today().isoformat(), 1, u["role"]
             db.execute("""INSERT INTO expenses(branch_id,day,category,description,amount,method,created_by,created_at,from_cash,role)
                 VALUES(?,?,?,?,?,?,?,?,?,?)""", (br, day, f.get("category") if f.get("category") in EXPENSE_CATS else "أخرى",
                                                  f.get("description", "").strip(), amount, "cash" if from_cash else f.get("method", "cash"),
@@ -3186,7 +3233,7 @@ def expenses():
         return redirect(url_for("expenses", month=None if not admin else (f.get("day") or "")[:7] or None))
     if not admin:
         rows = db.execute("""SELECT e.*, b.name AS branch FROM expenses e JOIN branches b ON b.id=e.branch_id
-            WHERE e.created_by=? AND e.day=? ORDER BY e.id DESC""", (u["id"], date.today().isoformat())).fetchall()
+            WHERE e.created_by=? AND e.day=? ORDER BY e.id DESC""", (u["id"], center_today().isoformat())).fetchall()
         return render_template("expenses.html", rows=rows, mm=None, br=u["branch_id"], by_cat=[], total=0, cat="", worker=True)
     mm, d1, d2 = month_bounds(request.args.get("month"))
     br = scope_branch()
@@ -3229,7 +3276,7 @@ def cash_close():
     if u["role"] == "admin":
         flash("إغلاق الصندوق يقوم به العامل في مكانه. المديرة ترى النتيجة في «الصندوق اليومي».", "ok")
         return redirect(url_for("cash_daily"))
-    today = date.today().isoformat()
+    today = center_today().isoformat()
     ex = db.execute("SELECT * FROM cash_days WHERE branch_id=? AND day=? AND role=?",
                     (u["branch_id"], today, u["role"])).fetchone()
     if request.method == "POST":
@@ -3257,8 +3304,8 @@ def cash_close():
 def cash_daily():
     """المديرة: الصندوق يومًا بيوم لكل فرع ومكان، للفترة التي تختارها."""
     db = get_db()
-    d1 = request.args.get("from") or date.today().replace(day=1).isoformat()
-    d2 = request.args.get("to") or date.today().isoformat()
+    d1 = request.args.get("from") or center_today().replace(day=1).isoformat()
+    d2 = request.args.get("to") or center_today().isoformat()
     br = scope_branch()
     branches_ = [b for b in db.execute("SELECT * FROM branches WHERE active=1 ORDER BY id").fetchall() if not br or b["id"] == br]
     rows, tot = [], dict(cash=0, card=0, ccp=0, total=0, out=0, expected=0, counted=0, diff=0)
@@ -3291,8 +3338,8 @@ def cash_daily():
 @login_required("admin")
 def audit_page():
     db = get_db()
-    d1 = request.args.get("from") or (date.today() - timedelta(days=7)).isoformat()
-    d2 = request.args.get("to") or date.today().isoformat()
+    d1 = request.args.get("from") or (center_today() - timedelta(days=7)).isoformat()
+    d2 = request.args.get("to") or center_today().isoformat()
     br = scope_branch()
     q = """SELECT a.*, u.full_name, u.username, u.role, b.name AS branch FROM audit a LEFT JOIN users u ON u.id=a.user_id
         LEFT JOIN branches b ON b.id=a.branch_id WHERE substr(a.created_at,1,10) BETWEEN ? AND ?"""
@@ -3318,7 +3365,7 @@ def salary_paid(eid):
         flash("أجرة هذا الشهر مسجلة كمدفوعة مسبقًا", "err")
     else:
         db.execute("""INSERT INTO expenses(branch_id,day,category,description,amount,method,employee_id,month,created_by,created_at)
-            VALUES(?,?,?,?,?,?,?,?,?,?)""", (s_["e"]["branch_id"], date.today().isoformat(), "أجور العمال",
+            VALUES(?,?,?,?,?,?,?,?,?,?)""", (s_["e"]["branch_id"], center_today().isoformat(), "أجور العمال",
                                              f"أجرة {s_['e']['name']} — {s_['d1']} إلى {s_['d2']}", fnum(request.form.get("amount"), s_["net"]),
                                              "cash", eid, mm, current_user()["id"], now_str()))
         db.commit()
@@ -3551,7 +3598,7 @@ def reorder_suggestions(br):
     """المواد اللي لازم تتشرى: اللي وصلت حد التنبيه، ولا اللي ما تكفّيش أسبوع حسب الاستهلاك تاع آخر 30 يوم.
     الكمية المقترحة تكفّي شهر (وما تنقصش على ضعف حد التنبيه)."""
     db = get_db()
-    since = (date.today() - timedelta(days=30)).isoformat()
+    since = (center_today() - timedelta(days=30)).isoformat()
     rows = db.execute("""SELECT p.id, p.name, p.category, p.usage, COALESCE(p.cost_price,0) AS cost, COALESCE(s.qty,0) AS qty,
         COALESCE(s.min_qty,0) AS min_qty,
         (SELECT COALESCE(SUM(-m.qty),0) FROM stock_moves m WHERE m.product_id=p.id AND m.branch_id=? AND m.qty<0
@@ -3598,7 +3645,7 @@ def purchase_auto():
         made = []
         for sup, lines in groups.items():
             pid = db.execute("""INSERT INTO purchases(supplier_id,branch_id,day,notes,created_by,created_at)
-                VALUES(?,?,?,?,?,?)""", (int(sup) if sup.lstrip("-").isdigit() else None, br, date.today().isoformat(),
+                VALUES(?,?,?,?,?,?)""", (int(sup) if sup.lstrip("-").isdigit() else None, br, center_today().isoformat(),
                                          "طلبية أوتوماتيكية (مواد قربت تكمل)", u["id"], now_str())).lastrowid
             for p, q in lines:
                 db.execute("INSERT INTO purchase_items(purchase_id,product_id,qty,unit_cost) VALUES(?,?,?,0)", (pid, p, q))
@@ -3631,12 +3678,73 @@ def client_note(cid):
         db.execute("DELETE FROM client_notes WHERE id=? AND client_id=?", (request.form.get("id"), cid))
     else:
         note = request.form.get("note", "").strip()
+        parts = []
+        if request.form.getlist("area"):
+            parts.append("المنطقة: " + "، ".join(request.form.getlist("area")))
+        for k, lbl in (("reaction", "رد فعل البشرة"), ("settings", "الجهاز / الإعدادات"), ("advice", "التوصية")):
+            if request.form.get(k, "").strip():
+                parts.append(f"{lbl}: {request.form[k].strip()}")
+        if parts:
+            note = "🧴 " + " · ".join(parts) + (f" — {note}" if note else "")
         if note:
             db.execute("INSERT INTO client_notes(client_id,branch_id,visit_id,note,created_by,created_at) VALUES(?,?,?,?,?,?)",
                        (cid, u["branch_id"] or work_branch(), request.form.get("visit_id") or None, note, u["id"], now_str()))
             flash("تمت إضافة الملاحظة إلى الملف", "ok")
     db.commit()
     return redirect(request.referrer or url_for("client_view", cid=cid))
+
+
+def skin_card(db, cid):
+    return db.execute("SELECT * FROM skin_cards WHERE client_id=? ORDER BY id DESC LIMIT 1", (cid,)).fetchone()
+
+
+@app.route("/clients/<int(signed=True):cid>/skin", methods=["POST"])
+@perm_required("medical")
+def client_skin(cid):
+    """بطاقة البشرة: نوع البشرة، الفوتوتايب، المشاكل، وموانع العلاج."""
+    db = get_db()
+    db.execute("SELECT 1 FROM clients WHERE id=?", (cid,)).fetchone() or abort(404)
+    f = request.form
+    vals = (f.get("skin_type") if f.get("skin_type") in SKIN_TYPES else None,
+            f.get("phototype") if f.get("phototype") in PHOTOTYPES else None,
+            "، ".join(x for x in f.getlist("concerns") if x in SKIN_CONCERNS),
+            "، ".join(x for x in f.getlist("contra") if x in SKIN_CONTRA),
+            f.get("sensitivities", "").strip(), f.get("routine", "").strip(), f.get("notes", "").strip(),
+            current_user()["id"], now_str())
+    old = skin_card(db, cid)
+    if old:
+        db.execute("""UPDATE skin_cards SET skin_type=?, phototype=?, concerns=?, contra=?, sensitivities=?, routine=?, notes=?,
+            updated_by=?, updated_at=? WHERE id=?""", vals + (old["id"],))
+    else:
+        db.execute("""INSERT INTO skin_cards(skin_type,phototype,concerns,contra,sensitivities,routine,notes,updated_by,updated_at,client_id)
+            VALUES(?,?,?,?,?,?,?,?,?,?)""", vals + (cid,))
+    db.commit()
+    flash("تم حفظ بطاقة البشرة", "ok")
+    return redirect(request.referrer or url_for("client_view", cid=cid))
+
+
+@app.route("/visits/<int(signed=True):vid>/aftercare")
+@login_required()
+def visit_aftercare(vid):
+    """ورقة «نصائح بعد الجلسة» تتطبع وتتعطى للزبونة."""
+    db = get_db()
+    v, items, total = visit_data(vid)
+    u = current_user()
+    if u["role"] in ("laser", "beauty") and v["target"] != u["role"]:
+        abort(403)
+    sids = [i["service_id"] for i in items if i["service_id"]]
+    if v["appointment_id"]:
+        r = db.execute("SELECT service_id FROM appointments WHERE id=?", (v["appointment_id"],)).fetchone()
+        if r and r[0] and r[0] not in sids:
+            sids.append(r[0])
+    tips = []
+    for sid in sids:
+        s = db.execute("SELECT * FROM services WHERE id=?", (sid,)).fetchone()
+        if s and aftercare_for(s):
+            tips.append((s["name"], aftercare_for(s).split("\n")))
+    nxt = db.execute("""SELECT start_at FROM appointments WHERE client_id=? AND status='scheduled' AND start_at>? ORDER BY start_at LIMIT 1""",
+                     (v["client_id"], now_str()[:16])).fetchone()
+    return render_template("aftercare.html", v=v, tips=tips, nxt=nxt)
 
 
 @app.route("/clients/<int(signed=True):cid>/photos", methods=["POST"])
@@ -3700,7 +3808,7 @@ def consent(cid):
         db.commit()
         return {"ok": True}
     vals = dict(name=c["name"], procedure=proc, center=setting("center_name"), phone=c["phone"] or "",
-                birth_date=fmt_date(c["birth_date"]), date=fmt_date(date.today().isoformat()))
+                birth_date=fmt_date(c["birth_date"]), date=fmt_date(center_today().isoformat()))
 
     def fill(x):
         try:
@@ -3791,7 +3899,7 @@ def purchase_new():
             return redirect(url_for("purchase_new"))
         pid = db.execute("""INSERT INTO purchases(supplier_id,branch_id,day,notes,created_by,created_at)
             VALUES(?,?,?,?,?,?)""", (f.get("supplier_id") or None, current_user()["branch_id"] or int(f.get("branch_id") or work_branch()),
-                                     f.get("day") or date.today().isoformat(), f.get("notes", "").strip(),
+                                     f.get("day") or center_today().isoformat(), f.get("notes", "").strip(),
                                      current_user()["id"], now_str())).lastrowid
         for p, q, c in lines:
             db.execute("INSERT INTO purchase_items(purchase_id,product_id,qty,unit_cost) VALUES(?,?,?,?)", (pid, p, q, c))
@@ -3859,7 +3967,7 @@ def purchase_view(pid):
                 worker = u["role"] != "admin"
                 db.execute("""INSERT INTO expenses(branch_id,day,category,description,amount,method,supplier_id,purchase_id,
                     created_by,created_at,from_cash,role) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
-                           (p["branch_id"], date.today().isoformat(), "شراء سلع (منتجات)",
+                           (p["branch_id"], center_today().isoformat(), "شراء سلع (منتجات)",
                             f"طلبية {rid_filter(pid)} — {p['supplier'] or ''}", amount, "cash" if worker else f.get("method", "cash"),
                             p["supplier_id"], pid, u["id"], now_str(), 1 if worker else 0, u["role"] if worker else None))
             audit("استلام سلعة", f"طلبية {rid_filter(pid)} — {p['supplier'] or ''}", p["branch_id"])
@@ -3871,7 +3979,7 @@ def purchase_view(pid):
             if amount > 0:
                 db.execute("""INSERT INTO expenses(branch_id,day,category,description,amount,method,supplier_id,purchase_id,
                     created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?)""",
-                           (p["branch_id"], date.today().isoformat(), "شراء سلع (منتجات)",
+                           (p["branch_id"], center_today().isoformat(), "شراء سلع (منتجات)",
                             f"تسديد طلبية {rid_filter(pid)} — {p['supplier'] or ''}", amount, f.get("method", "cash"),
                             p["supplier_id"], pid, u["id"], now_str()))
                 flash("تم تسجيل الدفع للمورد", "ok")
@@ -3889,7 +3997,7 @@ def purchase_view(pid):
         db.commit()
         return redirect(url_for("purchase_view", pid=pid))
     return render_template("purchase_view.html", p=p, items=items, total=total, paid=paid,
-                           now=datetime.now().strftime("%Y-%m-%d %H:%M"))
+                           now=center_now().strftime("%Y-%m-%d %H:%M"))
 
 
 @app.route("/permissions", methods=["GET", "POST"])
@@ -3917,7 +4025,7 @@ def permissions():
         staff = {r["role"]: r["n"] for r in db.execute(
             "SELECT role, COUNT(*) n FROM users WHERE branch_id=? AND active=1 GROUP BY role", (br["id"],))}
         devs = {}
-        lim = (datetime.now() - timedelta(minutes=2)).strftime("%Y-%m-%d %H:%M:%S")
+        lim = (center_now() - timedelta(minutes=2)).strftime("%Y-%m-%d %H:%M:%S")
         for dv in db.execute("SELECT full_name, role, last_seen FROM users WHERE device=1 AND active=1 AND branch_id=?",
                              (br["id"],)):
             devs.setdefault(dv["role"], []).append(dict(full_name=dv["full_name"], last_seen=dv["last_seen"],
@@ -3934,7 +4042,7 @@ def backup_status():
     age = None
     if last:
         try:
-            age = (datetime.now() - datetime.strptime(last, "%Y-%m-%d %H:%M:%S")).total_seconds() / 3600
+            age = (center_now() - datetime.strptime(last, "%Y-%m-%d %H:%M:%S")).total_seconds() / 3600
         except ValueError:
             age = None
     return dict(last=last, age=age, err=setting("backup_error"), size=setting("backup_last_size"),
@@ -4353,7 +4461,7 @@ def branch_view(bid):
     """لوحة فرع واحد في الحاسوب المركزي: صندوقه، مخزونه، مواعيده."""
     db = get_db()
     b = db.execute("SELECT * FROM branches WHERE id=?", (bid,)).fetchone() or abort(404)
-    today = date.today()
+    today = center_today()
     t = today.isoformat()
     m1 = today.replace(day=1).isoformat()
 
@@ -4424,6 +4532,8 @@ def services():
                         "full" if request.form.get("pkg_pay") == "full" else "session", pkg_sid))
             if request.form.get("mats_form"):
                 save_service_mats(db, pkg_sid, request.form.getlist("sm_id"), request.form.getlist("sm_qty"))
+            if "aftercare" in request.form:
+                db.execute("UPDATE services SET aftercare=? WHERE id=?", (request.form.get("aftercare", "").strip() or None, pkg_sid))
         db.commit()
         return redirect(url_for("services"))
     rows = db.execute("""SELECT s.*, b.name AS branch FROM services s LEFT JOIN branches b ON b.id=s.branch_id
@@ -4533,7 +4643,7 @@ def users():
 @login_required("admin")
 def summary_test():
     db = get_db()
-    msg = daily_summary_text(db, date.today().isoformat())
+    msg = daily_summary_text(db, center_today().isoformat())
     if not setting("manager_phone"):
         flash("اكتب هاتف المديرة أولًا ثم احفظ", "err")
         return redirect(url_for("settings") + "#dir")
@@ -4657,7 +4767,7 @@ def due_reminders(con):
     depts = [d for d in (s.get("sms_depts") or "").split(",") if d]
     if not depts:
         return []
-    now = datetime.now()
+    now = center_now()
     q = f"""SELECT a.*, c.name AS client, c.phone, b.name AS branch FROM appointments a
         JOIN clients c ON c.id=a.client_id JOIN branches b ON b.id=a.branch_id
         WHERE a.status='scheduled' AND a.sms_sent_at IS NULL AND c.phone<>''
@@ -4706,8 +4816,8 @@ def daily_summary_check():
     """كل ليلة في الساعة المحددة: ملخص اليوم في هاتف المديرة."""
     if sync.NODE or setting("daily_summary") != "1" or setting("sms_enabled") != "1" or not setting("manager_phone"):
         return
-    today = date.today().isoformat()
-    if setting("last_daily_summary") == today or datetime.now().strftime("%H:%M") < (setting("daily_summary_time") or "21:00"):
+    today = center_today().isoformat()
+    if setting("last_daily_summary") == today or center_now().strftime("%H:%M") < (setting("daily_summary_time") or "21:00"):
         return
     db = get_db()
     db.execute("INSERT OR REPLACE INTO settings(key,value) VALUES('last_daily_summary',?)", (today,))
@@ -4723,8 +4833,8 @@ def stock_sms_check():
     """مرة في اليوم (بعد الساعة 9 صباحًا) يرسل للمدير رسالة بالمنتجات التي قاربت على النفاد."""
     if setting("stock_sms_enabled") != "1" or not setting("manager_phone"):
         return
-    today = date.today().isoformat()
-    if setting("last_stock_sms") == today or datetime.now().hour < 9:
+    today = center_today().isoformat()
+    if setting("last_stock_sms") == today or center_now().hour < 9:
         return
     db = get_db()
     rows = stock_alerts(None)
@@ -4780,7 +4890,7 @@ def calendar():
     try:
         d0 = datetime.strptime(request.args.get("week", ""), "%Y-%m-%d").date()
     except ValueError:
-        d0 = date.today()
+        d0 = center_today()
     start = d0 - timedelta(days=(d0.weekday() - 5) % 7)  # الأسبوع يبدأ يوم السبت
     days = [start + timedelta(days=i) for i in range(7)]
     rooms = list(posts_for(br)) + [{"id": None, "name": "بدون غرفة"}]
@@ -4814,7 +4924,7 @@ def sms_extra_jobs(con):
     s = {r["key"]: r["value"] for r in con.execute("SELECT * FROM settings")}
     if s.get("sms_enabled") != "1":
         return
-    now = datetime.now()
+    now = center_now()
     # 1) تأكيد الحجز
     if s.get("sms_confirm") == "1":
         rows = con.execute("""SELECT a.*, c.name AS client, c.phone, b.name AS branch FROM appointments a
@@ -4858,7 +4968,7 @@ def sms_extra_jobs(con):
                     con.execute("UPDATE appointments SET morning_sent_at=? WHERE id=?", (now_str(), a["id"]))
                 con.commit()
     # 2) تهنئة عيد الميلاد مرة في اليوم بعد العاشرة صباحًا
-    today = date.today().isoformat()
+    today = center_today().isoformat()
     if s.get("sms_birthday") == "1" and s.get("last_birthday_run") != today and now.hour >= 10:
         con.execute("INSERT OR REPLACE INTO settings(key,value) VALUES('last_birthday_run',?)", (today,))
         con.commit()
@@ -4975,7 +5085,7 @@ def new_pair_code(db, uid):
         code = f"{secrets.randbelow(10**6):06d}"
         if not db.execute("SELECT 1 FROM pair_codes WHERE code=?", (code,)).fetchone():
             break
-    exp = (datetime.now() + timedelta(days=2)).strftime("%Y-%m-%d %H:%M:%S")
+    exp = (center_now() + timedelta(days=2)).strftime("%Y-%m-%d %H:%M:%S")
     db.execute("INSERT INTO pair_codes(code,user_id,expires) VALUES(?,?,?)", (code, uid, exp))
     return code
 
@@ -5031,7 +5141,7 @@ def devices():
     codes = {r["user_id"]: r for r in db.execute("SELECT * FROM pair_codes WHERE expires>=?", (now_str(),))}
     return render_template("devices.html", rows=device_rows(db), codes=codes,
                            branches=db.execute("SELECT * FROM branches WHERE active=1 ORDER BY id").fetchall(),
-                           now=datetime.now(), version=APP_VERSION)
+                           now=center_now(), version=APP_VERSION)
 
 
 @app.route("/pair", methods=["POST"])
@@ -5095,7 +5205,7 @@ def sync_wait():
 @app.route("/sync/hello", methods=["POST"])
 def sync_hello():
     sync_auth()
-    return {"ok": True, "version": APP_VERSION, "update": bool(update_zip())}
+    return {"ok": True, "version": APP_VERSION, "update": bool(update_zip()), "epoch": time.time(), "tz": sync.TZ_HOURS[0]}
 
 
 def update_zip():
@@ -5175,7 +5285,7 @@ def page_icon():
     return icons.ic(name, "pg")
 
 
-app.jinja_env.globals.update(now_hm=lambda: datetime.now().strftime("%Y-%m-%d %H:%M"), live_page=lambda: bool(request.endpoint) and request.endpoint not in NOT_LIVE
+app.jinja_env.globals.update(now_hm=lambda: center_now().strftime("%Y-%m-%d %H:%M"), live_page=lambda: bool(request.endpoint) and request.endpoint not in NOT_LIVE
                              and not request.endpoint.endswith(("_print", "_csv")) and request.method == "GET", ic=icons.ic, item_ic=icons.item, avatar=icons.avatar,
                              icon_sprite=icons.sprite, page_icon=page_icon)
 RESTORE_MSG = backup.apply_pending_restore(DB_PATH)
@@ -5258,6 +5368,13 @@ if PAIR_MODE:
         return render_template_string(SETUP_HTML, central=central, err=None, done=None)
 else:
     init_db()
+    if sync.NODE:  # آخر فرق ساعة معروف مع المركزي (حتى إذا الحاسوب يبدا بلا انترنت)
+        try:
+            _c = connect()
+            sync.CLOCK_SKEW[0] = float(sync.state_get(_c, "clock_skew", "0") or 0)
+            _c.close()
+        except Exception:
+            pass
 
 
 # ---------------------------------------------------------------- التحديث التلقائي للحواسيب
@@ -5265,6 +5382,45 @@ else:
 # فيحمّل منه ملف التحديث ويثبّته وحده: عند تشغيل الحاسوب، أو بعد 5 دقائق بلا استعمال.
 START_TIME = time.time()
 LAST_REQ = [time.time()]
+
+
+def current_lang():
+    try:
+        u = current_user()
+    except Exception:  # noqa: BLE001
+        u = None
+    lang = (u["lang"] if u and "lang" in u.keys() and u["lang"] else None) or session.get("lang") or "ar"
+    return lang if lang in i18n.LANGS else "ar"
+
+
+@app.route("/lang/<code>")
+def set_lang(code):
+    """كل عامل يختار لغتو: تتحفظ في حسابو (تتبعو في أي حاسوب)."""
+    if code in i18n.LANGS:
+        session["lang"] = code
+        u = current_user()
+        if not u:
+            session["lang_pick"] = 1
+        if u:
+            db = get_db()
+            db.execute("UPDATE users SET lang=? WHERE id=?", (code, u["id"]))
+            db.commit()
+    ref = request.referrer or ""
+    return redirect(ref if ref.startswith(request.host_url) else url_for("dashboard"))
+
+
+@app.after_request
+def _translate(resp):
+    """الصفحة تتترجم للفرنسية ولا الإنجليزية حسب لغة العامل."""
+    try:
+        if (resp.status_code == 200 or 300 <= resp.status_code < 600) and resp.mimetype == "text/html" \
+                and not resp.direct_passthrough and not resp.is_streamed:
+            lang = current_lang()
+            if lang != "ar":
+                resp.set_data(i18n.translate_html(resp.get_data(as_text=True), lang))
+    except Exception:  # noqa: BLE001
+        pass
+    return resp
 
 
 @app.after_request

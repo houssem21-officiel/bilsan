@@ -9,7 +9,7 @@ python -m pip install flask waitress pillow pyinstaller
 
 python tools/make_configs.py build/variants.txt
 pyinstaller --noconfirm --clean --noconsole --onedir --name Bilsan `
-  --icon static\bilsan.ico --add-data "static;static" --add-data "VERSION;." `
+  --icon static\bilsan.ico --add-data "static;static" --add-data "VERSION;." --add-data "i18n_dict.json;." `
   --hidden-import waitress --collect-submodules waitress launcher.py
 if (!(Test-Path dist\Bilsan\Bilsan.exe)) { throw "PyInstaller failed" }
 # ملف التحديث التلقائي (يوضع مع الحاسوب المركزي)

@@ -1,0 +1,7918 @@
+{
+"آثار حب الشباب": [
+"Séquelles d’acné",
+"Acne scars"
+],
+"آخر": [
+"Dernier",
+"Last"
+],
+"آخر اتصال": [
+"Dernière connexion",
+"Last connection"
+],
+"آخر الدفعات من كل الفروع": [
+"Derniers paiements de toutes les branches",
+"Latest payments from all branches"
+],
+"آخر العمليات": [
+"Dernières opérations",
+"Latest operations"
+],
+"آخر تعديل": [
+"Dernière modification",
+"Last modified"
+],
+"آخر مزامنة": [
+"Dernière synchronisation",
+"Last sync"
+],
+"آخر مزامنة من حاسوب الفرع": [
+"Dernière synchro depuis le poste de la branche",
+"Last sync from the branch computer"
+],
+"آخر نسخة": [
+"Dernière sauvegarde",
+"Last backup"
+],
+"آخر يوم": [
+"Dernier jour",
+"Last day"
+],
+"آخر يوم عمل": [
+"Dernier jour de travail",
+"Last working day"
+],
+"أجرة": [
+"Salaire",
+"Pay"
+],
+"أجرة الفترة السابقة": [
+"Salaire de la période précédente",
+"Previous period pay"
+],
+"أجرة اليوم": [
+"Salaire du jour",
+"Today’s pay"
+],
+"أجرة حان وقتها": [
+"Salaire dû",
+"Pay due"
+],
+"أجرة هذا الشهر مسجلة كمدفوعة مسبقًا": [
+"Le salaire de ce mois est enregistré comme payé d’avance",
+"This month’s pay is recorded as paid in advance"
+],
+"أجرة يومية": [
+"Salaire journalier",
+"Daily pay"
+],
+"أجور العمال": [
+"Salaires des employés",
+"Staff wages"
+],
+"أجور مستحقة": [
+"Salaires dus",
+"Wages due"
+],
+"أحرف أو أكثر": [
+"caractères ou plus",
+"characters or more"
+],
+"أحسن الخدمات": [
+"Meilleures prestations",
+"Top services"
+],
+"أحسن يوم": [
+"Meilleur jour",
+"Best day"
+],
+"أخرى": [
+"Autre",
+"Other"
+],
+"أخّر الحصص اللي من بعد بنفس الفرق": [
+"Décaler les séances suivantes du même écart",
+"Shift the following sessions by the same gap"
+],
+"أدخل المبلغ المدفوع": [
+"Saisissez le montant payé",
+"Enter the amount paid"
+],
+"أدخل المبلغ المسدَّد": [
+"Saisissez le montant réglé",
+"Enter the amount settled"
+],
+"أدخل مبلغ المصروف": [
+"Saisissez le montant de la dépense",
+"Enter the expense amount"
+],
+"أدخل مبلغًا صحيحًا": [
+"Saisissez un montant valide",
+"Enter a valid amount"
+],
+"أدخل نوع المنحة ومبلغًا صحيحًا": [
+"Saisissez le type de prime et un montant valide",
+"Enter the bonus type and a valid amount"
+],
+"أدخلها": [
+"Saisissez-la",
+"Enter it"
+],
+"أدناه": [
+"ci-dessous",
+"below"
+],
+"أدوية": [
+"Médicaments",
+"Medications"
+],
+"أدوية يتناولها": [
+"Médicaments pris",
+"Medications taken"
+],
+"أرسله": [
+"Envoyé par",
+"Sent by"
+],
+"أرقام": [
+"Chiffres",
+"Numbers"
+],
+"أرقام أخرى": [
+"Autres chiffres",
+"Other figures"
+],
+"أرمل": [
+"Veuf/Veuve",
+"Widowed"
+],
+"أشهر": [
+"mois",
+"months"
+],
+"أصحاب الأجرة اليومية": [
+"Employés payés à la journée",
+"Daily-paid staff"
+],
+"أصحاب الراتب الشهري": [
+"Employés au salaire mensuel",
+"Monthly-salaried staff"
+],
+"أصرّح بما يلي": [
+"Je déclare ce qui suit",
+"I declare the following"
+],
+"أضافه عامل": [
+"Ajouté par un employé",
+"Added by a staff member"
+],
+"أضف عمالًا": [
+"Ajoutez des employés",
+"Add staff"
+],
+"أضف له مستخدمين من صفحة المستخدمين": [
+"Ajoutez-lui des utilisateurs depuis la page Utilisateurs",
+"Add users from the Users page"
+],
+"أضف منتجًا واحدًا على الأقل بكمية": [
+"Ajoutez au moins un produit avec une quantité",
+"Add at least one product with a quantity"
+],
+"أضفناه للسلة": [
+"Ajouté au panier",
+"Added to cart"
+],
+"أضفه كمنتج جديد": [
+"Ajoutez-le comme nouveau produit",
+"Add it as a new product"
+],
+"أضفه من زر": [
+"Ajoutez-le avec le bouton",
+"Add it with the button"
+],
+"أضفهم من صفحة": [
+"Ajoutez-les depuis la page",
+"Add them from the page"
+],
+"أعد تشغيل البرنامج لتطبيقه": [
+"Redémarrez le programme pour l’appliquer",
+"Restart the program to apply it"
+],
+"أعد تشغيل الحاسوب": [
+"Redémarrez l’ordinateur",
+"Restart the computer"
+],
+"أعزب": [
+"Célibataire",
+"Single"
+],
+"أعشاب": [
+"Plantes",
+"Herbs"
+],
+"أفهم أن النتائج تختلف من شخص لآخر": [
+"Je comprends que les résultats varient d’une personne à l’autre",
+"I understand that results vary from person to person"
+],
+"أقسام الفرع": [
+"Services de la branche",
+"Branch departments"
+],
+"أقسام تحصّل المال بنفسها": [
+"Services qui encaissent eux-mêmes",
+"Departments that collect payments themselves"
+],
+"أقسام كل فرع تُحدَّد من صفحة الفروع": [
+"Les services de chaque branche se définissent dans la page Branches",
+"Each branch’s departments are set on the Branches page"
+],
+"أقل من": [
+"Moins de",
+"Less than"
+],
+"أكتبه": [
+"Écrivez-le",
+"Write it"
+],
+"أكثر الخدمات طلبًا": [
+"Prestations les plus demandées",
+"Most requested services"
+],
+"أكثر المنتجات مبيعًا": [
+"Produits les plus vendus",
+"Best-selling products"
+],
+"أكثر خدمة جابت فائدة": [
+"Prestation la plus rentable",
+"Most profitable service"
+],
+"أكثر من": [
+"Plus de",
+"More than"
+],
+"أكمل الاسم والفرع والمكان": [
+"Complétez le nom, la branche et le poste",
+"Fill in the name, branch and place"
+],
+"أكمل الدورة": [
+"A terminé la formation",
+"Completed the course"
+],
+"أكملوا": [
+"Terminées",
+"Completed"
+],
+"ألتزم بتعليمات ما قبل الجلسة وما بعدها التي قُدّمت لي": [
+"Je m’engage à respecter les consignes avant et après la séance qui m’ont été données",
+"I agree to follow the before and after session instructions given to me"
+],
+"ألغِ الدفعة أولًا من الوصل": [
+"Annulez d’abord le paiement depuis le reçu",
+"Cancel the payment from the receipt first"
+],
+"ألغِ تحديد أي سطر لا تريده في الورقة المطبوعة": [
+"Décochez toute ligne que vous ne voulez pas sur la feuille imprimée",
+"Uncheck any line you don’t want on the printed sheet"
+],
+"ألم": [
+"Douleur",
+"Pain"
+],
+"أمراض مزمنة": [
+"Maladies chroniques",
+"Chronic illnesses"
+],
+"أنا الموقّع": [
+"Je soussigné(e)",
+"I, the undersigned"
+],
+"أنت تعرض": [
+"Vous affichez",
+"You are viewing"
+],
+"أنثى": [
+"Femme",
+"Female"
+],
+"أنصح بمجلد ثانٍ داخل": [
+"Je conseille un deuxième dossier dans",
+"I recommend a second folder in"
+],
+"أو": [
+"ou",
+"or"
+],
+"أو البرنامج": [
+"ou le programme",
+"or the program"
+],
+"أو تغيّر لون الجلد": [
+"ou changement de couleur de la peau",
+"or skin color change"
+],
+"أو كلها": [
+"ou tous",
+"or all"
+],
+"أوافق": [
+"J’accepte",
+"I agree"
+],
+"أوافق بإرادتي الحرة على إجراء": [
+"J’accepte de mon plein gré de réaliser",
+"I freely agree to undergo"
+],
+"أوريدو": [
+"Ooredoo",
+"Ooredoo"
+],
+"أوكسي": [
+"Oxy",
+"Oxy"
+],
+"أوكسيجين": [
+"Oxygène",
+"Oxygen"
+],
+"أولاد": [
+"Enfants",
+"Children"
+],
+"أي نسخة لكل سنة إلى الأبد": [
+"une copie par an, pour toujours",
+"one copy per year, forever"
+],
+"أيام": [
+"jours",
+"days"
+],
+"أيام الحضور": [
+"Jours de présence",
+"Days present"
+],
+"أيام الراحة الأسبوعية": [
+"Jours de repos hebdomadaire",
+"Weekly days off"
+],
+"أيام الشهر المحسوبة": [
+"Jours du mois comptés",
+"Counted days of the month"
+],
+"أيام العمل": [
+"Jours de travail",
+"Working days"
+],
+"أيام العمل المحسوبة": [
+"Jours de travail comptés",
+"Counted working days"
+],
+"أيام العمل في الشهر": [
+"Jours de travail par mois",
+"Working days per month"
+],
+"أيام الغياب": [
+"Jours d’absence",
+"Days absent"
+],
+"أيام تُدفع رغم عدم الحضور": [
+"Jours payés malgré l’absence",
+"Days paid despite absence"
+],
+"أيام محسوبة": [
+"Jours comptés",
+"Counted days"
+],
+"أيام واستعملي واقي الشمس": [
+"jours et utilisez un écran solaire",
+"days and use sunscreen"
+],
+"أين تُحفظ النسخ": [
+"Où sont gardées les sauvegardes",
+"Where backups are stored"
+],
+"أُرسل": [
+"Envoyé",
+"Sent"
+],
+"أُرسل إلى الاستقبال للتحصيل": [
+"Envoyé à l’accueil pour encaissement",
+"Sent to reception for collection"
+],
+"أُرسل الطلب للمديرة": [
+"La demande a été envoyée à la directrice",
+"Request sent to the director"
+],
+"أُرسل طلب الإلغاء للمديرة": [
+"La demande d’annulation a été envoyée à la directrice",
+"Cancellation request sent to the director"
+],
+"أُرسل طلب السعر الجديد للمديرة": [
+"La demande de nouveau prix a été envoyée à la directrice",
+"New price request sent to the director"
+],
+"أُرسلت": [
+"Envoyées",
+"Sent"
+],
+"أُضيف": [
+"Ajouté",
+"Added"
+],
+"أُضيفت": [
+"Ajoutée",
+"Added"
+],
+"أُعلمت بالآثار الجانبية والمضاعفات المحتملة": [
+"J’ai été informé(e) des effets secondaires et complications possibles",
+"I have been informed of the possible side effects and complications"
+],
+"أُغلق الصندوق اليوم على الساعة": [
+"La caisse a été fermée aujourd’hui à",
+"The cash box was closed today at"
+],
+"أُلغيت الطلبية": [
+"La commande a été annulée",
+"The order was cancelled"
+],
+"إبر": [
+"Aiguilles",
+"Needles"
+],
+"إخراج": [
+"Sortie",
+"Out"
+],
+"إخراج مبلغ": [
+"Sortie d’argent",
+"Cash out"
+],
+"إخراج مبلغ من الصندوق": [
+"Sortir un montant de la caisse",
+"Take money out of the cash box"
+],
+"إخراج مبلغ من صندوق اليوم": [
+"Sortir un montant de la caisse du jour",
+"Take money out of today’s cash box"
+],
+"إدخال أسعار الشراء ورؤيتها": [
+"Saisir et voir les prix d’achat",
+"Enter and view purchase prices"
+],
+"إدخال سلعة": [
+"Entrée de marchandise",
+"Stock in"
+],
+"إدخال فاتورة شراء": [
+"Saisir une facture d’achat",
+"Enter a purchase invoice"
+],
+"إدخال واستلام المشتريات": [
+"Saisie et réception des achats",
+"Enter and receive purchases"
+],
+"إذا بدّلتي التاريخ يتحسبو من جديد كي تحفظي": [
+"Si vous changez la date, elles seront recalculées à l’enregistrement",
+"If you change the date, they are recalculated when you save"
+],
+"إذا تخليها فارغة يخرجو نصائح جاهزة حسب نوع الخدمة": [
+"Si vous la laissez vide, des conseils prêts s’affichent selon le type de prestation",
+"If left empty, ready-made advice is shown based on the service type"
+],
+"إذا تركت التاريخ فارغ": [
+"Si vous laissez la date vide",
+"If you leave the date empty"
+],
+"إذا طلبت الزبونة حاجة زايدة": [
+"Si la cliente demande quelque chose en plus",
+"If the client asks for something extra"
+],
+"إذا عمل أحد اليوم سجّله": [
+"Si quelqu’un a travaillé aujourd’hui, enregistrez-le",
+"If someone worked today, record it"
+],
+"إذا كان أقل يبقى الباقي دينًا على الزبون": [
+"S’il est inférieur, le reste devient une dette du client",
+"If it is less, the rest becomes the client’s debt"
+],
+"إذا كان ألم قوي ولا حرارة اتصلي بالمركز": [
+"En cas de forte douleur ou de fièvre, appelez le centre",
+"If there is strong pain or fever, call the center"
+],
+"إذا كان متصلًا": [
+"s’il est connecté",
+"if it is connected"
+],
+"إذا لم يُفعَّل": [
+"s’il n’est pas activé",
+"if it is not enabled"
+],
+"إذا وصلت أقل": [
+"S’il en arrive moins",
+"If fewer arrive"
+],
+"إرجاع": [
+"Rétablir",
+"Restore"
+],
+"إرسال": [
+"Envoyer",
+"Send"
+],
+"إرسال الآن": [
+"Envoyer maintenant",
+"Send now"
+],
+"إرسال التذكير قبل الموعد بـ": [
+"Envoyer le rappel avant le rendez-vous de",
+"Send the reminder before the appointment by"
+],
+"إرسال الرسالة إلى": [
+"Envoyer le message à",
+"Send the message to"
+],
+"إرسال الزبون": [
+"Envoyer le client",
+"Send the client"
+],
+"إرسال الزبون للعلاج": [
+"Envoyer le client en soin",
+"Send the client to treatment"
+],
+"إرسال الطلب": [
+"Envoyer la demande",
+"Send the request"
+],
+"إرسال المحدد للاستقبال للتحصيل": [
+"Envoyer la sélection à l’accueil pour encaissement",
+"Send the selection to reception for collection"
+],
+"إرسال رسالة": [
+"Envoyer un message",
+"Send a message"
+],
+"إرسال للاستقبال": [
+"Envoyer à l’accueil",
+"Send to reception"
+],
+"إرسال مبلغ إلى الاستقبال": [
+"Envoyer un montant à l’accueil",
+"Send an amount to reception"
+],
+"إرسال مبلغ للاستقبال": [
+"Envoyer un montant à l’accueil",
+"Send an amount to reception"
+],
+"إرسال ملخص اليوم الآن": [
+"Envoyer le résumé du jour maintenant",
+"Send today’s summary now"
+],
+"إزالة الشعر": [
+"Épilation",
+"Hair removal"
+],
+"إشهار وتسويق": [
+"Publicité et marketing",
+"Advertising and marketing"
+],
+"إضافة": [
+"Ajouter",
+"Add"
+],
+"إضافة أثناء العلاج": [
+"Ajouté pendant le soin",
+"Added during treatment"
+],
+"إضافة المنتجات وتعديلها وتعديل المخزون": [
+"Ajouter et modifier les produits et le stock",
+"Add and edit products and stock"
+],
+"إضافة المواعيد وتعديلها وإلغاؤها": [
+"Ajouter, modifier et annuler les rendez-vous",
+"Add, edit and cancel appointments"
+],
+"إضافة حاسوب": [
+"Ajouter un ordinateur",
+"Add a computer"
+],
+"إضافة حاسوب جديد": [
+"Ajouter un nouvel ordinateur",
+"Add a new computer"
+],
+"إضافة حصص": [
+"Ajouter des séances",
+"Add sessions"
+],
+"إضافة شيء قمت به": [
+"Ajouter ce que j’ai fait",
+"Add what I did"
+],
+"إضافة عامل": [
+"Ajouter un employé",
+"Add a staff member"
+],
+"إضافة فرع جديد": [
+"Ajouter une nouvelle branche",
+"Add a new branch"
+],
+"إعادة المحاولة الآن": [
+"Réessayer maintenant",
+"Retry now"
+],
+"إغلاق الصندوق": [
+"Fermer la caisse",
+"Close the cash box"
+],
+"إغلاق الصندوق اليومي": [
+"Fermeture de caisse journalière",
+"Daily cash close"
+],
+"إغلاق الصندوق يقوم به العامل في مكانه": [
+"La fermeture de caisse est faite par l’employé à son poste",
+"Cash closing is done by the staff member at their place"
+],
+"إغلاق صندوق اليوم": [
+"Fermer la caisse du jour",
+"Close today’s cash box"
+],
+"إكزيما": [
+"Eczéma",
+"Eczema"
+],
+"إلغاء": [
+"Annuler",
+"Cancel"
+],
+"إلغاء الدفعة": [
+"Annuler le paiement",
+"Cancel payment"
+],
+"إلغاء الزيارة": [
+"Annuler la visite",
+"Cancel the visit"
+],
+"إلغاء الطلبية": [
+"Annuler la commande",
+"Cancel the order"
+],
+"إلغاء الوصل": [
+"Annuler le reçu",
+"Cancel the receipt"
+],
+"إلغاء زيارة": [
+"Annuler une visite",
+"Cancel a visit"
+],
+"إلغاء مبلغ": [
+"Annuler un montant",
+"Cancel an amount"
+],
+"إلغاء مبلغ معلّق": [
+"Annuler un montant en attente",
+"Cancel a pending amount"
+],
+"إلغاء هاذ الموعد نهائيًا": [
+"Annuler ce rendez-vous définitivement",
+"Cancel this appointment permanently"
+],
+"إلغاء هذا المبلغ": [
+"Annuler ce montant",
+"Cancel this amount"
+],
+"إلغاء هذه الدفعة": [
+"Annuler ce paiement",
+"Cancel this payment"
+],
+"إلغاء وصل": [
+"Annuler un reçu",
+"Cancel a receipt"
+],
+"إلى": [
+"à",
+"to"
+],
+"إلى أين يذهب الزبون": [
+"Où va le client",
+"Where the client goes"
+],
+"إلى الاستقبال": [
+"À l’accueil",
+"To reception"
+],
+"إليكتروليز": [
+"Électrolyse",
+"Electrolysis"
+],
+"إمضاء الزبون": [
+"Signature du client",
+"Client signature"
+],
+"إمضاء العامل": [
+"Signature de l’employé",
+"Staff signature"
+],
+"إمضاء المسؤول": [
+"Signature du responsable",
+"Manager signature"
+],
+"إمضاء المعالج": [
+"Signature du praticien",
+"Practitioner signature"
+],
+"إن كان سعرها": [
+"si son prix est",
+"if its price is"
+],
+"إنترنت وهاتف": [
+"Internet et téléphone",
+"Internet and phone"
+],
+"إنشاء الخطة": [
+"Créer le plan",
+"Create the plan"
+],
+"إنشاء الدورة": [
+"Créer la formation",
+"Create the course"
+],
+"إنشاء الطلبيات": [
+"Créer les commandes",
+"Create the orders"
+],
+"إنهاء الدورة": [
+"Terminer la formation",
+"Finish the course"
+],
+"إنهاء العلاج وإرسال المبلغ إلى الاستقبال": [
+"Terminer le soin et envoyer le montant à l’accueil",
+"Finish treatment and send the amount to reception"
+],
+"إنهاء العلاج وإرسال المجموع": [
+"Terminer le soin et envoyer le total",
+"Finish treatment and send the total"
+],
+"إنهاء العلاج وتحصيل": [
+"Terminer le soin et encaisser",
+"Finish treatment and collect"
+],
+"إنهاء العلاج وتحصيل المبلغ هنا": [
+"Terminer le soin et encaisser ici",
+"Finish treatment and collect here"
+],
+"إنهاء وإرسال المبلغ للاستقبال": [
+"Terminer et envoyer le montant à l’accueil",
+"Finish and send the amount to reception"
+],
+"إنهاء وتحصيل المبلغ هنا": [
+"Terminer et encaisser ici",
+"Finish and collect here"
+],
+"إيقاف": [
+"Arrêter",
+"Stop"
+],
+"إيقاف حاسوب": [
+"Arrêter un ordinateur",
+"Stop a computer"
+],
+"ا": [
+"a",
+"a"
+],
+"ابتداءً من الساعة": [
+"À partir de",
+"Starting at"
+],
+"ابحث بالاسم أو الهاتف": [
+"Rechercher par nom ou téléphone",
+"Search by name or phone"
+],
+"ابحث عن منتج أو امسح الباركود": [
+"Rechercher un produit ou scanner le code-barres",
+"Search a product or scan the barcode"
+],
+"اتركها فارغة لعدم التغيير": [
+"Laissez vide pour ne pas changer",
+"Leave empty to keep unchanged"
+],
+"اتصلي بالمركز": [
+"Appelez le centre",
+"Call the center"
+],
+"احفظها بصيغة": [
+"Enregistrez-la au format",
+"Save it as"
+],
+"احمرار": [
+"Rougeur",
+"Redness"
+],
+"احمرار خفيف": [
+"Rougeur légère",
+"Slight redness"
+],
+"احمرار قوي": [
+"Rougeur forte",
+"Strong redness"
+],
+"اختار المواد اللي استعملتها": [
+"Choisissez les produits que vous avez utilisés",
+"Choose the materials you used"
+],
+"اختار مادة": [
+"Choisir un produit",
+"Choose a material"
+],
+"اختر الإجراء": [
+"Choisissez l’acte",
+"Choose the procedure"
+],
+"اختر التاريخ": [
+"Choisissez la date",
+"Choose the date"
+],
+"اختر الخدمة": [
+"Choisissez la prestation",
+"Choose the service"
+],
+"اختر الزبون": [
+"Choisissez le client",
+"Choose the client"
+],
+"اختر الزبون أو سجّله أولًا": [
+"Choisissez le client ou enregistrez-le d’abord",
+"Choose the client or register them first"
+],
+"اختر الزبون والتاريخ والساعة": [
+"Choisissez le client, la date et l’heure",
+"Choose the client, date and time"
+],
+"اختر الغرفة اللي يروح ليها الزبون": [
+"Choisissez la salle où va le client",
+"Choose the room the client goes to"
+],
+"اختر الفرع لهذا المستخدم": [
+"Choisissez la branche de cet utilisateur",
+"Choose this user’s branch"
+],
+"اختر المادة والكمية": [
+"Choisissez le produit et la quantité",
+"Choose the product and quantity"
+],
+"اختر المتكوّن أو سجّله": [
+"Choisissez le stagiaire ou enregistrez-le",
+"Choose the trainee or register them"
+],
+"اختر خدمة أو منتجًا أو اكتب وصفًا": [
+"Choisissez une prestation, un produit ou écrivez une description",
+"Choose a service or product, or write a description"
+],
+"اختر ملفًا": [
+"Choisissez un fichier",
+"Choose a file"
+],
+"اختر من قائمة الأسعار أو اكتب السعر بيدك": [
+"Choisissez dans la liste des prix ou saisissez le prix",
+"Choose from the price list or type the price"
+],
+"اختر منتجًا واحدًا على الأقل": [
+"Choisissez au moins un produit",
+"Choose at least one product"
+],
+"اختر وقتًا آخر أو أشّر على": [
+"Choisissez une autre heure ou cochez",
+"Choose another time or check"
+],
+"اخترناه في الطلبية": [
+"Nous l’avons choisi dans la commande",
+"We picked it in the order"
+],
+"اختياري": [
+"facultatif",
+"optional"
+],
+"استرجاع": [
+"Retour",
+"Return"
+],
+"استرجاع البيانات كما كانت في": [
+"Restaurer les données telles qu’elles étaient le",
+"Restore the data as it was on"
+],
+"استعملي الكريم الموصوف حسب التعليمات": [
+"Utilisez la crème prescrite selon les instructions",
+"Use the prescribed cream as instructed"
+],
+"استقالة": [
+"Démission",
+"Resignation"
+],
+"استقبال": [
+"Accueil",
+"Reception"
+],
+"استقبال الزبائن وإرسالهم للعلاج": [
+"Accueillir les clients et les envoyer en soin",
+"Welcome clients and send them to treatment"
+],
+"استقبال زبون": [
+"Accueillir un client",
+"Welcome a client"
+],
+"استقبال زبون وإرساله للعلاج": [
+"Accueillir un client et l’envoyer en soin",
+"Welcome a client and send them to treatment"
+],
+"استلام السلعة": [
+"Réception de marchandise",
+"Receiving goods"
+],
+"استلام المبلغ": [
+"Réception du montant",
+"Amount received"
+],
+"استلام سلعة": [
+"Recevoir une marchandise",
+"Receive goods"
+],
+"استلمت كل حقوقي": [
+"J’ai reçu tous mes droits",
+"I received all my entitlements"
+],
+"استلمه": [
+"Reçu par",
+"Received by"
+],
+"استمارة الموافقة المستنيرة على إجراء علاجي": [
+"Formulaire de consentement éclairé à un acte de soin",
+"Informed consent form for a treatment procedure"
+],
+"استهلاك": [
+"Consommation",
+"Consumption"
+],
+"استهلاك في حصة": [
+"Consommation lors d’une séance",
+"Used in a session"
+],
+"استهلاك مواد": [
+"Consommation de produits",
+"Materials usage"
+],
+"استهلاك مواد العمل": [
+"Consommation des produits de travail",
+"Work materials usage"
+],
+"استيراد": [
+"Importer",
+"Import"
+],
+"استيراد قائمة منتجات من": [
+"Importer une liste de produits depuis",
+"Import a product list from"
+],
+"استُلمت": [
+"Reçues",
+"Received"
+],
+"اسم الحاسوب": [
+"Nom de l’ordinateur",
+"Computer name"
+],
+"اسم الخدمة مطلوب": [
+"Le nom de la prestation est obligatoire",
+"The service name is required"
+],
+"اسم الخطة": [
+"Nom du plan",
+"Plan name"
+],
+"اسم الدخول": [
+"Identifiant",
+"Username"
+],
+"اسم الدورة": [
+"Nom de la formation",
+"Course name"
+],
+"اسم الزبون": [
+"Nom du client",
+"Client name"
+],
+"اسم العامل مطلوب": [
+"Le nom de l’employé est obligatoire",
+"The staff name is required"
+],
+"اسم الفرع": [
+"Nom de la branche",
+"Branch name"
+],
+"اسم الفرع مطلوب": [
+"Le nom de la branche est obligatoire",
+"The branch name is required"
+],
+"اسم المركز": [
+"Nom du centre",
+"Center name"
+],
+"اسم المستخدم": [
+"Nom d’utilisateur",
+"Username"
+],
+"اسم المستخدم أو كلمة المرور خاطئة": [
+"Nom d’utilisateur ou mot de passe erroné",
+"Wrong username or password"
+],
+"اسم المستخدم أو كلمة المرور غير صحيحة": [
+"Nom d’utilisateur ou mot de passe incorrect",
+"Incorrect username or password"
+],
+"اسم المستخدم موجود مسبقًا": [
+"Ce nom d’utilisateur existe déjà",
+"This username already exists"
+],
+"اسم المستخدم وكلمة المرور مطلوبان": [
+"Nom d’utilisateur et mot de passe obligatoires",
+"Username and password are required"
+],
+"اسم المنتج مطلوب": [
+"Le nom du produit est obligatoire",
+"The product name is required"
+],
+"اسم المورد مطلوب": [
+"Le nom du fournisseur est obligatoire",
+"The supplier name is required"
+],
+"اشربي": [
+"Buvez",
+"Drink"
+],
+"اشربي الماء بكثرة ورطّبي البشرة": [
+"Buvez beaucoup d’eau et hydratez la peau",
+"Drink plenty of water and moisturize the skin"
+],
+"اضغط": [
+"Appuyez",
+"Press"
+],
+"اضغط على أي نص في الشهادة لتعديله مباشرة": [
+"Cliquez sur un texte du certificat pour le modifier directement",
+"Click any text in the certificate to edit it directly"
+],
+"اضغط على أي نص لتعديله قبل الطبع": [
+"Cliquez sur un texte pour le modifier avant l’impression",
+"Click any text to edit it before printing"
+],
+"اضغطي": [
+"Appuyez",
+"Press"
+],
+"اطبعها وابعثها للمورد": [
+"Imprimez-la et envoyez-la au fournisseur",
+"Print it and send it to the supplier"
+],
+"اطلب من المديرة": [
+"Demandez à la directrice",
+"Ask the director"
+],
+"اكتب أمام كل منتج الكمية الموجودة في كل فرع وحد التنبيه": [
+"Indiquez pour chaque produit la quantité dans chaque branche et le seuil d’alerte",
+"For each product enter the quantity in each branch and the alert threshold"
+],
+"اكتب اسم الدورة": [
+"Écrivez le nom de la formation",
+"Write the course name"
+],
+"اكتب اسم المنتج": [
+"Écrivez le nom du produit",
+"Write the product name"
+],
+"اكتب اسم الوظيفة أو الغرفة": [
+"Écrivez le nom du poste ou de la salle",
+"Write the job or room name"
+],
+"اكتب الكميات فقط": [
+"Saisissez seulement les quantités",
+"Enter quantities only"
+],
+"اكتب الكمية الحقيقية": [
+"Saisissez la quantité réelle",
+"Enter the real quantity"
+],
+"اكتب الكمية اللي وصلت فعلًا": [
+"Saisissez la quantité réellement arrivée",
+"Enter the quantity that actually arrived"
+],
+"اكتب المبلغ المدفوع الآن": [
+"Saisissez le montant payé maintenant",
+"Enter the amount paid now"
+],
+"اكتب المبلغ الموجود في الصندوق بعد عدّه": [
+"Saisissez le montant présent dans la caisse après l’avoir compté",
+"Enter the amount in the cash box after counting it"
+],
+"اكتب المبلغ في السعر": [
+"Saisissez le montant dans le prix",
+"Enter the amount in the price"
+],
+"اكتب سعر البيع": [
+"Saisissez le prix de vente",
+"Enter the sale price"
+],
+"اكتب مبلغ التخفيض": [
+"Saisissez le montant de la remise",
+"Enter the discount amount"
+],
+"اكتب نص الرسالة": [
+"Écrivez le texte du message",
+"Write the message text"
+],
+"اكتب هاتف المديرة أولًا ثم احفظ": [
+"Saisissez d’abord le téléphone de la directrice puis enregistrez",
+"Enter the director’s phone first, then save"
+],
+"الآن": [
+"Maintenant",
+"Now"
+],
+"الأجر": [
+"Rémunération",
+"Pay"
+],
+"الأجرة الشهرية": [
+"Salaire mensuel",
+"Monthly salary"
+],
+"الأجرة المستحقة": [
+"Salaire dû",
+"Pay due"
+],
+"الأجرة تُحسب وحدها": [
+"Le salaire se calcule tout seul",
+"Pay is calculated automatically"
+],
+"الأحد": [
+"Dimanche",
+"Sunday"
+],
+"الأربعاء": [
+"Mercredi",
+"Wednesday"
+],
+"الأسبوع السابق": [
+"Semaine précédente",
+"Previous week"
+],
+"الأسبوع القادم": [
+"Semaine suivante",
+"Next week"
+],
+"الأسعار": [
+"Prix",
+"Prices"
+],
+"الأسعار تُعدَّل من المديرة فقط في": [
+"Les prix ne sont modifiés que par la directrice dans",
+"Prices are changed only by the director in"
+],
+"الأعشاب والعلاج": [
+"Plantes et soins",
+"Herbs and treatment"
+],
+"الأفضل صورة": [
+"Meilleure photo",
+"Best photo"
+],
+"الأقسام المعنية": [
+"Services concernés",
+"Departments concerned"
+],
+"الأقسام والموظفون": [
+"Services et personnel",
+"Departments and staff"
+],
+"الأيام المدفوعة أعلاه": [
+"Les jours payés ci-dessus",
+"The paid days above"
+],
+"الإبر": [
+"Les aiguilles",
+"Needles"
+],
+"الإبطين": [
+"Aisselles",
+"Underarms"
+],
+"الإثنين": [
+"Lundi",
+"Monday"
+],
+"الإجراء": [
+"Acte",
+"Procedure"
+],
+"الإدارة": [
+"Administration",
+"Administration"
+],
+"الإرسال التلقائي غير مفعل": [
+"L’envoi automatique n’est pas activé",
+"Automatic sending is not enabled"
+],
+"الإعدادات": [
+"Paramètres",
+"Settings"
+],
+"الإغلاق": [
+"Fermeture",
+"Closing"
+],
+"الإمضاء": [
+"Signature",
+"Signature"
+],
+"الاحتفاظ": [
+"Conservation",
+"Retention"
+],
+"الاحمرار والانتفاخ الخفيف عاديين ويروحو في يوم ولا يومين": [
+"Une rougeur et un léger gonflement sont normaux et disparaissent en un ou deux jours",
+"Redness and slight swelling are normal and go away in a day or two"
+],
+"الاستقبال": [
+"Accueil",
+"Reception"
+],
+"الاستقبال موجود في كل فرع": [
+"L’accueil existe dans chaque branche",
+"Reception exists in every branch"
+],
+"الاستقبال والأقسام": [
+"Accueil et services",
+"Reception and departments"
+],
+"الاستقبال والتحصيل": [
+"Accueil et encaissement",
+"Reception and collection"
+],
+"الاستهلاك": [
+"Consommation",
+"Usage"
+],
+"الاسم": [
+"Nom",
+"Name"
+],
+"الاسم أو الهاتف": [
+"Nom ou téléphone",
+"Name or phone"
+],
+"الاسم الكامل": [
+"Nom complet",
+"Full name"
+],
+"الاسم مطلوب": [
+"Le nom est obligatoire",
+"The name is required"
+],
+"الاسم واللقب": [
+"Nom et prénom",
+"Full name"
+],
+"الاسم والهاتف": [
+"Nom et téléphone",
+"Name and phone"
+],
+"الباركود": [
+"Code-barres",
+"Barcode"
+],
+"الباقة": [
+"Forfait",
+"Package"
+],
+"الباقة كاملة مسبقًا": [
+"Forfait complet payé d’avance",
+"Full package paid in advance"
+],
+"الباقي": [
+"Reste",
+"Remaining"
+],
+"الباقي له": [
+"Reste à lui payer",
+"Remaining owed to them"
+],
+"البرنامج اختار أقرب يوم الغرفة فيه فارغة في نفس الساعة": [
+"Le programme a choisi le jour le plus proche où la salle est libre à la même heure",
+"The program picked the nearest day the room is free at the same time"
+],
+"البرنامج جمع المواد اللي وصلت حد التنبيه": [
+"Le programme a rassemblé les produits ayant atteint le seuil d’alerte",
+"The program gathered the items that reached the alert threshold"
+],
+"البرنامج يحدد تاريخ الحصة الجاية وحدو": [
+"Le programme fixe tout seul la date de la séance suivante",
+"The program sets the next session date by itself"
+],
+"البرنامج يحسب أجرة الأيام من بداية فترته الحالية إلى آخر يوم عمل": [
+"Le programme calcule le salaire des jours depuis le début de sa période actuelle jusqu’au dernier jour de travail",
+"The program calculates pay from the start of the current period to the last working day"
+],
+"البرنامج يسجّل بساعة الحاسوب المركزي": [
+"Le programme enregistre avec l’heure de l’ordinateur central",
+"The program records using the central computer’s clock"
+],
+"البرنامج يعمل عاديًا والعمليات محفوظة هنا": [
+"Le programme fonctionne normalement et les opérations sont gardées ici",
+"The program works normally and operations are saved here"
+],
+"البرنامج يعمل على": [
+"Le programme fonctionne sur",
+"The program runs on"
+],
+"البرنامج يعمّر عدد الحصص وتواريخها وسعرها وحدو": [
+"Le programme remplit tout seul le nombre de séances, leurs dates et leur prix",
+"The program fills in the number of sessions, dates and price by itself"
+],
+"البرنامج يقارنه بما سُجّل": [
+"Le programme le compare avec ce qui a été enregistré",
+"The program compares it with what was recorded"
+],
+"البرنامج يمنع حجز موعدين متداخلين في نفس الغرفة": [
+"Le programme empêche deux rendez-vous qui se chevauchent dans la même salle",
+"The program prevents two overlapping appointments in the same room"
+],
+"البرنامج يُعاد تشغيله": [
+"Le programme redémarre",
+"The program is restarting"
+],
+"البطن": [
+"Ventre",
+"Abdomen"
+],
+"البند": [
+"Ligne",
+"Item"
+],
+"البيان": [
+"Libellé",
+"Description"
+],
+"البيانات الحالية تُحفظ نسخة قبل الاسترجاع": [
+"Les données actuelles sont sauvegardées avant la restauration",
+"Current data is backed up before restoring"
+],
+"البيع": [
+"Vente",
+"Sale"
+],
+"البيع باسم فرع": [
+"Vendre au nom d’une branche",
+"Sell under a branch"
+],
+"التاريخ": [
+"Date",
+"Date"
+],
+"التاريخ الجديد": [
+"Nouvelle date",
+"New date"
+],
+"التجميل": [
+"Esthétique",
+"Beauty"
+],
+"التحصيل": [
+"Encaissement",
+"Collection"
+],
+"التذكير بالرسالة يتعاود وحدو للموعد الجديد": [
+"Le rappel par SMS est renvoyé automatiquement pour le nouveau rendez-vous",
+"The SMS reminder is resent automatically for the new appointment"
+],
+"التسبيق يُقتطع تلقائيًا من أجرة الشهر المحدد ويظهر بتاريخه في كشف الأجرة المطبوع": [
+"L’avance est déduite automatiquement du salaire du mois choisi et apparaît à sa date sur la fiche de paie imprimée",
+"The advance is deducted automatically from the chosen month’s pay and shows on the printed payslip"
+],
+"التسبيقات": [
+"Avances",
+"Advances"
+],
+"التسبيقات أكبر من الأجرة": [
+"Les avances dépassent le salaire",
+"Advances exceed the pay"
+],
+"التسبيقات والمنح": [
+"Avances et primes",
+"Advances and bonuses"
+],
+"التسعير": [
+"Tarification",
+"Pricing"
+],
+"التعديل يخص هذه الشهادة فقط": [
+"La modification ne concerne que ce certificat",
+"The change applies to this certificate only"
+],
+"التغيير يظهر في حاسوب العامل خلال ثوانٍ": [
+"Le changement apparaît sur le poste de l’employé en quelques secondes",
+"The change appears on the staff computer within seconds"
+],
+"التفاصيل": [
+"Détails",
+"Details"
+],
+"التفاصيل الكاملة": [
+"Détails complets",
+"Full details"
+],
+"التفاصيل في اقرأني": [
+"Détails dans le fichier Lisez-moi",
+"Details in the README"
+],
+"التقارير": [
+"Rapports",
+"Reports"
+],
+"التقارير والأرباح": [
+"Rapports et bénéfices",
+"Reports and profits"
+],
+"التقرير الشهري": [
+"Rapport mensuel",
+"Monthly report"
+],
+"التقرير الشهري للعمال": [
+"Rapport mensuel des employés",
+"Monthly staff report"
+],
+"التقرير الشهري والأجور": [
+"Rapport mensuel et salaires",
+"Monthly report and wages"
+],
+"التكلفة": [
+"Coût",
+"Cost"
+],
+"التنبيه قبل انتهاء الصلاحية بـ": [
+"Alerte avant expiration de",
+"Alert before expiry by"
+],
+"التواريخ": [
+"Dates",
+"Dates"
+],
+"التواريخ هاذو حسب الاقتراح": [
+"Ces dates suivent la proposition",
+"These dates follow the suggestion"
+],
+"التورم": [
+"Gonflement",
+"Swelling"
+],
+"التوصية": [
+"Recommandation",
+"Recommendation"
+],
+"التوصية للجلسة الجاية": [
+"Recommandation pour la prochaine séance",
+"Recommendation for the next session"
+],
+"الثلاثاء": [
+"Mardi",
+"Tuesday"
+],
+"الجبهة": [
+"Front",
+"Forehead"
+],
+"الجل": [
+"Gel",
+"Gel"
+],
+"الجلسة": [
+"Séance",
+"Session"
+],
+"الجمعة": [
+"Vendredi",
+"Friday"
+],
+"الجنس": [
+"Sexe",
+"Gender"
+],
+"الجهاز": [
+"Appareil",
+"Device"
+],
+"الحاسوب": [
+"Ordinateur",
+"Computer"
+],
+"الحاسوب المركزي": [
+"Ordinateur central",
+"Central computer"
+],
+"الحاسوب الموقوف لا يستطيع الدخول ولا إرسال أي شيء": [
+"Un ordinateur arrêté ne peut ni se connecter ni envoyer quoi que ce soit",
+"A stopped computer can neither log in nor send anything"
+],
+"الحاضر والمتأخر يومٌ كامل": [
+"Présent et en retard comptent comme une journée complète",
+"Present and late count as a full day"
+],
+"الحالات": [
+"Cas",
+"Cases"
+],
+"الحالة": [
+"Statut",
+"Status"
+],
+"الحالة العائلية": [
+"Situation familiale",
+"Marital status"
+],
+"الحجامة": [
+"Hijama",
+"Cupping"
+],
+"الحجم": [
+"Volume",
+"Volume"
+],
+"الحد": [
+"Seuil",
+"Threshold"
+],
+"الحساب": [
+"Compte",
+"Account"
+],
+"الحساسية": [
+"Allergies",
+"Allergies"
+],
+"الحصة": [
+"Séance",
+"Session"
+],
+"الحصة الجاية تحددت": [
+"La prochaine séance est fixée",
+"The next session is set"
+],
+"الحصة القادمة": [
+"Séance suivante",
+"Next session"
+],
+"الحصة تتسجّل بلا موعد": [
+"La séance est enregistrée sans rendez-vous",
+"The session is recorded without an appointment"
+],
+"الحصة مخلّصة": [
+"Séance payée",
+"Session paid"
+],
+"الحصص": [
+"Séances",
+"Sessions"
+],
+"الحصص اللي فاتت": [
+"Séances manquées",
+"Missed sessions"
+],
+"الحصص اللي كمّلوها": [
+"Séances terminées",
+"Sessions completed"
+],
+"الحصص المدفوعة": [
+"Séances payées",
+"Paid sessions"
+],
+"الحصص المنجزة": [
+"Séances effectuées",
+"Sessions done"
+],
+"الحصص والسعر": [
+"Séances et prix",
+"Sessions and price"
+],
+"الحضور": [
+"Présence",
+"Attendance"
+],
+"الحلاقة مسموحة": [
+"Le rasage est autorisé",
+"Shaving is allowed"
+],
+"الحواسيب": [
+"Ordinateurs",
+"Computers"
+],
+"الحواسيب الأخرى تتحدث وحدها إلى هذه النسخة عند تشغيلها أو بعد": [
+"Les autres ordinateurs se mettent à jour d’eux-mêmes vers cette version au démarrage ou après",
+"Other computers update themselves to this version at startup or after"
+],
+"الحواسيب وكلمات السر": [
+"Ordinateurs et mots de passe",
+"Computers and passwords"
+],
+"الخادم يرد فور ما تتسجل معلومة جديدة": [
+"Le serveur répond dès qu’une nouvelle info est enregistrée",
+"The server replies as soon as new data is saved"
+],
+"الختم": [
+"Cachet",
+"Stamp"
+],
+"الختم أو الإمضاء غير موجود": [
+"Le cachet ou la signature est absent",
+"The stamp or signature is missing"
+],
+"الختم وإمضاء المديرة": [
+"Cachet et signature de la directrice",
+"Stamp and director’s signature"
+],
+"الخدمات": [
+"Prestations",
+"Services"
+],
+"الخدمات والأسعار": [
+"Prestations et prix",
+"Services and prices"
+],
+"الخدمة": [
+"Prestation",
+"Service"
+],
+"الخروج": [
+"Déconnexion",
+"Log out"
+],
+"الخطة": [
+"Plan",
+"Plan"
+],
+"الخطة تتسجّل بالسعر العادي": [
+"Le plan est enregistré au prix normal",
+"The plan is saved at the normal price"
+],
+"الخطة كاملة": [
+"Plan complet",
+"Full plan"
+],
+"الخميس": [
+"Jeudi",
+"Thursday"
+],
+"الدخل": [
+"Revenus",
+"Income"
+],
+"الدخول": [
+"Connexion",
+"Log in"
+],
+"الدفع": [
+"Paiement",
+"Payment"
+],
+"الدفع المباشر": [
+"Paiement direct",
+"Direct payment"
+],
+"الدفع من الصندوق": [
+"Payer depuis la caisse",
+"Pay from the cash box"
+],
+"الدور": [
+"Rôle",
+"Role"
+],
+"الدورات": [
+"Formations",
+"Courses"
+],
+"الدورات التكوينية": [
+"Formations",
+"Training courses"
+],
+"الدورات الجديدة وأسعارها تُنشئها المديرة": [
+"Les nouvelles formations et leurs prix sont créés par la directrice",
+"New courses and their prices are created by the director"
+],
+"الدورات والشهادات": [
+"Formations et certificats",
+"Courses and certificates"
+],
+"الدورة": [
+"Formation",
+"Course"
+],
+"الدين": [
+"Dette",
+"Debt"
+],
+"الديون": [
+"Dettes",
+"Debts"
+],
+"الذراعين": [
+"Bras",
+"Arms"
+],
+"الرؤوس": [
+"Points noirs",
+"Blackheads"
+],
+"الرئيسية": [
+"Accueil",
+"Home"
+],
+"الراتب": [
+"Salaire",
+"Salary"
+],
+"الراتب الشهري": [
+"Salaire mensuel",
+"Monthly salary"
+],
+"الربح": [
+"Bénéfice",
+"Profit"
+],
+"الربح الصافي": [
+"Bénéfice net",
+"Net profit"
+],
+"الرجوع للرئيسية": [
+"Retour à l’accueil",
+"Back to home"
+],
+"الرجوع للنص الافتراضي": [
+"Revenir au texte par défaut",
+"Restore the default text"
+],
+"الرسالة": [
+"Message",
+"Message"
+],
+"الرسالة الطويلة": [
+"Message long",
+"Long message"
+],
+"الرقبة": [
+"Cou",
+"Neck"
+],
+"الرمز صالح يومين ولمرة واحدة": [
+"Le code est valable deux jours et une seule fois",
+"The code is valid for two days, one use only"
+],
+"الرمز غير صحيح أو انتهت صلاحيته": [
+"Code incorrect ou expiré",
+"Code incorrect or expired"
+],
+"الزبائن": [
+"Clients",
+"Clients"
+],
+"الزبائن اللي خلّصو": [
+"Clients ayant payé",
+"Clients who paid"
+],
+"الزبون": [
+"Client",
+"Client"
+],
+"الزبون أو الهاتف أو الخطة": [
+"Client, téléphone ou plan",
+"Client, phone or plan"
+],
+"الزبونة": [
+"Cliente",
+"Client"
+],
+"الزبونة جات": [
+"La cliente est arrivée",
+"The client arrived"
+],
+"الزبونة ما جاتش": [
+"La cliente n’est pas venue",
+"The client didn’t come"
+],
+"الزيارات": [
+"Visites",
+"Visits"
+],
+"الساعات": [
+"Heures",
+"Hours"
+],
+"الساعة": [
+"Heure",
+"Time"
+],
+"الساقين": [
+"Jambes",
+"Legs"
+],
+"السبب": [
+"Motif",
+"Reason"
+],
+"السبت": [
+"Samedi",
+"Saturday"
+],
+"السطر الأخير": [
+"Dernière ligne",
+"Last line"
+],
+"السعر": [
+"Prix",
+"Price"
+],
+"السعر الإجمالي": [
+"Prix total",
+"Total price"
+],
+"السعر الإجمالي للخطة": [
+"Prix total du plan",
+"Total plan price"
+],
+"السعر الحالي": [
+"Prix actuel",
+"Current price"
+],
+"السعر المطلوب للباقة كاملة": [
+"Prix demandé pour le forfait complet",
+"Price for the full package"
+],
+"السعر تبدّل": [
+"Le prix a changé",
+"The price changed"
+],
+"السعر تبدّل عند الاستلام": [
+"Le prix a changé à la réception",
+"The price changed on receipt"
+],
+"السعر تحدده المديرة": [
+"Le prix est fixé par la directrice",
+"The price is set by the director"
+],
+"السعر لهذا المتكوّن": [
+"Prix pour ce stagiaire",
+"Price for this trainee"
+],
+"السلة": [
+"Panier",
+"Cart"
+],
+"السلة فارغة": [
+"Le panier est vide",
+"The cart is empty"
+],
+"السماح للعمال": [
+"Autoriser les employés",
+"Allow staff"
+],
+"السن": [
+"Âge",
+"Age"
+],
+"السيد": [
+"M.",
+"Mr."
+],
+"السيدة": [
+"Mme",
+"Mrs."
+],
+"الشراء": [
+"Achat",
+"Purchase"
+],
+"الشهادة": [
+"Certificat",
+"Certificate"
+],
+"الشهر": [
+"Mois",
+"Month"
+],
+"الشهر الفايت": [
+"Mois précédent",
+"Previous month"
+],
+"الصافي": [
+"Net",
+"Net"
+],
+"الصافي للدفع": [
+"Net à payer",
+"Net to pay"
+],
+"الصدر": [
+"Poitrine",
+"Chest"
+],
+"الصفحة أو العنصر غير موجود": [
+"Page ou élément introuvable",
+"Page or item not found"
+],
+"الصفحة ترجع وحدها": [
+"La page revient toute seule",
+"The page comes back by itself"
+],
+"الصلاحيات": [
+"Permissions",
+"Permissions"
+],
+"الصلاحية": [
+"Validité",
+"Expiry"
+],
+"الصناديق": [
+"Caisses",
+"Cash boxes"
+],
+"الصندوق المركزي": [
+"Caisse centrale",
+"Central cash box"
+],
+"الصندوق اليومي": [
+"Caisse journalière",
+"Daily cash box"
+],
+"الصندوق والمجاميع والتقارير والرواتب والأسعار والإعدادات للمديرة وحدها دائمًا": [
+"La caisse, les totaux, les rapports, les salaires, les prix et les paramètres sont toujours réservés à la directrice",
+"The cash box, totals, reports, salaries, prices and settings are always for the director only"
+],
+"الصور": [
+"Photos",
+"Photos"
+],
+"الصورة كبيرة جدًا": [
+"L’image est trop grande",
+"The image is too large"
+],
+"الصورة يجب أن تكون": [
+"L’image doit être",
+"The image must be"
+],
+"الضمان الاجتماعي": [
+"Sécurité sociale",
+"Social security"
+],
+"الطريقة الأسهل": [
+"La méthode la plus simple",
+"The easiest way"
+],
+"الطلب": [
+"Demande",
+"Request"
+],
+"الطلبات والتنبيهات": [
+"Demandes et alertes",
+"Requests and alerts"
+],
+"الطلبيات": [
+"Commandes",
+"Orders"
+],
+"الطلبية جاهزة": [
+"La commande est prête",
+"The order is ready"
+],
+"الطلع": [
+"Pollen",
+"Pollen"
+],
+"الظهر": [
+"Dos",
+"Back"
+],
+"العامل": [
+"Employé",
+"Staff member"
+],
+"العامل حاضر تلقائيًا": [
+"L’employé est présent automatiquement",
+"The staff member is marked present automatically"
+],
+"العامل ما يقدرش يدير تخفيض ولا يلغي مبلغ أو وصل وحدو": [
+"L’employé ne peut ni faire de remise ni annuler un montant ou un reçu seul",
+"Staff cannot give a discount or cancel an amount or receipt alone"
+],
+"العامل مدين للمركز بـ": [
+"L’employé doit au centre",
+"The staff member owes the center"
+],
+"العامل موقوف": [
+"L’employé est suspendu",
+"The staff member is suspended"
+],
+"العاملات": [
+"Employées",
+"Staff"
+],
+"العاملة": [
+"Employée",
+"Staff member"
+],
+"العدد": [
+"Nombre",
+"Count"
+],
+"العكبر": [
+"Propolis",
+"Propolis"
+],
+"العمال": [
+"Employés",
+"Staff"
+],
+"العمال والحضور": [
+"Employés et présence",
+"Staff and attendance"
+],
+"العمال والرواتب": [
+"Employés et salaires",
+"Staff and salaries"
+],
+"العمل بدون إنترنت": [
+"Travailler sans internet",
+"Work without internet"
+],
+"العمل على هذا الفرع فقط": [
+"Travailler sur cette branche seulement",
+"Work on this branch only"
+],
+"العمل والأجر": [
+"Travail et salaire",
+"Work and pay"
+],
+"العملة": [
+"Devise",
+"Currency"
+],
+"العمليات": [
+"Opérations",
+"Operations"
+],
+"العمليات المسجّلة هنا تُرسل عاديًا": [
+"Les opérations enregistrées ici sont envoyées normalement",
+"Operations recorded here are sent normally"
+],
+"العملية": [
+"Opération",
+"Operation"
+],
+"العملية تبدّلت": [
+"L’opération a changé",
+"The operation changed"
+],
+"العنوان": [
+"Adresse",
+"Address"
+],
+"الغرفة": [
+"Salle",
+"Room"
+],
+"الغرفة محجوزة في هذا الوقت": [
+"La salle est réservée à cette heure",
+"The room is booked at this time"
+],
+"الغيابات": [
+"Absences",
+"Absences"
+],
+"الفئة": [
+"Catégorie",
+"Category"
+],
+"الفائدة": [
+"Bénéfice",
+"Profit"
+],
+"الفائدة الصافية": [
+"Bénéfice net",
+"Net profit"
+],
+"الفترة": [
+"Période",
+"Period"
+],
+"الفترة الأخيرة": [
+"Dernière période",
+"Last period"
+],
+"الفترة التي تبدأ في شهر": [
+"La période qui commence au mois",
+"The period starting in the month"
+],
+"الفرع": [
+"Branche",
+"Branch"
+],
+"الفرق": [
+"Écart",
+"Difference"
+],
+"الفروع": [
+"Branches",
+"Branches"
+],
+"الفروع والغرف": [
+"Branches et salles",
+"Branches and rooms"
+],
+"الفوتوتايب": [
+"Phototype",
+"Phototype"
+],
+"القادمة": [
+"Prochaines",
+"Upcoming"
+],
+"القرار": [
+"Décision",
+"Decision"
+],
+"القرار يوصل لحاسوبو في ثوانٍ": [
+"La décision arrive sur son ordinateur en quelques secondes",
+"The decision reaches their computer within seconds"
+],
+"القسم": [
+"Service",
+"Department"
+],
+"القسم يستلم المال ويسجله": [
+"Le service reçoit l’argent et l’enregistre",
+"The department receives the money and records it"
+],
+"الكدمات": [
+"Bleus",
+"Bruises"
+],
+"الكريمات": [
+"Crèmes",
+"Creams"
+],
+"الكشف": [
+"Relevé",
+"Statement"
+],
+"الكشف والدفع": [
+"Relevé et paiement",
+"Statement and payment"
+],
+"الكل": [
+"Tout",
+"All"
+],
+"الكميات تتزاد للمخزون": [
+"Les quantités sont ajoutées au stock",
+"Quantities are added to stock"
+],
+"الكمية": [
+"Quantité",
+"Quantity"
+],
+"الكمية الأولية": [
+"Quantité initiale",
+"Initial quantity"
+],
+"الكمية التي وصلت": [
+"Quantité arrivée",
+"Quantity arrived"
+],
+"الكمية الحالية": [
+"Quantité actuelle",
+"Current quantity"
+],
+"الكمية اللي وصلت": [
+"Quantité arrivée",
+"Quantity arrived"
+],
+"الكمية المستعملة": [
+"Quantité utilisée",
+"Quantity used"
+],
+"الكمية المطلوبة": [
+"Quantité demandée",
+"Quantity ordered"
+],
+"الكمية المقترحة تكفّي شهر تقريبًا": [
+"La quantité proposée couvre environ un mois",
+"The suggested quantity covers about a month"
+],
+"الكمية للطلب": [
+"Quantité à commander",
+"Quantity to order"
+],
+"الليزر": [
+"Laser",
+"Laser"
+],
+"المادة": [
+"Produit",
+"Material"
+],
+"المبلغ": [
+"Montant",
+"Amount"
+],
+"المبلغ أكبر من الباقي": [
+"Le montant dépasse le reste",
+"The amount exceeds the remainder"
+],
+"المبلغ المدفوع الآن": [
+"Montant payé maintenant",
+"Amount paid now"
+],
+"المبلغ المستلم": [
+"Montant reçu",
+"Amount received"
+],
+"المبلغ المسلَّم": [
+"Montant remis",
+"Amount handed over"
+],
+"المبلغ المعدود": [
+"Montant compté",
+"Counted amount"
+],
+"المبلغ الموجود نقدًا": [
+"Montant en espèces",
+"Cash amount"
+],
+"المبلغ النهائي المستحق للعامل": [
+"Montant final dû à l’employé",
+"Final amount due to the staff member"
+],
+"المبلغ يخرج من صندوق اليوم ويظهر عند المديرة مع السبب": [
+"Le montant sort de la caisse du jour et apparaît chez la directrice avec le motif",
+"The amount leaves today’s cash box and shows to the director with the reason"
+],
+"المبلغ يذهب إلى صندوق الفرع والصندوق المركزي": [
+"Le montant va dans la caisse de la branche et la caisse centrale",
+"The amount goes to the branch cash box and the central cash box"
+],
+"المبيعات": [
+"Ventes",
+"Sales"
+],
+"المتغيرات": [
+"Variables",
+"Variables"
+],
+"المتغيرات المتاحة": [
+"Variables disponibles",
+"Available variables"
+],
+"المتكونون": [
+"Stagiaires",
+"Trainees"
+],
+"المتوقع": [
+"Attendu",
+"Expected"
+],
+"المتوقع في الصندوق": [
+"Attendu en caisse",
+"Expected in the cash box"
+],
+"المجلد الرئيسي": [
+"Dossier principal",
+"Main folder"
+],
+"المجموع": [
+"Total",
+"Total"
+],
+"المجموع حسب الغرفة": [
+"Total par salle",
+"Total by room"
+],
+"المحدد": [
+"Sélection",
+"Selected"
+],
+"المحصّل": [
+"Encaissé",
+"Collected"
+],
+"المخزون": [
+"Stock",
+"Stock"
+],
+"المخزون زاد": [
+"Le stock a augmenté",
+"Stock increased"
+],
+"المداخيل": [
+"Revenus",
+"Income"
+],
+"المداخيل اليومية": [
+"Revenus journaliers",
+"Daily income"
+],
+"المداخيل حسب القسم": [
+"Revenus par service",
+"Income by department"
+],
+"المداخيل والمصاريف": [
+"Revenus et dépenses",
+"Income and expenses"
+],
+"المدة": [
+"Durée",
+"Duration"
+],
+"المدة حسب الخدمة": [
+"Durée selon la prestation",
+"Duration by service"
+],
+"المدفوع": [
+"Payé",
+"Paid"
+],
+"المدفوع للمورد": [
+"Payé au fournisseur",
+"Paid to the supplier"
+],
+"المدفوع للمورد الآن": [
+"Payé au fournisseur maintenant",
+"Paid to the supplier now"
+],
+"المدفوعات": [
+"Paiements",
+"Payments"
+],
+"المدفوعات بالبطاقة أو": [
+"Paiements par carte ou",
+"Payments by card or"
+],
+"المدير": [
+"Directeur",
+"Manager"
+],
+"المدير يعمل على الحاسوب المركزي ويرى كل الفروع": [
+"Le directeur travaille sur l’ordinateur central et voit toutes les branches",
+"The manager works on the central computer and sees all branches"
+],
+"المديرة": [
+"Directrice",
+"Director"
+],
+"المديرة تدخل من الحاسوب المركزي": [
+"La directrice se connecte depuis l’ordinateur central",
+"The director logs in from the central computer"
+],
+"المديرة ترى النتيجة في": [
+"La directrice voit le résultat dans",
+"The director sees the result in"
+],
+"المديرة تقدر تكتبها في صفحة": [
+"La directrice peut l’écrire dans la page",
+"The director can write it on the page"
+],
+"المديرة ولا الاستقبال يبدّلو نوع المواد في صفحة المنتجات": [
+"La directrice ou l’accueil changent le type de produit dans la page Produits",
+"The director or reception change the material type on the Products page"
+],
+"المركز": [
+"Centre",
+"Center"
+],
+"المركزي": [
+"Central",
+"Central"
+],
+"المزيد": [
+"Plus",
+"More"
+],
+"المستحق": [
+"Dû",
+"Due"
+],
+"المستخدمون": [
+"Utilisateurs",
+"Users"
+],
+"المشاكل": [
+"Problèmes",
+"Concerns"
+],
+"المشتريات والموردون": [
+"Achats et fournisseurs",
+"Purchases and suppliers"
+],
+"المصاريف": [
+"Dépenses",
+"Expenses"
+],
+"المصاريف حسب الفئة": [
+"Dépenses par catégorie",
+"Expenses by category"
+],
+"المعدود": [
+"Compté",
+"Counted"
+],
+"المعلومات الشخصية": [
+"Informations personnelles",
+"Personal information"
+],
+"المعلومات الصحية": [
+"Informations de santé",
+"Health information"
+],
+"المكان": [
+"Lieu",
+"Place"
+],
+"المكوّن": [
+"Formateur",
+"Trainer"
+],
+"الملف": [
+"Fichier",
+"File"
+],
+"الملف الطبي": [
+"Dossier médical",
+"Medical file"
+],
+"الملف الطبي للزبون": [
+"Dossier médical du client",
+"Client medical file"
+],
+"الملف الطبي وصور قبل": [
+"Dossier médical et photos avant",
+"Medical file and before photos"
+],
+"الملف الكامل والصور": [
+"Dossier complet et photos",
+"Full file and photos"
+],
+"الملف غير موجود": [
+"Fichier introuvable",
+"File not found"
+],
+"المنتج": [
+"Produit",
+"Product"
+],
+"المنتج الجديد وأي تبديل في السعر يظهران للمديرة لتراجعهما": [
+"Le nouveau produit et tout changement de prix s’affichent chez la directrice pour vérification",
+"The new product and any price change show to the director for review"
+],
+"المنتجات": [
+"Produits",
+"Products"
+],
+"المنتجات اللي تستعملها": [
+"Produits qu’elle utilise",
+"Products she uses"
+],
+"المنتجات الموجودة تُحدَّث": [
+"Les produits existants sont mis à jour",
+"Existing products are updated"
+],
+"المنتجات تُخصم من مخزون الفرع تلقائيًا": [
+"Les produits sont déduits du stock de la branche automatiquement",
+"Products are deducted from the branch stock automatically"
+],
+"المنتجات والمخزون": [
+"Produits et stock",
+"Products and stock"
+],
+"المنح": [
+"Primes",
+"Bonuses"
+],
+"المنطقة": [
+"Zone",
+"Area"
+],
+"المنطقة الحساسة": [
+"Zone intime",
+"Intimate area"
+],
+"المنطقة الزمنية": [
+"Fuseau horaire",
+"Time zone"
+],
+"المنطقة المعالجة": [
+"Zone traitée",
+"Treated area"
+],
+"المنظمة من": [
+"Organisé par",
+"Organized by"
+],
+"المهمة": [
+"Tâche",
+"Task"
+],
+"المهمة المغلقة تختفي من شاشة العامل ولا يستطيع فتحها": [
+"Une tâche fermée disparaît de l’écran de l’employé, qui ne peut plus l’ouvrir",
+"A closed task disappears from the staff screen and cannot be opened"
+],
+"المواد": [
+"Produits",
+"Materials"
+],
+"المواد اللي تستعملها الغرف في العلاج": [
+"Les produits que les salles utilisent dans les soins",
+"Materials the rooms use in treatments"
+],
+"المواد اللي قربت تكمل": [
+"Produits presque épuisés",
+"Materials running out"
+],
+"المواد المستعملة": [
+"Produits utilisés",
+"Materials used"
+],
+"المواد المستعملة داخلة في المصاريف كي تتشرى": [
+"Les produits utilisés sont inclus dans les dépenses lors de leur achat",
+"Materials used are included in expenses when purchased"
+],
+"المواد المستعملة في هذه الحصة": [
+"Produits utilisés dans cette séance",
+"Materials used in this session"
+],
+"المواد المستعملة فيها": [
+"Produits utilisés dedans",
+"Materials used in it"
+],
+"المواد المعتادة": [
+"Produits habituels",
+"Usual materials"
+],
+"المواد المعتادة لهذه الخدمة": [
+"Produits habituels pour cette prestation",
+"Usual materials for this service"
+],
+"المواد المعتادة لهذه الخدمة تعمّرت وحدها": [
+"Les produits habituels de cette prestation ont été remplis automatiquement",
+"This service’s usual materials were filled in automatically"
+],
+"المواد تنحسب بسعر الشراء المسجّل في المنتجات": [
+"Les produits sont comptés au prix d’achat enregistré dans Produits",
+"Materials are counted at the purchase price recorded in Products"
+],
+"المواعيد": [
+"Rendez-vous",
+"Appointments"
+],
+"الموجود": [
+"Disponible",
+"In stock"
+],
+"المورد": [
+"Fournisseur",
+"Supplier"
+],
+"الموردون": [
+"Fournisseurs",
+"Suppliers"
+],
+"الموعد": [
+"Rendez-vous",
+"Appointment"
+],
+"الموعد الجديد": [
+"Nouveau rendez-vous",
+"New appointment"
+],
+"الموعد اللي فات": [
+"Rendez-vous manqué",
+"Missed appointment"
+],
+"المولود": [
+"né le",
+"born on"
+],
+"المولودة": [
+"née le",
+"born on"
+],
+"النتيجة تبان مع الحصص": [
+"Le résultat apparaît au fil des séances",
+"Results show over the sessions"
+],
+"النسخ": [
+"Sauvegardes",
+"Backups"
+],
+"النسخ الاحتياطي": [
+"Sauvegarde",
+"Backup"
+],
+"النسخ المحفوظة": [
+"Sauvegardes enregistrées",
+"Saved backups"
+],
+"النسخة": [
+"Version",
+"Version"
+],
+"النسخة الاحتياطية نسخة كاملة إضافية في مكان آخر": [
+"La sauvegarde est une copie complète supplémentaire à un autre endroit",
+"A backup is an extra full copy in another place"
+],
+"النسخة المضغوطة": [
+"Copie compressée",
+"Compressed copy"
+],
+"النص": [
+"Texte",
+"Text"
+],
+"النص الافتراضي": [
+"Texte par défaut",
+"Default text"
+],
+"النص الافتراضي تعدّله المديرة من الإعدادات": [
+"Le texte par défaut est modifié par la directrice dans les paramètres",
+"The default text is edited by the director in settings"
+],
+"النقد المحصّل": [
+"Espèces encaissées",
+"Cash collected"
+],
+"النوع": [
+"Type",
+"Type"
+],
+"الهاتف": [
+"Téléphone",
+"Phone"
+],
+"الوجه": [
+"Visage",
+"Face"
+],
+"الوصف": [
+"Description",
+"Description"
+],
+"الوصل": [
+"Reçu",
+"Receipt"
+],
+"الوصول": [
+"Arrivée",
+"Arrival"
+],
+"الوصولات التي سلّمتها اليوم": [
+"Reçus que vous avez remis aujourd’hui",
+"Receipts you handed over today"
+],
+"الوظائف والغرف في هذا الفرع": [
+"Postes et salles de cette branche",
+"Jobs and rooms in this branch"
+],
+"الوظيفة": [
+"Poste",
+"Job"
+],
+"الوظيفة مرتبطة بعمال": [
+"Le poste est lié à des employés",
+"The job is linked to staff"
+],
+"الوقت": [
+"Heure",
+"Time"
+],
+"الوقت واللغة": [
+"Heure et langue",
+"Time & language"
+],
+"اليدين": [
+"Mains",
+"Hands"
+],
+"اليوم": [
+"Aujourd’hui",
+"Today"
+],
+"امشي": [
+"Marchez",
+"Walk"
+],
+"انتباه": [
+"Attention",
+"Attention"
+],
+"انتبهي قبل العلاج": [
+"Attention avant le soin",
+"Caution before treatment"
+],
+"انتظار دائم": [
+"Attente permanente",
+"Always waiting"
+],
+"انتظر دقيقة": [
+"Attendez une minute",
+"Wait a minute"
+],
+"انتظر قليلًا": [
+"Patientez un peu",
+"Wait a moment"
+],
+"انتهت الدورة": [
+"La formation est terminée",
+"The course is finished"
+],
+"انتهت الصلاحية": [
+"Expiré",
+"Expired"
+],
+"انتهى": [
+"Terminé",
+"Finished"
+],
+"انتهى العلاج": [
+"Soin terminé",
+"Treatment finished"
+],
+"انتهى العلاج وتم تحصيل المبلغ": [
+"Soin terminé et montant encaissé",
+"Treatment finished and amount collected"
+],
+"انسحب": [
+"S’est retiré",
+"Withdrew"
+],
+"انسخهما من تطبيق": [
+"Copiez-les depuis l’application",
+"Copy them from the app"
+],
+"بأن": [
+"que",
+"that"
+],
+"بإذن المديرة": [
+"Avec l’accord de la directrice",
+"With the director’s permission"
+],
+"باش تبان أو تختفي فورًا": [
+"pour qu’il apparaisse ou disparaisse immédiatement",
+"to show or hide it immediately"
+],
+"باش تبقى المدة بين الحصص كيما هي": [
+"pour garder le même écart entre les séances",
+"to keep the same gap between sessions"
+],
+"باش تكون الأرقام صحيحة": [
+"pour que les chiffres soient justes",
+"for the figures to be accurate"
+],
+"باش يبان منتج هنا": [
+"pour qu’un produit apparaisse ici",
+"for a product to appear here"
+],
+"باقة": [
+"Forfait",
+"Package"
+],
+"باقي": [
+"Reste",
+"Remaining"
+],
+"بالحصة": [
+"Par séance",
+"Per session"
+],
+"بانتظار المديرة": [
+"En attente de la directrice",
+"Waiting for the director"
+],
+"بانتظار مراجعة المديرة": [
+"En attente de vérification par la directrice",
+"Waiting for the director’s review"
+],
+"بتاريخ": [
+"Le",
+"On"
+],
+"بتغيير السعر عند التحصيل": [
+"En changeant le prix à l’encaissement",
+"By changing the price at collection"
+],
+"بحث": [
+"Rechercher",
+"Search"
+],
+"بحجم ساعي قدره": [
+"d’un volume horaire de",
+"with a duration of"
+],
+"بخاخ": [
+"Spray",
+"Spray"
+],
+"بخلفية شفافة": [
+"Fond transparent",
+"Transparent background"
+],
+"بدء العلاج": [
+"Commencer le soin",
+"Start treatment"
+],
+"بداية العمل": [
+"Début du travail",
+"Start of work"
+],
+"بدون خدمة": [
+"Sans prestation",
+"No service"
+],
+"بدون غرفة": [
+"Sans salle",
+"No room"
+],
+"بدون مبلغ": [
+"Sans montant",
+"No amount"
+],
+"بدّل سعر البيع إذا تبدّل": [
+"Changez le prix de vente s’il a changé",
+"Change the sale price if it changed"
+],
+"بدّل نوعه في صفحة المنتجات": [
+"Changez son type dans la page Produits",
+"Change its type on the Products page"
+],
+"بدّلها ولا فرّغها إذا ما استعملتهاش": [
+"Changez-la ou videz-la si vous ne l’avez pas utilisée",
+"Change it or clear it if you didn’t use it"
+],
+"بدّلو إذا تبدّل": [
+"Modifiez-le s’il a changé",
+"Change it if it changed"
+],
+"بدّلي الكمية ولا المورد إذا حبيتي": [
+"Changez la quantité ou le fournisseur si vous voulez",
+"Change the quantity or supplier if you wish"
+],
+"بدّليه إذا الزبونة حبّت وقت آخر": [
+"Changez-le si la cliente veut une autre heure",
+"Change it if the client wants another time"
+],
+"بريدي": [
+"postal",
+"postal"
+],
+"بسعر البيع": [
+"Au prix de vente",
+"At sale price"
+],
+"بسعر الشراء": [
+"Au prix d’achat",
+"At purchase price"
+],
+"بشرة": [
+"Peau",
+"Skin"
+],
+"بصّح صلّحوها في": [
+"mais corrigez-la dans",
+"but fix it in"
+],
+"بطاقة": [
+"Carte",
+"Card"
+],
+"بطاقة البشرة": [
+"Fiche peau",
+"Skin card"
+],
+"بطاقة التعريف": [
+"Carte d’identité",
+"ID card"
+],
+"بطلب منه": [
+"À sa demande",
+"At their request"
+],
+"بعد": [
+"Après",
+"After"
+],
+"بعد إكمال الدورة": [
+"Après avoir terminé la formation",
+"After completing the course"
+],
+"بعد الإضافة يظهر": [
+"Après l’ajout apparaît",
+"After adding, it shows"
+],
+"بعد التأكيد": [
+"Après confirmation",
+"After confirmation"
+],
+"بعد تقديم الخدمة": [
+"Après la prestation",
+"After the service"
+],
+"بـ": [
+"de",
+"by"
+],
+"بقي": [
+"Reste",
+"Left"
+],
+"بقي على الزبون": [
+"Reste dû par le client",
+"Left for the client to pay"
+],
+"بلا أكل ثقيل ساعتين بعد الجلسة": [
+"Pas de repas lourd deux heures après la séance",
+"No heavy meal for two hours after the session"
+],
+"بلا حمام ساخن ولا سونا": [
+"Pas de bain chaud ni de sauna",
+"No hot bath or sauna"
+],
+"بلا رياضة ولا حمام ولا سونا يومين": [
+"Pas de sport, de bain ni de sauna pendant deux jours",
+"No sport, bath or sauna for two days"
+],
+"بلا شمع ولا ملقاط بين الجلسات": [
+"Pas de cire ni de pince entre les séances",
+"No waxing or tweezing between sessions"
+],
+"بلا مكياج": [
+"Pas de maquillage",
+"No makeup"
+],
+"بلا مورد": [
+"Sans fournisseur",
+"No supplier"
+],
+"بلازما": [
+"Plasma",
+"Plasma"
+],
+"بمناسبة الصيف تخفيض": [
+"Remise d’été",
+"Summer discount"
+],
+"بنجاح الدورة التكوينية": [
+"avec succès la formation",
+"successfully the course"
+],
+"بند": [
+"Ligne",
+"Item"
+],
+"بوابة": [
+"Passerelle",
+"Gateway"
+],
+"بوابة الإرسال": [
+"Passerelle d’envoi",
+"Sending gateway"
+],
+"بيضاء": [
+"Claire",
+"Fair"
+],
+"بيضاء جدًا": [
+"Très claire",
+"Very fair"
+],
+"بيع": [
+"Vente",
+"Sale"
+],
+"بيع المنتجات": [
+"Vente de produits",
+"Product sales"
+],
+"بيع منتجات": [
+"Vendre des produits",
+"Sell products"
+],
+"بيلسان": [
+"Bilsan",
+"Bilsan"
+],
+"بين": [
+"Entre",
+"Between"
+],
+"ة": [
+"e",
+"e"
+],
+"تأخر": [
+"En retard",
+"Late"
+],
+"تأكد من الإنترنت ومن تشغيل": [
+"Vérifiez internet et que l’application est lancée",
+"Check the internet and that the app is running"
+],
+"تأكد من الكمية اللي وصلت فعلًا وبدّل سعر البيع إذا تبدّل": [
+"Vérifiez la quantité réellement arrivée et changez le prix de vente s’il a changé",
+"Check the quantity that actually arrived and change the sale price if it changed"
+],
+"تأكيد استلام السلعة": [
+"Confirmer la réception de la marchandise",
+"Confirm receipt of goods"
+],
+"تأكيد البيع": [
+"Confirmer la vente",
+"Confirm sale"
+],
+"تأكيد المبلغ المعدود": [
+"Confirmer le montant compté",
+"Confirm the counted amount"
+],
+"تأكيد المغادرة وتسليم الأجرة": [
+"Confirmer le départ et la remise du salaire",
+"Confirm departure and pay handover"
+],
+"تأكيد تصفية الحساب وإيقاف العامل نهائيًا": [
+"Confirmer le solde de tout compte et arrêter l’employé définitivement",
+"Confirm final settlement and stop the staff member permanently"
+],
+"تأكّد من الكمية": [
+"Vérifiez la quantité",
+"Check the quantity"
+],
+"تابع": [
+"Continuer",
+"Continue"
+],
+"تابعت": [
+"a suivi",
+"attended"
+],
+"تاريخ الأخذ": [
+"Date de prise",
+"Date taken"
+],
+"تاريخ التسجيل": [
+"Date d’inscription",
+"Registration date"
+],
+"تاريخ الحصة الأولى": [
+"Date de la première séance",
+"First session date"
+],
+"تاريخ الميلاد": [
+"Date de naissance",
+"Date of birth"
+],
+"تاريخ انتهاء الصلاحية": [
+"Date d’expiration",
+"Expiry date"
+],
+"تاريخ بداية العمل": [
+"Date de début de travail",
+"Start date"
+],
+"تبقى في ملفها للجلسات الجاية": [
+"Elle reste dans son dossier pour les prochaines séances",
+"It stays in her file for the next sessions"
+],
+"تبييض": [
+"Éclaircissement",
+"Lightening"
+],
+"تتبعث للغرفة": [
+"Envoyée en salle",
+"Sent to the room"
+],
+"تتحدث القائمة تلقائيًا كل": [
+"La liste se met à jour automatiquement toutes les",
+"The list refreshes automatically every"
+],
+"تتحدث وحدها كي توصل معلومة جديدة": [
+"Se met à jour toute seule à l’arrivée d’une nouvelle info",
+"Updates itself when new info arrives"
+],
+"تتطبع للزبونة": [
+"Imprimées pour la cliente",
+"Printed for the client"
+],
+"تتعمّر وحدها": [
+"Se remplit toute seule",
+"Fills itself in"
+],
+"تجاعيد وخطوط": [
+"Rides et ridules",
+"Wrinkles and fine lines"
+],
+"تجربة": [
+"Test",
+"Test"
+],
+"تجميل": [
+"Esthétique",
+"Beauty"
+],
+"تجميل الحروش": [
+"Esthétique El Harrouch",
+"Beauty El Harrouch"
+],
+"تجميلي": [
+"cosmétique",
+"cosmetic"
+],
+"تجنبي الشمس": [
+"Évitez le soleil",
+"Avoid the sun"
+],
+"تجنبي الشمس أسبوعين وحطي واقي الشمس": [
+"Évitez le soleil deux semaines et mettez un écran solaire",
+"Avoid the sun for two weeks and apply sunscreen"
+],
+"تحت": [
+"Sous",
+"Under"
+],
+"تحت إشراف": [
+"Sous la supervision de",
+"Under the supervision of"
+],
+"تحتاج تفعيل بوابة": [
+"Nécessite d’activer la passerelle",
+"Requires enabling the gateway"
+],
+"تحدده المديرة في الخدمة": [
+"Fixé par la directrice dans la prestation",
+"Set by the director in the service"
+],
+"تحديث": [
+"Mise à jour",
+"Update"
+],
+"تحديث البرنامج إلى": [
+"Mettre à jour le programme vers",
+"Update the program to"
+],
+"تحديث البرنامج الآن": [
+"Mettre à jour le programme maintenant",
+"Update the program now"
+],
+"تحديث تلقائي": [
+"Mise à jour automatique",
+"Automatic update"
+],
+"تحديد غير المسجَّلين": [
+"Sélectionner les non enregistrés",
+"Select unregistered"
+],
+"تحصيل": [
+"Encaissement",
+"Collection"
+],
+"تحصيل الأموال": [
+"Encaissement de l’argent",
+"Collecting money"
+],
+"تحصيل بتخفيض": [
+"Encaisser avec remise",
+"Collect with discount"
+],
+"تحكم": [
+"Contrôle",
+"Control"
+],
+"تحمي من عطب الحاسوب أو القرص أو الفيروسات": [
+"Protège contre une panne d’ordinateur, de disque ou les virus",
+"Protects against computer or disk failure and viruses"
+],
+"تحميل": [
+"Télécharger",
+"Download"
+],
+"تحميل قائمة المنتجات": [
+"Télécharger la liste des produits",
+"Download the product list"
+],
+"تحويل": [
+"Virement",
+"Transfer"
+],
+"تخرج طلبية لكل مورد": [
+"Une commande par fournisseur est créée",
+"One order per supplier is created"
+],
+"تخرج من المخزون وتنحسب على الغرفة": [
+"Sortent du stock et sont comptés sur la salle",
+"Taken from stock and counted against the room"
+],
+"تخسيس": [
+"Amincissement",
+"Slimming"
+],
+"تخفيض": [
+"Remise",
+"Discount"
+],
+"تخفيض أو إلغاء": [
+"Remise ou annulation",
+"Discount or cancellation"
+],
+"تخفيض موافق عليه": [
+"Remise approuvée",
+"Approved discount"
+],
+"تخلّصت أو تلغات من قبل": [
+"Déjà payé ou annulé",
+"Already paid or cancelled"
+],
+"تدليك": [
+"Massage",
+"Massage"
+],
+"تذكير الصباح": [
+"Rappel du matin",
+"Morning reminder"
+],
+"تذكير المواعيد برسائل": [
+"Rappel des rendez-vous par SMS",
+"Appointment reminders by SMS"
+],
+"تذكير ثاني صباح نهار الموعد": [
+"Deuxième rappel le matin du rendez-vous",
+"Second reminder on the morning of the appointment"
+],
+"تذكيرات مستحقة الآن": [
+"Rappels à envoyer maintenant",
+"Reminders due now"
+],
+"ترجع للمخزون": [
+"Retournent au stock",
+"Go back to stock"
+],
+"تركيبة": [
+"Composition",
+"Composition"
+],
+"ترهل": [
+"Relâchement",
+"Sagging"
+],
+"تساقط الشعر": [
+"Chute de cheveux",
+"Hair loss"
+],
+"تسبيق على الراتب": [
+"Avance sur salaire",
+"Salary advance"
+],
+"تسبيق مأخوذ يوم": [
+"Avance prise le",
+"Advance taken on"
+],
+"تسبيق يوم": [
+"Avance du",
+"Advance of"
+],
+"تسبيق يُقتطع هذا الشهر": [
+"Avance déduite ce mois",
+"Advance deducted this month"
+],
+"تسبيقات": [
+"Avances",
+"Advances"
+],
+"تسجيل": [
+"Enregistrer",
+"Save"
+],
+"تسجيل استهلاك المواد": [
+"Enregistrer la consommation de produits",
+"Record materials usage"
+],
+"تسجيل استهلاك مواد العمل": [
+"Enregistrer la consommation des produits de travail",
+"Record work materials usage"
+],
+"تسجيل الاستهلاك": [
+"Enregistrer la consommation",
+"Record usage"
+],
+"تسجيل الدفع": [
+"Enregistrer le paiement",
+"Record payment"
+],
+"تسجيل الزبائن وتعديل معلوماتهم": [
+"Enregistrer les clients et modifier leurs informations",
+"Register clients and edit their information"
+],
+"تسجيل المواد": [
+"Enregistrer les produits",
+"Save materials"
+],
+"تسجيل الموعد": [
+"Enregistrer le rendez-vous",
+"Save the appointment"
+],
+"تسجيل تسبيق أو منحة": [
+"Enregistrer une avance ou une prime",
+"Record an advance or bonus"
+],
+"تسجيل حضور اليوم": [
+"Enregistrer la présence du jour",
+"Record today’s attendance"
+],
+"تسجيل دفع الأجرة في المصاريف": [
+"Enregistrer le paiement du salaire dans les dépenses",
+"Record the salary payment in expenses"
+],
+"تسجيل دفع الأجرة كمصروف": [
+"Enregistrer le paiement du salaire comme dépense",
+"Record the salary payment as an expense"
+],
+"تسجيل دفع الحصص المحددة": [
+"Enregistrer le paiement des séances sélectionnées",
+"Record payment for the selected sessions"
+],
+"تسجيل ما استُعمل": [
+"Enregistrer ce qui a été utilisé",
+"Record what was used"
+],
+"تسجيل متكوّن": [
+"Inscrire un stagiaire",
+"Register a trainee"
+],
+"تسجيل مصروف": [
+"Enregistrer une dépense",
+"Record an expense"
+],
+"تسجيل وتسديد": [
+"Enregistrer et régler",
+"Record and settle"
+],
+"تسجيل وطباعة الوصل": [
+"Enregistrer et imprimer le reçu",
+"Save and print the receipt"
+],
+"تسديد": [
+"Règlement",
+"Settlement"
+],
+"تسديد طلبية": [
+"Régler une commande",
+"Pay an order"
+],
+"تشغيل": [
+"Démarrer",
+"Start"
+],
+"تشغيل حاسوب": [
+"Démarrer un ordinateur",
+"Start a computer"
+],
+"تصبغات": [
+"Taches pigmentaires",
+"Pigmentation"
+],
+"تصدير": [
+"Exporter",
+"Export"
+],
+"تصغير النص": [
+"Réduire le texte",
+"Smaller text"
+],
+"تصفية": [
+"Filtrer",
+"Filter"
+],
+"تصفية الحساب": [
+"Solde de tout compte",
+"Final settlement"
+],
+"تصفية حساب": [
+"Solde de compte",
+"Account settlement"
+],
+"تصفية حساب نهائية": [
+"Solde de tout compte final",
+"Final account settlement"
+],
+"تصل تلقائيًا إلى حاسوب سكيكدة": [
+"Arrivent automatiquement sur l’ordinateur de Skikda",
+"Arrive automatically on the Skikda computer"
+],
+"تصل للحاسوب عند اتصاله بالإنترنت": [
+"Arrive sur l’ordinateur dès qu’il se connecte à internet",
+"Reaches the computer once it connects to the internet"
+],
+"تصلها زيارات هذا الفرع في": [
+"Les visites de cette branche lui arrivent dans",
+"This branch’s visits reach her in"
+],
+"تضعه المديرة من الإعدادات": [
+"Défini par la directrice dans les paramètres",
+"Set by the director in settings"
+],
+"تطبيق": [
+"Appliquer",
+"Apply"
+],
+"تطور الحالة": [
+"Évolution de l’état",
+"Progress of the condition"
+],
+"تعاملوا مع قسم": [
+"Ont été traités par le service",
+"Were handled by the department"
+],
+"تعديل": [
+"Modifier",
+"Edit"
+],
+"تعديل أسعار بيع المنتجات": [
+"Modifier les prix de vente des produits",
+"Edit product sale prices"
+],
+"تعديل البطاقة": [
+"Modifier la fiche",
+"Edit the card"
+],
+"تعديل الدورة": [
+"Modifier la formation",
+"Edit the course"
+],
+"تعديل الكمية أو الحد": [
+"Modifier la quantité ou le seuil",
+"Edit quantity or threshold"
+],
+"تعديل بيانات عامل": [
+"Modifier les données d’un employé",
+"Edit staff details"
+],
+"تعديل خدمة": [
+"Modifier une prestation",
+"Edit a service"
+],
+"تعديل فرع": [
+"Modifier une branche",
+"Edit a branch"
+],
+"تعديل مخزون": [
+"Ajuster le stock",
+"Adjust stock"
+],
+"تعديل مستخدم": [
+"Modifier un utilisateur",
+"Edit a user"
+],
+"تعديل معلومات الزبون": [
+"Modifier les informations du client",
+"Edit client information"
+],
+"تعديل منتج": [
+"Modifier un produit",
+"Edit a product"
+],
+"تعديل مورد": [
+"Modifier un fournisseur",
+"Edit a supplier"
+],
+"تعذر الاتصال بالحاسوب المركزي": [
+"Impossible de joindre l’ordinateur central",
+"Could not reach the central computer"
+],
+"تعذر الحفظ": [
+"Échec de l’enregistrement",
+"Save failed"
+],
+"تعذّر الإرسال": [
+"Échec de l’envoi",
+"Sending failed"
+],
+"تعذّر التنفيذ": [
+"Échec de l’exécution",
+"Could not execute"
+],
+"تعذّر الحفظ": [
+"Échec de l’enregistrement",
+"Save failed"
+],
+"تعذّر الوصول إلى الحاسوب المركزي": [
+"Impossible d’atteindre l’ordinateur central",
+"Cannot reach the central computer"
+],
+"تعرض للشمس مؤخرًا": [
+"Exposition récente au soleil",
+"Recent sun exposure"
+],
+"تعمير البطاقة": [
+"Remplir la fiche",
+"Fill in the card"
+],
+"تغيير أسعار عند الاستلام": [
+"Changement de prix à la réception",
+"Price changes on receipt"
+],
+"تغيير حالة موعد": [
+"Changement de statut de rendez-vous",
+"Appointment status change"
+],
+"تغيير حد التنبيه": [
+"Changement du seuil d’alerte",
+"Alert threshold change"
+],
+"تغيير سعر خدمة": [
+"Changement de prix d’une prestation",
+"Service price change"
+],
+"تغيير سعر شراء": [
+"Changement du prix d’achat",
+"Purchase price change"
+],
+"تغيير سعر منتج": [
+"Changement du prix d’un produit",
+"Product price change"
+],
+"تغيير كلمة السر أو الإيقاف يصل للحاسوب عند اتصاله بالإنترنت": [
+"Le changement de mot de passe ou l’arrêt arrive sur l’ordinateur dès qu’il se connecte à internet",
+"A password change or stop reaches the computer once it connects to the internet"
+],
+"تغيير كلمة المرور": [
+"Changer le mot de passe",
+"Change password"
+],
+"تغيير كلمة سر حاسوب": [
+"Changer le mot de passe d’un ordinateur",
+"Change a computer’s password"
+],
+"تفاصيل الجلسة والملف": [
+"Détails de la séance et dossier",
+"Session details and file"
+],
+"تفعيل الإرسال التلقائي": [
+"Activer l’envoi automatique",
+"Enable automatic sending"
+],
+"تقدر تبدّلو": [
+"Vous pouvez le changer",
+"You can change it"
+],
+"تقرير الحضور والغيابات والمنح": [
+"Rapport de présence, absences et primes",
+"Attendance, absences and bonuses report"
+],
+"تقرير الشهر": [
+"Rapport du mois",
+"Monthly report"
+],
+"تقرير الشهر في ورقة": [
+"Rapport du mois sur une page",
+"One-page monthly report"
+],
+"تقرير شهر": [
+"Rapport du mois",
+"Report for month"
+],
+"تقشير": [
+"Peeling",
+"Peeling"
+],
+"تقشير أو ليزر مؤخرًا": [
+"Peeling ou laser récent",
+"Recent peeling or laser"
+],
+"تكبير النص": [
+"Agrandir le texte",
+"Larger text"
+],
+"تكلفة": [
+"Coût",
+"Cost"
+],
+"تكلفة المنتجات المباعة في الفترة": [
+"Coût des produits vendus sur la période",
+"Cost of products sold in the period"
+],
+"تكلفة المنتجات المبيعة": [
+"Coût des produits vendus",
+"Cost of goods sold"
+],
+"تكوين": [
+"Formation",
+"Training"
+],
+"تلف": [
+"Avarie",
+"Damaged"
+],
+"تلقائي": [
+"Automatique",
+"Automatic"
+],
+"تلقائيًا كل": [
+"automatiquement toutes les",
+"automatically every"
+],
+"تلقيت شرحًا واضحًا عن الإجراء": [
+"J’ai reçu une explication claire de l’acte",
+"I received a clear explanation of the procedure"
+],
+"تم": [
+"Fait",
+"Done"
+],
+"تم إرسال": [
+"Envoyé",
+"Sent"
+],
+"تم إرسال التذكير": [
+"Le rappel a été envoyé",
+"The reminder was sent"
+],
+"تم إرسال الزبون إلى": [
+"Le client a été envoyé à",
+"The client was sent to"
+],
+"تم إرسال الزبونة إلى": [
+"La cliente a été envoyée à",
+"The client was sent to"
+],
+"تم إرسال المبلغ إلى الاستقبال": [
+"Le montant a été envoyé à l’accueil",
+"The amount was sent to reception"
+],
+"تم إرسال الملخص": [
+"Le résumé a été envoyé",
+"The summary was sent"
+],
+"تم إغلاق صندوق اليوم": [
+"La caisse du jour a été fermée",
+"Today’s cash box was closed"
+],
+"تم إلغاء الدفعة": [
+"Le paiement a été annulé",
+"The payment was cancelled"
+],
+"تم إلغاء الزيارة": [
+"La visite a été annulée",
+"The visit was cancelled"
+],
+"تم إلغاء المبلغ": [
+"Le montant a été annulé",
+"The amount was cancelled"
+],
+"تم إنشاء": [
+"Créé",
+"Created"
+],
+"تم إنشاء الدورة": [
+"La formation a été créée",
+"The course was created"
+],
+"تم إنشاء خطة من": [
+"Un plan a été créé à partir de",
+"A plan was created from"
+],
+"تم إنشاء طلبية الشراء": [
+"La commande d’achat a été créée",
+"The purchase order was created"
+],
+"تم إنهاء الموعد": [
+"Le rendez-vous est terminé",
+"The appointment is finished"
+],
+"تم إنهاء الموعد وإرسال المبلغ إلى الاستقبال للتحصيل": [
+"Rendez-vous terminé et montant envoyé à l’accueil pour encaissement",
+"Appointment finished and amount sent to reception for collection"
+],
+"تم إنهاء الموعد وتحصيل المبلغ": [
+"Rendez-vous terminé et montant encaissé",
+"Appointment finished and amount collected"
+],
+"تم إيقاف": [
+"Arrêté",
+"Stopped"
+],
+"تم إيقافها بدل حذفها": [
+"Désactivé au lieu d’être supprimé",
+"Deactivated instead of deleted"
+],
+"تم استلام الطلبية": [
+"La commande a été reçue",
+"The order was received"
+],
+"تم استيراد": [
+"Importé",
+"Imported"
+],
+"تم الإرسال": [
+"Envoyé",
+"Sent"
+],
+"تم البيع وأصبح المخزون سالبًا": [
+"Vendu, le stock est devenu négatif",
+"Sold, stock became negative"
+],
+"تم البيع وتسجيل المبلغ في الصندوق المركزي": [
+"Vendu et montant enregistré dans la caisse centrale",
+"Sold and amount recorded in the central cash box"
+],
+"تم التحصيل": [
+"Encaissé",
+"Collected"
+],
+"تم التسجيل في الدورة": [
+"Inscrit à la formation",
+"Enrolled in the course"
+],
+"تم التعديل": [
+"Modifié",
+"Updated"
+],
+"تم الحذف": [
+"Supprimé",
+"Deleted"
+],
+"تم الحفظ": [
+"Enregistré",
+"Saved"
+],
+"تم الربط": [
+"Connecté",
+"Linked"
+],
+"تم الرفض": [
+"Refusé",
+"Rejected"
+],
+"تم تحديث المخزون": [
+"Stock mis à jour",
+"Stock updated"
+],
+"تم تحديث حد التنبيه": [
+"Seuil d’alerte mis à jour",
+"Alert threshold updated"
+],
+"تم تحديث سعر الشراء": [
+"Prix d’achat mis à jour",
+"Purchase price updated"
+],
+"تم تسجيل": [
+"Enregistré",
+"Recorded"
+],
+"تم تسجيل استهلاك": [
+"Consommation enregistrée",
+"Usage recorded"
+],
+"تم تسجيل التسديد": [
+"Règlement enregistré",
+"Settlement recorded"
+],
+"تم تسجيل الدفع": [
+"Paiement enregistré",
+"Payment recorded"
+],
+"تم تسجيل الدفع للمورد": [
+"Paiement au fournisseur enregistré",
+"Supplier payment recorded"
+],
+"تم تسجيل الدفعة": [
+"Paiement enregistré",
+"Payment recorded"
+],
+"تم تسجيل المصروف": [
+"Dépense enregistrée",
+"Expense recorded"
+],
+"تم تسجيل المنحة": [
+"Prime enregistrée",
+"Bonus recorded"
+],
+"تم تسجيل الموعد": [
+"Rendez-vous enregistré",
+"Appointment saved"
+],
+"تم تسجيل دفع": [
+"Paiement enregistré",
+"Payment recorded"
+],
+"تم تسجيل دفع الأجرة في المصاريف": [
+"Paiement du salaire enregistré dans les dépenses",
+"Salary payment recorded in expenses"
+],
+"تم تسجيل موعدكم في": [
+"Votre rendez-vous est enregistré à",
+"Your appointment is booked at"
+],
+"تم تشغيل": [
+"Démarré",
+"Started"
+],
+"تم تعديل الفرع": [
+"Branche modifiée",
+"Branch updated"
+],
+"تم تعديل المنتج": [
+"Produit modifié",
+"Product updated"
+],
+"تم تعديل بيانات العامل": [
+"Données de l’employé modifiées",
+"Staff details updated"
+],
+"تم تعديل سعر المتكوّن": [
+"Prix du stagiaire modifié",
+"Trainee price updated"
+],
+"تم تغيير كلمة المرور": [
+"Mot de passe changé",
+"Password changed"
+],
+"تم تغيير كلمة سر": [
+"Mot de passe changé pour",
+"Password changed for"
+],
+"تم توزيع السعر على الحصص غير المدفوعة": [
+"Le prix a été réparti sur les séances non payées",
+"The price was spread over unpaid sessions"
+],
+"تم حذف الحصة": [
+"Séance supprimée",
+"Session deleted"
+],
+"تم حذف المادة ورجعت للمخزون": [
+"Produit supprimé et remis en stock",
+"Material deleted and returned to stock"
+],
+"تم حذف المصروف": [
+"Dépense supprimée",
+"Expense deleted"
+],
+"تم حذف المنحة": [
+"Prime supprimée",
+"Bonus deleted"
+],
+"تم حفظ": [
+"Enregistré",
+"Saved"
+],
+"تم حفظ إعدادات النسخ": [
+"Paramètres de sauvegarde enregistrés",
+"Backup settings saved"
+],
+"تم حفظ الإعدادات": [
+"Paramètres enregistrés",
+"Settings saved"
+],
+"تم حفظ الحصص": [
+"Séances enregistrées",
+"Sessions saved"
+],
+"تم حفظ الحضور ليوم": [
+"Présence enregistrée pour le",
+"Attendance saved for"
+],
+"تم حفظ الخطة": [
+"Plan enregistré",
+"Plan saved"
+],
+"تم حفظ الدورة": [
+"Formation enregistrée",
+"Course saved"
+],
+"تم حفظ الصور": [
+"Photos enregistrées",
+"Photos saved"
+],
+"تم حفظ الطلبية": [
+"Commande enregistrée",
+"Order saved"
+],
+"تم حفظ بطاقة البشرة": [
+"Fiche peau enregistrée",
+"Skin card saved"
+],
+"تم حفظ تعديلات الشهادة": [
+"Modifications du certificat enregistrées",
+"Certificate changes saved"
+],
+"تمت إضافة": [
+"Ajouté",
+"Added"
+],
+"تمت إضافة الحاسوب": [
+"Ordinateur ajouté",
+"Computer added"
+],
+"تمت إضافة الزبون": [
+"Client ajouté",
+"Client added"
+],
+"تمت إضافة العامل": [
+"Employé ajouté",
+"Staff member added"
+],
+"تمت إضافة الفرع": [
+"Branche ajoutée",
+"Branch added"
+],
+"تمت إضافة المستخدم": [
+"Utilisateur ajouté",
+"User added"
+],
+"تمت إضافة الملاحظة إلى الملف": [
+"Note ajoutée au dossier",
+"Note added to the file"
+],
+"تمت إضافة المنتج": [
+"Produit ajouté",
+"Product added"
+],
+"تمت إضافة المورد": [
+"Fournisseur ajouté",
+"Supplier added"
+],
+"تمت الإضافة": [
+"Ajouté",
+"Added"
+],
+"تمت التصفية": [
+"Solde effectué",
+"Settled"
+],
+"تمت المراجعة": [
+"Vérifié",
+"Reviewed"
+],
+"تمت المزامنة مع الحاسوب المركزي": [
+"Synchronisé avec l’ordinateur central",
+"Synced with the central computer"
+],
+"تمت الموافقة ونُفّذت": [
+"Approuvé et exécuté",
+"Approved and done"
+],
+"تمت النسخة الاحتياطية": [
+"Sauvegarde effectuée",
+"Backup done"
+],
+"تمت تصفية حساب": [
+"Solde effectué pour",
+"Account settled for"
+],
+"تمريرات": [
+"passages",
+"passes"
+],
+"تنبيه": [
+"Alerte",
+"Alert"
+],
+"تنبيه صحي": [
+"Alerte santé",
+"Health alert"
+],
+"تنبيه مخزون": [
+"Alerte stock",
+"Stock alert"
+],
+"تنبيهات المخزون": [
+"Alertes stock",
+"Stock alerts"
+],
+"تنبيهات مخزون الفرع": [
+"Alertes stock de la branche",
+"Branch stock alerts"
+],
+"تنظيف": [
+"Nettoyage",
+"Cleansing"
+],
+"تنقص من المخزون وتنحسب على الحصة": [
+"Déduit du stock et compté sur la séance",
+"Deducted from stock and counted on the session"
+],
+"تهنئة الزبائن بعيد ميلادهم": [
+"Souhaiter leur anniversaire aux clients",
+"Wish clients a happy birthday"
+],
+"تهيّج": [
+"Irritation",
+"Irritation"
+],
+"تورم": [
+"Gonflement",
+"Swelling"
+],
+"توزيعه على الحصص غير المدفوعة": [
+"Le répartir sur les séances non payées",
+"Spread it over unpaid sessions"
+],
+"توصيات": [
+"Recommandations",
+"Recommendations"
+],
+"توقف عن العمل": [
+"A cessé de travailler",
+"Stopped working"
+],
+"تولّي": [
+"Devient",
+"Becomes"
+],
+"تُحدد في": [
+"Définies dans",
+"Set in"
+],
+"تُحسب أكثر من رسالة": [
+"Compte pour plus d’un message",
+"Counts as more than one message"
+],
+"تُربط بها العمال والمواعيد": [
+"Les employés et les rendez-vous y sont liés",
+"Staff and appointments are linked to it"
+],
+"تُضاف الكميات إلى مخزون الفرع": [
+"Les quantités sont ajoutées au stock de la branche",
+"Quantities are added to the branch stock"
+],
+"ثبّت البرنامج العام": [
+"Installez le programme général",
+"Install the general program"
+],
+"ثم احفظ أو اطبع": [
+"Puis enregistrez ou imprimez",
+"Then save or print"
+],
+"ثم استوردها": [
+"Puis importez-la",
+"Then import it"
+],
+"ثم اضغط": [
+"Puis appuyez sur",
+"Then press"
+],
+"ثم سجّل الدفع": [
+"Puis enregistrez le paiement",
+"Then record the payment"
+],
+"ثم نسخة لكل شهر": [
+"Puis une copie par mois",
+"Then one copy per month"
+],
+"ثوانٍ": [
+"secondes",
+"seconds"
+],
+"جاري تحديث البرنامج": [
+"Mise à jour du programme en cours",
+"Updating the program"
+],
+"جارية": [
+"En cours",
+"Ongoing"
+],
+"جازي": [
+"Djezzy",
+"Djezzy"
+],
+"جافة": [
+"Sèche",
+"Dry"
+],
+"جدد": [
+"nouveaux",
+"new"
+],
+"جدول الغرف": [
+"Planning des salles",
+"Room schedule"
+],
+"جدول الغرف الأسبوعي": [
+"Planning hebdomadaire des salles",
+"Weekly room schedule"
+],
+"جروح في المنطقة": [
+"Plaies dans la zone",
+"Wounds in the area"
+],
+"جفاف": [
+"Sécheresse",
+"Dryness"
+],
+"جل": [
+"Gel",
+"Gel"
+],
+"جلسة": [
+"Séance",
+"Session"
+],
+"جلسة ليزر": [
+"Séance laser",
+"Laser session"
+],
+"جنسنغ": [
+"Ginseng",
+"Ginseng"
+],
+"حاضر": [
+"Présent",
+"Present"
+],
+"حان": [
+"Échu",
+"Due"
+],
+"حاول الآن": [
+"Réessayez maintenant",
+"Try now"
+],
+"حب الشباب": [
+"Acné",
+"Acne"
+],
+"حبوب": [
+"Comprimés",
+"Pills"
+],
+"حبوب اللقاح": [
+"Pollen",
+"Pollen"
+],
+"حجام": [
+"Praticien hijama",
+"Cupping therapist"
+],
+"حجامة": [
+"Hijama",
+"Cupping"
+],
+"حجامة للظهر": [
+"Hijama du dos",
+"Back cupping"
+],
+"حجز رغم التعارض": [
+"Réserver malgré le conflit",
+"Book despite the conflict"
+],
+"حجم البيانات": [
+"Taille des données",
+"Data size"
+],
+"حد التنبيه": [
+"Seuil d’alerte",
+"Alert threshold"
+],
+"حد التنبيه الافتراضي للمنتجات الجديدة": [
+"Seuil d’alerte par défaut pour les nouveaux produits",
+"Default alert threshold for new products"
+],
+"حد التنبيه الجديد": [
+"Nouveau seuil d’alerte",
+"New alert threshold"
+],
+"حدد الحصص التي يدفعها الزبون الآن": [
+"Sélectionnez les séances que le client paie maintenant",
+"Select the sessions the client pays now"
+],
+"حدد الحصص غير المدفوعة التي يدفعها الزبون": [
+"Sélectionnez les séances impayées que le client paie",
+"Select the unpaid sessions the client pays"
+],
+"حدد السعر": [
+"Fixez le prix",
+"Set the price"
+],
+"حدد منتجات": [
+"Sélectionnez des produits",
+"Select products"
+],
+"حدّث الآن": [
+"Mettre à jour maintenant",
+"Update now"
+],
+"حدّد المبلغ هنا فيظهر عند الاستقبال ليحصّله من الزبون": [
+"Indiquez le montant ici, il apparaît à l’accueil pour l’encaisser du client",
+"Enter the amount here; it appears at reception to collect from the client"
+],
+"حذف": [
+"Supprimer",
+"Delete"
+],
+"حذف الحصة": [
+"Supprimer la séance",
+"Delete the session"
+],
+"حذف المصروف": [
+"Supprimer la dépense",
+"Delete the expense"
+],
+"حذف بند من زيارة": [
+"Supprimer une ligne d’une visite",
+"Delete an item from a visit"
+],
+"حذف حصة": [
+"Supprimer une séance",
+"Delete a session"
+],
+"حذف مصروف": [
+"Supprimer une dépense",
+"Delete an expense"
+],
+"حذف من زيارة": [
+"Supprimer d’une visite",
+"Remove from a visit"
+],
+"حذف هذه المادة": [
+"Supprimer ce produit",
+"Delete this material"
+],
+"حرفًا عربيًا": [
+"caractères arabes",
+"Arabic characters"
+],
+"حساب": [
+"Compte",
+"Account"
+],
+"حساب كل غرفة": [
+"Compte de chaque salle",
+"Each room’s account"
+],
+"حساسة": [
+"Sensible",
+"Sensitive"
+],
+"حساسية": [
+"Allergie",
+"Allergy"
+],
+"حساسية من": [
+"Allergie à",
+"Allergy to"
+],
+"حساسية من مواد التجميل": [
+"Allergie aux produits cosmétiques",
+"Allergy to cosmetics"
+],
+"حساسية من مواد معيّنة": [
+"Allergie à certains produits",
+"Allergy to specific products"
+],
+"حسب الإعدادات": [
+"Selon les paramètres",
+"According to settings"
+],
+"حسب الساعات المكتوبة فوق": [
+"Selon les heures indiquées plus haut",
+"According to the hours set above"
+],
+"حسب الغرفة": [
+"Par salle",
+"By room"
+],
+"حسب الفئة": [
+"Par catégorie",
+"By category"
+],
+"حسب الفرع": [
+"Par branche",
+"By branch"
+],
+"حسب النوع": [
+"Par type",
+"By type"
+],
+"حسب سعر الشراء المسجل": [
+"Selon le prix d’achat enregistré",
+"By the recorded purchase price"
+],
+"حسب طريقة الدفع": [
+"Par mode de paiement",
+"By payment method"
+],
+"حسب نظام المركز": [
+"Selon le système du centre",
+"According to the center’s system"
+],
+"حصة": [
+"Séance",
+"Session"
+],
+"حصة إلى الاستقبال للتحصيل": [
+"séance à l’accueil pour encaissement",
+"session to reception for collection"
+],
+"حصة بدون خدمة": [
+"Séance sans prestation",
+"Session without service"
+],
+"حصة تأخرت": [
+"séance décalée",
+"session shifted"
+],
+"حصة فاتت وما تسجّلتش": [
+"séance passée non enregistrée",
+"past session not recorded"
+],
+"حصة في الصندوق": [
+"Séance en caisse",
+"Session in cash box"
+],
+"حصة مدفوعة من": [
+"Séance payée sur",
+"Session paid of"
+],
+"حصة من باقة": [
+"Séance d’un forfait",
+"Session from a package"
+],
+"حصة من باقة مخلّصة": [
+"Séance d’un forfait payé",
+"Session from a paid package"
+],
+"حصة من بعد تأخرت معاها": [
+"séance suivante décalée avec",
+"following session shifted with"
+],
+"حصص": [
+"Séances",
+"Sessions"
+],
+"حصّلته المديرة بنفسها": [
+"Encaissé par la directrice elle-même",
+"Collected by the director herself"
+],
+"حضور": [
+"Présence",
+"Attendance"
+],
+"حضور العمال": [
+"Présence des employés",
+"Staff attendance"
+],
+"حفظ": [
+"Enregistrer",
+"Save"
+],
+"حفظ الإعدادات": [
+"Enregistrer les paramètres",
+"Save settings"
+],
+"حفظ البطاقة": [
+"Enregistrer la fiche",
+"Save the card"
+],
+"حفظ التعديلات": [
+"Enregistrer les modifications",
+"Save changes"
+],
+"حفظ الحضور": [
+"Enregistrer la présence",
+"Save attendance"
+],
+"حفظ الصور": [
+"Enregistrer les photos",
+"Save photos"
+],
+"حفظ الطلبية": [
+"Enregistrer la commande",
+"Save the order"
+],
+"حفظ الملاحظة": [
+"Enregistrer la note",
+"Save the note"
+],
+"حفظ الموعد الجديد": [
+"Enregistrer le nouveau rendez-vous",
+"Save the new appointment"
+],
+"حفظ تعديل الطلبية": [
+"Enregistrer la modification de la commande",
+"Save order changes"
+],
+"حفظ واختيار": [
+"Enregistrer et choisir",
+"Save and choose"
+],
+"حقن": [
+"Injections",
+"Injections"
+],
+"حكة": [
+"Démangeaisons",
+"Itching"
+],
+"حمل": [
+"Grossesse",
+"Pregnancy"
+],
+"حمّل القائمة": [
+"Télécharger la liste",
+"Download the list"
+],
+"حواسيب غير متصلة": [
+"Ordinateurs non connectés",
+"Computers offline"
+],
+"حوالي": [
+"environ",
+"about"
+],
+"حول العينين": [
+"Contour des yeux",
+"Around the eyes"
+],
+"حُرّر بـ": [
+"Établi à",
+"Issued at"
+],
+"خالص": [
+"Pur",
+"Pure"
+],
+"خدمات فائدتها ضعيفة": [
+"Prestations peu rentables",
+"Low-profit services"
+],
+"خدمة": [
+"Prestation",
+"Service"
+],
+"خدمة أخرى ولا منتج": [
+"Autre prestation ou produit",
+"Another service or product"
+],
+"خدمة تجميل": [
+"Prestation esthétique",
+"Beauty service"
+],
+"خدمة جديدة": [
+"Nouvelle prestation",
+"New service"
+],
+"خرج": [
+"Sorti",
+"Out"
+],
+"خرج من الصناديق": [
+"Sorti des caisses",
+"Out of the cash boxes"
+],
+"خرج من صندوق": [
+"Sorti de la caisse",
+"Out of the cash box"
+],
+"خروج": [
+"Sortie",
+"Exit"
+],
+"خصم الغياب": [
+"Retenue pour absence",
+"Absence deduction"
+],
+"خصم الغياب غير المبرر ونصف الأيام": [
+"Retenue pour absences injustifiées et demi-journées",
+"Deduction for unjustified absences and half days"
+],
+"خطأ": [
+"Erreur",
+"Error"
+],
+"خطة جلسات": [
+"Plan de séances",
+"Session plan"
+],
+"خطة حصص": [
+"Plan de séances",
+"Session plan"
+],
+"خطة حصص جديدة": [
+"Nouveau plan de séances",
+"New session plan"
+],
+"خطط الحصص": [
+"Plans de séances",
+"Session plans"
+],
+"خُصم": [
+"Déduit",
+"Deducted"
+],
+"د": [
+"min",
+"min"
+],
+"دج": [
+"DA",
+"DA"
+],
+"دج صافي": [
+"DA net",
+"DA net"
+],
+"دخول": [
+"Entrée",
+"Entry"
+],
+"دفع": [
+"Paiement",
+"Payment"
+],
+"دفع للمورد": [
+"Payer le fournisseur",
+"Pay the supplier"
+],
+"دفعة": [
+"Paiement",
+"Payment"
+],
+"دفعة مباشرة": [
+"Paiement direct",
+"Direct payment"
+],
+"دفعة مباشرة في الاستقبال": [
+"Paiement direct à l’accueil",
+"Direct payment at reception"
+],
+"دقائق بلا استعمال": [
+"minutes sans utilisation",
+"minutes idle"
+],
+"دقيقة": [
+"minute",
+"minute"
+],
+"دقيقة على الأقل": [
+"minutes au moins",
+"minutes at least"
+],
+"دهن": [
+"Huile",
+"Oil"
+],
+"دهنية": [
+"Grasse",
+"Oily"
+],
+"دواء حب الشباب": [
+"Traitement anti-acné",
+"Acne medication"
+],
+"دورات": [
+"Formations",
+"Courses"
+],
+"دورة": [
+"Formation",
+"Course"
+],
+"دورة الحجامة العلاجية": [
+"Formation de hijama thérapeutique",
+"Therapeutic cupping course"
+],
+"دورة تكوينية": [
+"Formation professionnelle",
+"Training course"
+],
+"دورة جديدة": [
+"Nouvelle formation",
+"New course"
+],
+"دين": [
+"Dette",
+"Debt"
+],
+"ديون الزبائن": [
+"Dettes clients",
+"Client debts"
+],
+"ديون الزبائن الحالية": [
+"Dettes clients actuelles",
+"Current client debts"
+],
+"ديون على الزبون": [
+"Dettes du client",
+"Client debts"
+],
+"دُفعت": [
+"Payées",
+"Paid"
+],
+"دُفعت يوم": [
+"Payée le",
+"Paid on"
+],
+"ذكر": [
+"Homme",
+"Male"
+],
+"رؤوس سوداء": [
+"Points noirs",
+"Blackheads"
+],
+"رابط البوابة": [
+"Lien de la passerelle",
+"Gateway URL"
+],
+"راتب شهري ثابت": [
+"Salaire mensuel fixe",
+"Fixed monthly salary"
+],
+"راجع الاسم والسعر": [
+"Vérifiez le nom et le prix",
+"Check the name and price"
+],
+"راجع السجل": [
+"Consultez le journal",
+"Check the log"
+],
+"ربط": [
+"Lier",
+"Link"
+],
+"ربط الحاسوب": [
+"Lier l’ordinateur",
+"Link the computer"
+],
+"ربط حاسوب جديد": [
+"Lier un nouvel ordinateur",
+"Link a new computer"
+],
+"ربط حاسوب فرع": [
+"Lier un ordinateur de branche",
+"Link a branch computer"
+],
+"ربط هذا الحاسوب": [
+"Lier cet ordinateur",
+"Link this computer"
+],
+"رجع نص الشهادة إلى النص الافتراضي": [
+"Le texte du certificat est revenu au texte par défaut",
+"The certificate text was reset to default"
+],
+"رجوع": [
+"Retour",
+"Back"
+],
+"رد غير مفهوم من الحاسوب المركزي": [
+"Réponse incompréhensible de l’ordinateur central",
+"Unexpected response from the central computer"
+],
+"رد فعل البشرة": [
+"Réaction de la peau",
+"Skin reaction"
+],
+"رسائل": [
+"Messages",
+"Messages"
+],
+"رسائل أخرى": [
+"Autres messages",
+"Other messages"
+],
+"رسائل للمديرة في هاتفها": [
+"Messages à la directrice sur son téléphone",
+"Messages to the director’s phone"
+],
+"رسالة إلى قائمة الإرسال": [
+"Message à la liste d’envoi",
+"Message to the send list"
+],
+"رسالة تأكيد للزبون عند تسجيل موعده": [
+"Message de confirmation au client à la prise de rendez-vous",
+"Confirmation message to the client when booking"
+],
+"رسالة تجريبية": [
+"Message de test",
+"Test message"
+],
+"رسالة تجريبية من": [
+"Message de test de",
+"Test message from"
+],
+"رسالة جماعية للزبائن": [
+"Message groupé aux clients",
+"Group message to clients"
+],
+"رسالة فورية كي يطلب عامل تخفيض أو إلغاء": [
+"Message instantané quand un employé demande une remise ou une annulation",
+"Instant message when staff request a discount or cancellation"
+],
+"رسالة في انتظار الإرسال": [
+"message en attente d’envoi",
+"message waiting to be sent"
+],
+"رسالة كل دقيقة": [
+"message par minute",
+"message per minute"
+],
+"رضاعة": [
+"Allaitement",
+"Breastfeeding"
+],
+"رطّبي البشرة صباحًا ومساءً": [
+"Hydratez la peau matin et soir",
+"Moisturize the skin morning and evening"
+],
+"رطّبي المنطقة بكريم مهدّئ إذا كان احمرار": [
+"Hydratez la zone avec une crème apaisante en cas de rougeur",
+"Moisturize the area with a soothing cream if red"
+],
+"رفض": [
+"Refuser",
+"Reject"
+],
+"رفع": [
+"Envoyer",
+"Upload"
+],
+"رقم": [
+"Numéro",
+"Number"
+],
+"رقم الضمان الاجتماعي": [
+"Numéro de sécurité sociale",
+"Social security number"
+],
+"رقم الهاتف": [
+"Numéro de téléphone",
+"Phone number"
+],
+"رقم الوصل": [
+"Numéro du reçu",
+"Receipt number"
+],
+"رقم بطاقة التعريف": [
+"Numéro de carte d’identité",
+"ID card number"
+],
+"رمز الربط": [
+"Code de liaison",
+"Pairing code"
+],
+"رمز الربط الجديد لـ": [
+"Nouveau code de liaison pour",
+"New pairing code for"
+],
+"رمز ربط": [
+"Code de liaison",
+"Pairing code"
+],
+"رمز ربط من": [
+"Code de liaison de",
+"Pairing code from"
+],
+"روتين العناية": [
+"Routine de soin",
+"Skincare routine"
+],
+"روتين العناية الحالي": [
+"Routine de soin actuelle",
+"Current skincare routine"
+],
+"روح لـ": [
+"Allez à",
+"Go to"
+],
+"روكيتان": [
+"Roaccutane",
+"Roaccutane"
+],
+"رولر": [
+"Roller",
+"Roller"
+],
+"زادت": [
+"ont augmenté",
+"increased"
+],
+"زاروا المركز منذ": [
+"ont visité le centre depuis",
+"visited the center since"
+],
+"زبائن المديرة": [
+"Clients de la directrice",
+"Director’s clients"
+],
+"زبائن جدد": [
+"Nouveaux clients",
+"New clients"
+],
+"زبائن داخل العلاج الآن": [
+"Clients en soin maintenant",
+"Clients in treatment now"
+],
+"زبائن في الغرف الآن": [
+"Clients dans les salles maintenant",
+"Clients in the rooms now"
+],
+"زبون": [
+"Client",
+"Client"
+],
+"زبون جديد": [
+"Nouveau client",
+"New client"
+],
+"زبوناتي الآن": [
+"Mes clientes maintenant",
+"My clients now"
+],
+"زمرة الدم": [
+"Groupe sanguin",
+"Blood type"
+],
+"زيارة": [
+"Visite",
+"Visit"
+],
+"زيارة جديدة": [
+"Nouvelle visite",
+"New visit"
+],
+"زيت": [
+"Huile",
+"Oil"
+],
+"زيدها تحت": [
+"Ajoutez-la ci-dessous",
+"Add it below"
+],
+"زيوت": [
+"Huiles",
+"Oils"
+],
+"ساعات": [
+"heures",
+"hours"
+],
+"ساعة": [
+"heure",
+"hour"
+],
+"ساعة الخروج": [
+"Heure de sortie",
+"Exit time"
+],
+"ساعة الدخول": [
+"Heure d’entrée",
+"Entry time"
+],
+"ساعة هاذ الحاسوب غالطة بـ": [
+"L’heure de cet ordinateur est fausse de",
+"This computer’s clock is off by"
+],
+"سبب الإلغاء": [
+"Motif d’annulation",
+"Cancellation reason"
+],
+"سبب الغياب": [
+"Motif d’absence",
+"Absence reason"
+],
+"سبب المغادرة": [
+"Motif du départ",
+"Reason for leaving"
+],
+"سجل الحضور خلال الشهر": [
+"Registre de présence du mois",
+"Monthly attendance record"
+],
+"سجل الرسائل": [
+"Journal des messages",
+"Message log"
+],
+"سجل العمليات": [
+"Journal des opérations",
+"Activity log"
+],
+"سجّل المتكونين فيها": [
+"Inscrivez-y les stagiaires",
+"Enroll trainees in it"
+],
+"سجّل فقط من غاب": [
+"N’enregistrez que les absents",
+"Only record those absent"
+],
+"سجّلها": [
+"Enregistrez-la",
+"Record it"
+],
+"سجّلي": [
+"Enregistrez",
+"Record"
+],
+"سطر": [
+"Ligne",
+"Line"
+],
+"سعر": [
+"Prix",
+"Price"
+],
+"سعر آخر لهذه الزبونة": [
+"Autre prix pour cette cliente",
+"Another price for this client"
+],
+"سعر إجمالي": [
+"Prix total",
+"Total price"
+],
+"سعر إجمالي ثابت": [
+"Prix total fixe",
+"Fixed total price"
+],
+"سعر الباقة": [
+"Prix du forfait",
+"Package price"
+],
+"سعر الباقة كاملة": [
+"Prix du forfait complet",
+"Full package price"
+],
+"سعر البيع": [
+"Prix de vente",
+"Sale price"
+],
+"سعر البيع الحالي": [
+"Prix de vente actuel",
+"Current sale price"
+],
+"سعر الحصة": [
+"Prix de la séance",
+"Session price"
+],
+"سعر الحصة كاملة": [
+"Prix de la séance complète",
+"Full session price"
+],
+"سعر الحصص": [
+"Prix des séances",
+"Sessions price"
+],
+"سعر الخدمة": [
+"Prix de la prestation",
+"Service price"
+],
+"سعر الخطة": [
+"Prix du plan",
+"Plan price"
+],
+"سعر الدورة": [
+"Prix de la formation",
+"Course price"
+],
+"سعر الشراء": [
+"Prix d’achat",
+"Purchase price"
+],
+"سعر الشراء تبدّل": [
+"Le prix d’achat a changé",
+"The purchase price changed"
+],
+"سعر الشراء للوحدة": [
+"Prix d’achat unitaire",
+"Unit purchase price"
+],
+"سعر الشراء للوحدة من فاتورة المورد": [
+"Prix d’achat unitaire selon la facture du fournisseur",
+"Unit purchase price from the supplier invoice"
+],
+"سعر الشراء من فاتورة المورد": [
+"Prix d’achat selon la facture du fournisseur",
+"Purchase price from the supplier invoice"
+],
+"سعر الوحدة": [
+"Prix unitaire",
+"Unit price"
+],
+"سعر باقة": [
+"Prix du forfait",
+"Package price"
+],
+"سعر شراء المنتجات المبيعة": [
+"Prix d’achat des produits vendus",
+"Purchase cost of products sold"
+],
+"سعر شراء الوحدة": [
+"Prix d’achat unitaire",
+"Unit purchase price"
+],
+"سكري": [
+"Diabète",
+"Diabetes"
+],
+"سم النحل": [
+"Venin d’abeille",
+"Bee venom"
+],
+"سمراء": [
+"Mate",
+"Dark"
+],
+"سمراء داكنة": [
+"Très mate",
+"Very dark"
+],
+"سنة": [
+"an",
+"year"
+],
+"سيتحدث قريبًا": [
+"Sera bientôt mis à jour",
+"Will update soon"
+],
+"سيستقبلها": [
+"La recevra",
+"Will receive it"
+],
+"سيلوليت": [
+"Cellulite",
+"Cellulite"
+],
+"سيُرجع المخزون إن كانت بيعًا": [
+"Le stock sera rétabli s’il s’agissait d’une vente",
+"Stock will be restored if it was a sale"
+],
+"سيُسترجع هذا اليوم عند إعادة تشغيل البرنامج": [
+"Ce jour sera restauré au redémarrage du programme",
+"This day will be restored when the program restarts"
+],
+"سُلّمت هذه الشهادة للمعني": [
+"Ce certificat a été remis à l’intéressé(e)",
+"This certificate was handed to the holder"
+],
+"شخص يُتصل به عند الطوارئ": [
+"Personne à contacter en cas d’urgence",
+"Emergency contact person"
+],
+"شراء": [
+"Achat",
+"Purchase"
+],
+"شراء سلع": [
+"Achat de marchandises",
+"Goods purchase"
+],
+"شعر": [
+"Cheveux",
+"Hair"
+],
+"شعر زائد": [
+"Poils superflus",
+"Excess hair"
+],
+"شغّل أو أوقف لكل مكان": [
+"Activez ou désactivez pour chaque poste",
+"Turn on or off for each place"
+],
+"شكرا لثقتكم": [
+"Merci de votre confiance",
+"Thank you for your trust"
+],
+"شهادة": [
+"Certificat",
+"Certificate"
+],
+"شهادة تكوين": [
+"Certificat de formation",
+"Training certificate"
+],
+"شهر": [
+"mois",
+"month"
+],
+"شهريًا": [
+"par mois",
+"monthly"
+],
+"شوفي سعرها ولا المواد اللي تستعمل فيها": [
+"Vérifiez son prix ou les produits utilisés",
+"Check its price or the materials used"
+],
+"شوفي سعرها ولا موادها": [
+"Vérifiez son prix ou ses produits",
+"Check its price or materials"
+],
+"شيء آخر": [
+"Autre chose",
+"Something else"
+],
+"صافي الفترة السابقة": [
+"Net de la période précédente",
+"Previous period net"
+],
+"صالح يومين": [
+"Valable deux jours",
+"Valid for two days"
+],
+"صباح الخير": [
+"Bonjour",
+"Good morning"
+],
+"صباحًا": [
+"le matin",
+"in the morning"
+],
+"صدفية": [
+"Psoriasis",
+"Psoriasis"
+],
+"صرّحت بكل أمراضي المزمنة وحساسيتي والأدوية التي أتناولها": [
+"J’ai déclaré toutes mes maladies chroniques, allergies et médicaments",
+"I have declared all my chronic illnesses, allergies and medications"
+],
+"صفة الموقّع": [
+"Qualité du signataire",
+"Signatory’s capacity"
+],
+"صفحات المتابعة": [
+"Pages de suivi",
+"Follow-up pages"
+],
+"صفحة التنبيهات والطباعة": [
+"Page des alertes et de l’impression",
+"Alerts and printing page"
+],
+"صلاحيات": [
+"Permissions",
+"Permissions"
+],
+"صلاحيات العمال": [
+"Permissions des employés",
+"Staff permissions"
+],
+"صلاحية قريبة": [
+"Expiration proche",
+"Expiring soon"
+],
+"صلاحية قريبة أو منتهية": [
+"Expiration proche ou dépassée",
+"Expiring or expired"
+],
+"صندوق": [
+"Caisse",
+"Cash box"
+],
+"صندوق الفرع": [
+"Caisse de la branche",
+"Branch cash box"
+],
+"صندوق اليوم": [
+"Caisse du jour",
+"Today’s cash box"
+],
+"صندوق هذا الشهر": [
+"Caisse de ce mois",
+"This month’s cash box"
+],
+"صنع نسخة احتياطية الآن": [
+"Faire une sauvegarde maintenant",
+"Make a backup now"
+],
+"صور قبل": [
+"Photos avant",
+"Before photos"
+],
+"صورة": [
+"Photo",
+"Photo"
+],
+"صيانة وإصلاح": [
+"Entretien et réparation",
+"Maintenance and repair"
+],
+"ضبط الوقت تلقائيًا": [
+"Régler l’heure automatiquement",
+"Set time automatically"
+],
+"ضرائب ورسوم": [
+"Impôts et taxes",
+"Taxes and fees"
+],
+"ضع هذا المفتاح في ملف": [
+"Mettez cette clé dans le fichier",
+"Put this key in the file"
+],
+"ضع هنا الرابط واسم المستخدم وكلمة المرور التي يعطيك إياها التطبيق": [
+"Saisissez ici le lien, l’identifiant et le mot de passe donnés par l’application",
+"Enter here the link, username and password given by the app"
+],
+"ضغط": [
+"Tension",
+"Blood pressure"
+],
+"ضمن الباقة": [
+"Inclus dans le forfait",
+"Included in the package"
+],
+"طاقة": [
+"Énergie",
+"Energy"
+],
+"طباعة": [
+"Imprimer",
+"Print"
+],
+"طباعة التقرير": [
+"Imprimer le rapport",
+"Print the report"
+],
+"طباعة الشهادة": [
+"Imprimer le certificat",
+"Print the certificate"
+],
+"طباعة الطلبية للمورد": [
+"Imprimer la commande pour le fournisseur",
+"Print the order for the supplier"
+],
+"طباعة القائمة": [
+"Imprimer la liste",
+"Print the list"
+],
+"طباعة الكشف": [
+"Imprimer le relevé",
+"Print the statement"
+],
+"طباعة بطاقة الخطة للزبون": [
+"Imprimer la carte du plan pour le client",
+"Print the plan card for the client"
+],
+"طباعة كشوف الأجرة لكل العمال": [
+"Imprimer les fiches de paie de tous les employés",
+"Print payslips for all staff"
+],
+"طباعة كل الكشوف": [
+"Imprimer tous les relevés",
+"Print all statements"
+],
+"طباعة وثيقة الموافقة": [
+"Imprimer le formulaire de consentement",
+"Print the consent form"
+],
+"طرق الدفع": [
+"Modes de paiement",
+"Payment methods"
+],
+"طريقة الأجر": [
+"Mode de rémunération",
+"Pay method"
+],
+"طريقة الحضور": [
+"Mode de présence",
+"Attendance mode"
+],
+"طريقة الدفع": [
+"Mode de paiement",
+"Payment method"
+],
+"طريقته": [
+"Sa méthode",
+"Its method"
+],
+"طلب": [
+"Demande",
+"Request"
+],
+"طلب إلغاء": [
+"Demande d’annulation",
+"Cancellation request"
+],
+"طلب إلغاء هذا الوصل من المديرة": [
+"Demander à la directrice l’annulation de ce reçu",
+"Ask the director to cancel this receipt"
+],
+"طلب استرجاع نسخة": [
+"Demande de restauration d’une sauvegarde",
+"Backup restore request"
+],
+"طلب الاستقبال": [
+"Demande de l’accueil",
+"Reception request"
+],
+"طلب الزبون": [
+"Demande du client",
+"Client request"
+],
+"طلب الزبون عند الاستقبال": [
+"Demande du client à l’accueil",
+"Client request at reception"
+],
+"طلب تخفيض": [
+"Demande de remise",
+"Discount request"
+],
+"طلب سعر آخر من المديرة": [
+"Demander un autre prix à la directrice",
+"Ask the director for another price"
+],
+"طلب موافقة": [
+"Demande d’accord",
+"Approval request"
+],
+"طلب ينتظر موافقتك": [
+"Une demande attend votre accord",
+"A request awaits your approval"
+],
+"طلبات الموافقة": [
+"Demandes d’accord",
+"Approval requests"
+],
+"طلبات تنتظر موافقتك": [
+"Demandes en attente de votre accord",
+"Requests awaiting your approval"
+],
+"طلبه": [
+"Sa demande",
+"Their request"
+],
+"طلبيات الشراء": [
+"Commandes d’achat",
+"Purchase orders"
+],
+"طلبية": [
+"Commande",
+"Order"
+],
+"طلبية أوتوماتيكية": [
+"Commande automatique",
+"Automatic order"
+],
+"طلبية شراء": [
+"Commande d’achat",
+"Purchase order"
+],
+"طلبية شراء جديدة": [
+"Nouvelle commande d’achat",
+"New purchase order"
+],
+"طلبية شراء رقم": [
+"Commande d’achat n°",
+"Purchase order no."
+],
+"طلبية شراء من المحدد": [
+"Commande d’achat de la sélection",
+"Purchase order from selection"
+],
+"طُبع في": [
+"Imprimé le",
+"Printed on"
+],
+"طُبعت": [
+"Imprimées",
+"Printed"
+],
+"طُبعت وثيقة الموافقة على": [
+"Formulaire de consentement imprimé pour",
+"Consent form printed for"
+],
+"عادية": [
+"Normale",
+"Normal"
+],
+"عام": [
+"Général",
+"General"
+],
+"عامل": [
+"Employé",
+"Staff member"
+],
+"عدة حصص": [
+"Plusieurs séances",
+"Several sessions"
+],
+"عدد أيام العمل في الشهر": [
+"Nombre de jours de travail par mois",
+"Working days per month"
+],
+"عدد الأولاد": [
+"Nombre d’enfants",
+"Number of children"
+],
+"عدد الحصص": [
+"Nombre de séances",
+"Number of sessions"
+],
+"عدد الساعات": [
+"Nombre d’heures",
+"Number of hours"
+],
+"عدّ النقود": [
+"Compter l’argent",
+"Count the cash"
+],
+"عرض": [
+"Afficher",
+"Show"
+],
+"عرض القائمة": [
+"Afficher la liste",
+"Show the list"
+],
+"عرض كل الفروع": [
+"Afficher toutes les branches",
+"Show all branches"
+],
+"عرض وطباعة القائمة": [
+"Afficher et imprimer la liste",
+"Show and print the list"
+],
+"عزباء": [
+"Célibataire",
+"Single"
+],
+"عسل": [
+"Miel",
+"Honey"
+],
+"عطلة": [
+"Congé",
+"Leave"
+],
+"عطلة مرضية": [
+"Arrêt maladie",
+"Sick leave"
+],
+"علاج المديرة": [
+"Soin de la directrice",
+"Director’s treatment"
+],
+"علامات تمدد": [
+"Vergetures",
+"Stretch marks"
+],
+"علاوة": [
+"Prime",
+"Allowance"
+],
+"على": [
+"le",
+"on"
+],
+"على الأقل": [
+"au moins",
+"at least"
+],
+"على الحاسوب الجديد واكتب الرمز": [
+"sur le nouvel ordinateur et saisissez le code",
+"on the new computer and enter the code"
+],
+"على الساعة": [
+"à",
+"at"
+],
+"على الشهر الفايت": [
+"par rapport au mois précédent",
+"vs. last month"
+],
+"على جلسات الليزر في": [
+"sur les séances laser à",
+"on laser sessions at"
+],
+"على حاسوب استقبال الفرع": [
+"sur l’ordinateur d’accueil de la branche",
+"on the branch reception computer"
+],
+"عمال الفرع اليوم": [
+"Employés de la branche aujourd’hui",
+"Branch staff today"
+],
+"عمل يوم الراحة": [
+"Travail un jour de repos",
+"Work on a day off"
+],
+"عمليات الصندوق اليوم": [
+"Opérations de caisse du jour",
+"Today’s cash operations"
+],
+"عمليات الفرع": [
+"Opérations de la branche",
+"Branch operations"
+],
+"عمليات اليوم": [
+"Opérations du jour",
+"Today’s operations"
+],
+"عملية": [
+"opération",
+"operation"
+],
+"عملية تنتظر الإرسال": [
+"opération en attente d’envoi",
+"operation waiting to be sent"
+],
+"عمّريها في أول جلسة": [
+"Remplissez-la lors de la première séance",
+"Fill it in at the first session"
+],
+"عند": [
+"chez",
+"at"
+],
+"عند إدخال سلعة": [
+"À l’entrée de marchandise",
+"When stock comes in"
+],
+"عند الاستقبال": [
+"À l’accueil",
+"At reception"
+],
+"عند الاستلام": [
+"À la réception",
+"On receipt"
+],
+"عند الطوارئ": [
+"en cas d’urgence",
+"in an emergency"
+],
+"عندما يدفع الزبون أقل من المستحق عند التحصيل": [
+"Quand le client paie moins que le dû à l’encaissement",
+"When the client pays less than due at collection"
+],
+"عنوان الحاسوب المركزي": [
+"Adresse de l’ordinateur central",
+"Central computer address"
+],
+"عيد ميلاد سعيد وسنة مليئة بالصحة والعافية": [
+"Joyeux anniversaire et une année pleine de santé et de bien-être",
+"Happy birthday and a year full of health and well-being"
+],
+"عُدّ النقود الموجودة في الصندوق الآن واكتب المبلغ": [
+"Comptez l’argent présent dans la caisse maintenant et saisissez le montant",
+"Count the cash in the box now and enter the amount"
+],
+"غائب": [
+"Absent",
+"Absent"
+],
+"غائب يوم كامل": [
+"Absent toute la journée",
+"Absent all day"
+],
+"غابت": [
+"Absente",
+"Absent"
+],
+"غادر": [
+"Parti",
+"Left"
+],
+"غادر العمل يوم": [
+"A quitté le travail le",
+"Left work on"
+],
+"غدًا يبدأ صندوق جديد من صفر": [
+"Demain une nouvelle caisse commence à zéro",
+"Tomorrow a new cash box starts from zero"
+],
+"غرفة التجميل": [
+"Salle d’esthétique",
+"Beauty room"
+],
+"غرفة الحجامة": [
+"Salle de hijama",
+"Cupping room"
+],
+"غرفة الحجامة الآن": [
+"Salle de hijama maintenant",
+"Cupping room now"
+],
+"غرفة الليزر": [
+"Salle laser",
+"Laser room"
+],
+"غرفة المديرة": [
+"Salle de la directrice",
+"Director’s room"
+],
+"غرفة تجميل": [
+"Salle d’esthétique",
+"Beauty room"
+],
+"غرفة ليزر": [
+"Salle laser",
+"Laser room"
+],
+"غياب": [
+"Absence",
+"Absence"
+],
+"غياب مبرر": [
+"Absence justifiée",
+"Justified absence"
+],
+"غياب نصف يوم": [
+"Absence d’une demi-journée",
+"Half-day absence"
+],
+"غياب يوم": [
+"Absence d’un jour",
+"One-day absence"
+],
+"غياب يوم كامل": [
+"Absence d’une journée complète",
+"Full-day absence"
+],
+"غيابات": [
+"Absences",
+"Absences"
+],
+"غيابات الشهر": [
+"Absences du mois",
+"Monthly absences"
+],
+"غير كافٍ في هذا الفرع": [
+"insuffisant dans cette branche",
+"insufficient in this branch"
+],
+"غير مؤمَّن": [
+"Non sécurisé",
+"Not secure"
+],
+"غير متصل": [
+"Hors ligne",
+"Offline"
+],
+"غير متصل بالحاسوب المركزي": [
+"Non connecté à l’ordinateur central",
+"Not connected to the central computer"
+],
+"غير مدفوعة": [
+"Non payées",
+"Unpaid"
+],
+"غير مفعلة": [
+"Non activée",
+"Not enabled"
+],
+"غير وافقي": [
+"il suffit d’approuver",
+"just approve"
+],
+"فائدة الحصة الصافية": [
+"Bénéfice net de la séance",
+"Session net profit"
+],
+"فائدة الحصة الوحدة": [
+"Bénéfice par séance",
+"Profit per session"
+],
+"فائدة كل الحصص": [
+"Bénéfice de toutes les séances",
+"Profit of all sessions"
+],
+"فائدة كل حصة": [
+"Bénéfice par séance",
+"Profit per session"
+],
+"فائدة كل خدمة": [
+"Bénéfice par prestation",
+"Profit per service"
+],
+"فائدة هذه الحصة": [
+"Bénéfice de cette séance",
+"Profit of this session"
+],
+"فات الوقت": [
+"L’heure est passée",
+"Time has passed"
+],
+"فاتورة": [
+"Facture",
+"Invoice"
+],
+"فارغ": [
+"Vide",
+"Empty"
+],
+"فالمديرة لم تحدده بعد": [
+"la directrice ne l’a pas encore fixé",
+"the director has not set it yet"
+],
+"فتح": [
+"Ouvrir",
+"Open"
+],
+"فتح الصندوق المركزي": [
+"Ouvrir la caisse centrale",
+"Open the central cash box"
+],
+"فتح الملف": [
+"Ouvrir le dossier",
+"Open the file"
+],
+"فترة الأجرة": [
+"Période de paie",
+"Pay period"
+],
+"فرع": [
+"Branche",
+"Branch"
+],
+"فرع الحروش للطب البديل": [
+"Branche d’El Harrouch de médecine alternative",
+"El Harrouch alternative medicine branch"
+],
+"فرع المديرة": [
+"Branche de la directrice",
+"Director’s branch"
+],
+"فرع سكيكدة للطب البديل": [
+"Branche de Skikda de médecine alternative",
+"Skikda alternative medicine branch"
+],
+"فرق الصندوق": [
+"Écart de caisse",
+"Cash difference"
+],
+"فرق العدّ في الفترة": [
+"Écart de comptage sur la période",
+"Count difference in the period"
+],
+"فرق في عدّ الصندوق": [
+"Écart dans le comptage de caisse",
+"Cash count difference"
+],
+"فروة الرأس": [
+"Cuir chevelu",
+"Scalp"
+],
+"فشل": [
+"Échec",
+"Failed"
+],
+"فشل الإرسال": [
+"Échec de l’envoi",
+"Sending failed"
+],
+"فشلت النسخة": [
+"La sauvegarde a échoué",
+"Backup failed"
+],
+"فعّله من": [
+"Activez-le depuis",
+"Enable it from"
+],
+"فلاشة أو مجلد": [
+"Clé USB ou dossier",
+"USB stick or folder"
+],
+"فواتير الشراء": [
+"Factures d’achat",
+"Purchase invoices"
+],
+"فوق": [
+"Au-dessus",
+"Above"
+],
+"في": [
+"dans",
+"in"
+],
+"في أي غرفة": [
+"Dans quelle salle",
+"In which room"
+],
+"في الانتظار": [
+"En attente",
+"Waiting"
+],
+"في الساعة": [
+"à l’heure",
+"at the time"
+],
+"في العلاج": [
+"En soin",
+"In treatment"
+],
+"في انتظار أول اتصال بالحاسوب المركزي لجلب المستخدمين والقوائم": [
+"En attente de la première connexion à l’ordinateur central pour récupérer les utilisateurs et les listes",
+"Waiting for the first connection to the central computer to fetch users and lists"
+],
+"في انتظاركم": [
+"Nous vous attendons",
+"We look forward to seeing you"
+],
+"في صفحة المنتجات": [
+"dans la page Produits",
+"on the Products page"
+],
+"في غرفتها": [
+"dans sa salle",
+"in her room"
+],
+"في كل فرع له صلاحياته": [
+"Dans chaque branche ses permissions",
+"Each branch has its permissions"
+],
+"فيلر": [
+"Filler",
+"Filler"
+],
+"فيها كل المنتجات بأسعارها": [
+"Avec tous les produits et leurs prix",
+"With all products and their prices"
+],
+"فيُضاف له يوم": [
+"Un jour lui est ajouté",
+"A day is added to them"
+],
+"قائمة الانتظار": [
+"File d’attente",
+"Waiting list"
+],
+"قائمة العمال": [
+"Liste des employés",
+"Staff list"
+],
+"قائمة المنتجات التي قاربت على النفاد": [
+"Liste des produits presque épuisés",
+"List of products running low"
+],
+"قارب على النفاد": [
+"Presque épuisé",
+"Running low"
+],
+"قبل": [
+"Avant",
+"Before"
+],
+"قبل الاسترجاع": [
+"avant la restauration",
+"before restoring"
+],
+"قبل الطباعة": [
+"avant l’impression",
+"before printing"
+],
+"قبل الموعد تلقائيًا": [
+"Avant le rendez-vous automatiquement",
+"Before the appointment automatically"
+],
+"قبل بيوم": [
+"La veille",
+"The day before"
+],
+"قبل بيوم والصباح": [
+"La veille et le matin",
+"The day before and in the morning"
+],
+"قد": [
+"déjà",
+"already"
+],
+"قرأت وفهمت ووافقت": [
+"J’ai lu, compris et accepté",
+"I have read, understood and agreed"
+],
+"قطن": [
+"Coton",
+"Cotton"
+],
+"قلّلي الملح والسكر": [
+"Réduisez le sel et le sucre",
+"Reduce salt and sugar"
+],
+"قمحية": [
+"Mate",
+"Olive"
+],
+"قمحية فاتحة": [
+"Mate claire",
+"Light olive"
+],
+"قيمة المخزون": [
+"Valeur du stock",
+"Stock value"
+],
+"كؤوس إضافية": [
+"Ventouses supplémentaires",
+"Extra cups"
+],
+"كؤوس الحجامة": [
+"Ventouses de hijama",
+"Cupping cups"
+],
+"كامل": [
+"Complet",
+"Full"
+],
+"كانت": [
+"Était",
+"Was"
+],
+"كبسول": [
+"Gélule",
+"Capsule"
+],
+"كراء": [
+"Loyer",
+"Rent"
+],
+"كراء شهر نوفمبر": [
+"Loyer du mois de novembre",
+"November rent"
+],
+"كربون": [
+"Carbone",
+"Carbon"
+],
+"كريم": [
+"Crème",
+"Cream"
+],
+"كشف الأجرة الشهرية": [
+"Fiche de paie mensuelle",
+"Monthly payslip"
+],
+"كل": [
+"Chaque",
+"Every"
+],
+"كل الحواسيب متصلة": [
+"Tous les ordinateurs sont connectés",
+"All computers are connected"
+],
+"كل الخدمات": [
+"Toutes les prestations",
+"All services"
+],
+"كل الصفحات تتحدث كي تشغّل المديرة أو توقف مهمة": [
+"Toutes les pages se mettent à jour quand la directrice active ou désactive une tâche",
+"All pages update when the director turns a task on or off"
+],
+"كل الصفحات مصفّاة على هذا الفرع": [
+"Toutes les pages sont filtrées sur cette branche",
+"All pages are filtered to this branch"
+],
+"كل الطلبيات": [
+"Toutes les commandes",
+"All orders"
+],
+"كل العمال حاضرون تلقائيًا ويأخذون أجرتهم كاملة": [
+"Tous les employés sont présents automatiquement et touchent leur salaire complet",
+"All staff are marked present automatically and get full pay"
+],
+"كل العمليات": [
+"Toutes les opérations",
+"All operations"
+],
+"كل الغرف الآن": [
+"Toutes les salles maintenant",
+"All rooms now"
+],
+"كل الفترات": [
+"Toutes les périodes",
+"All periods"
+],
+"كل الفروع": [
+"Toutes les branches",
+"All branches"
+],
+"كل المخزون فوق حد التنبيه": [
+"Tout le stock est au-dessus du seuil d’alerte",
+"All stock is above the alert threshold"
+],
+"كل المسجّلين أكملوا": [
+"Tous les inscrits ont terminé",
+"All enrolled have completed"
+],
+"كل المسجّلين أكملوا الدورة ويمكن طباعة شهاداتهم": [
+"Tous les inscrits ont terminé la formation et leurs certificats peuvent être imprimés",
+"All enrolled completed the course and their certificates can be printed"
+],
+"كل المسجّلين يصبحون": [
+"Tous les inscrits deviennent",
+"All enrolled become"
+],
+"كل المنتجات": [
+"Tous les produits",
+"All products"
+],
+"كل النسخ لآخر": [
+"Toutes les sauvegardes des derniers",
+"All backups of the last"
+],
+"كل حاسوب مربوط بفرع ومكان": [
+"Chaque ordinateur est lié à une branche et un poste",
+"Each computer is linked to a branch and a place"
+],
+"كل حصة تتخلّص وحدها": [
+"Chaque séance est payée seule",
+"Each session is paid separately"
+],
+"كل حصة من هذه الخدمة تتعمّر فيها هاذ المواد وحدها": [
+"Chaque séance de cette prestation est remplie automatiquement avec ces produits",
+"Each session of this service is filled automatically with these materials"
+],
+"كل خطط الحصص": [
+"Tous les plans de séances",
+"All session plans"
+],
+"كل دفعة تدخل الصندوق بوصل": [
+"Chaque paiement entre en caisse avec un reçu",
+"Every payment enters the cash box with a receipt"
+],
+"كل سطر بند": [
+"Chaque ligne est un article",
+"Each line is an item"
+],
+"كل شيء على ما يرام": [
+"Tout va bien",
+"All is well"
+],
+"كل عملية في البرنامج تُحفظ فورًا": [
+"Chaque opération du programme est enregistrée immédiatement",
+"Every operation is saved immediately"
+],
+"كل كم ساعة": [
+"Toutes les combien d’heures",
+"Every how many hours"
+],
+"كل كم يوم حصة": [
+"Une séance tous les combien de jours",
+"One session every how many days"
+],
+"كل ما سُجّل بعدها سيُلغى": [
+"Tout ce qui a été enregistré après sera annulé",
+"Everything recorded after it will be undone"
+],
+"كل مدفوعات الفروع": [
+"Tous les paiements des branches",
+"All branch payments"
+],
+"كل مستخدم مرتبط بفرع": [
+"Chaque utilisateur est lié à une branche",
+"Each user is linked to a branch"
+],
+"كل مكان": [
+"Chaque poste",
+"Every place"
+],
+"كل من يعمل في ذلك المكان يأخذها": [
+"Tous ceux qui travaillent à ce poste l’obtiennent",
+"Everyone working at that place gets it"
+],
+"كل نصيحة في سطر": [
+"Un conseil par ligne",
+"One tip per line"
+],
+"كل يوم صندوق جديد يبدأ من صفر لكل مكان": [
+"Chaque jour, une nouvelle caisse commence à zéro pour chaque poste",
+"Every day a new cash box starts from zero for each place"
+],
+"كلشي متوفّر": [
+"Tout est disponible",
+"Everything is in stock"
+],
+"كلف": [
+"Mélasma",
+"Melasma"
+],
+"كلمة السر": [
+"Mot de passe",
+"Password"
+],
+"كلمة السر غير صحيحة": [
+"Mot de passe incorrect",
+"Incorrect password"
+],
+"كلمة السر قصيرة جدًا": [
+"Mot de passe trop court",
+"Password too short"
+],
+"كلمة المرور": [
+"Mot de passe",
+"Password"
+],
+"كلمة المرور الجديدة": [
+"Nouveau mot de passe",
+"New password"
+],
+"كلمة المرور الجديدة قصيرة جدًا": [
+"Le nouveau mot de passe est trop court",
+"The new password is too short"
+],
+"كلمة المرور الحالية": [
+"Mot de passe actuel",
+"Current password"
+],
+"كلمة المرور الحالية غير صحيحة": [
+"Le mot de passe actuel est incorrect",
+"The current password is incorrect"
+],
+"كلمة سر الحاسوب": [
+"Mot de passe de l’ordinateur",
+"Computer password"
+],
+"كلمة سر جديدة": [
+"Nouveau mot de passe",
+"New password"
+],
+"كملو": [
+"Terminés",
+"Done"
+],
+"كمية تُضاف أو تُنقص": [
+"Quantité ajoutée ou retirée",
+"Quantity added or removed"
+],
+"كمية قاربت على النفاد": [
+"Quantité presque épuisée",
+"Quantity running low"
+],
+"كهرب": [
+"Électricité",
+"Electricity"
+],
+"كهرباء وماء وغاز": [
+"Électricité, eau et gaz",
+"Electricity, water and gas"
+],
+"كي العامل يختار هذه الخدمة في": [
+"quand l’employé choisit cette prestation dans",
+"when staff choose this service in"
+],
+"كي تختار خدمة تحت": [
+"quand vous choisissez une prestation ci-dessous",
+"when you choose a service below"
+],
+"كي توصل السلعة": [
+"quand la marchandise arrive",
+"when the goods arrive"
+],
+"لأصحاب الراتب الشهري": [
+"pour les salariés mensuels",
+"for monthly-salaried staff"
+],
+"لأي سؤال ولا إذا حسّيتي بحاجة غير عادية": [
+"Pour toute question ou si vous ressentez quelque chose d’inhabituel",
+"For any question or if you feel anything unusual"
+],
+"لإضافة واحد": [
+"pour en ajouter un",
+"to add one"
+],
+"لإعادة الطباعة": [
+"pour réimprimer",
+"to reprint"
+],
+"لإعادة تثبيت البرنامج على حاسوب جديد مكان هذا": [
+"Pour réinstaller le programme sur un nouvel ordinateur à la place de celui-ci",
+"To reinstall the program on a new computer in place of this one"
+],
+"لا": [
+"Non",
+"No"
+],
+"لا أوافق على التقاط صور قبل وبعد لغرض متابعة العلاج فقط": [
+"Je n’accepte pas la prise de photos avant et après, uniquement pour le suivi du traitement",
+"I do not agree to before and after photos, for treatment follow-up only"
+],
+"لا توجد تذكيرات مستحقة": [
+"Aucun rappel à envoyer",
+"No reminders due"
+],
+"لا توجد تنبيهات": [
+"Aucune alerte",
+"No alerts"
+],
+"لا توجد حصص": [
+"Aucune séance",
+"No sessions"
+],
+"لا توجد حصص صالحة للإرسال": [
+"Aucune séance valide à envoyer",
+"No valid sessions to send"
+],
+"لا توجد حصص غير مدفوعة أو المبلغ أقل من المدفوع": [
+"Aucune séance impayée ou le montant est inférieur au payé",
+"No unpaid sessions or the amount is less than paid"
+],
+"لا توجد حصص منتهية في هذه الفترة": [
+"Aucune séance terminée dans cette période",
+"No sessions finished in this period"
+],
+"لا توجد حواسيب بعد": [
+"Aucun ordinateur pour le moment",
+"No computers yet"
+],
+"لا توجد خطط": [
+"Aucun plan",
+"No plans"
+],
+"لا توجد دفعات بعد": [
+"Aucun paiement pour le moment",
+"No payments yet"
+],
+"لا توجد دورات بعد": [
+"Aucune formation pour le moment",
+"No courses yet"
+],
+"لا توجد ديون": [
+"Aucune dette",
+"No debts"
+],
+"لا توجد زيارات": [
+"Aucune visite",
+"No visits"
+],
+"لا توجد صور": [
+"Aucune photo",
+"No photos"
+],
+"لا توجد طلبات": [
+"Aucune demande",
+"No requests"
+],
+"لا توجد طلبيات": [
+"Aucune commande",
+"No orders"
+],
+"لا توجد عمليات في هذه الفترة": [
+"Aucune opération sur cette période",
+"No operations in this period"
+],
+"لا توجد قائمة انتظار لهذا المستخدم": [
+"Pas de file d’attente pour cet utilisateur",
+"No waiting list for this user"
+],
+"لا توجد مبالغ معلقة": [
+"Aucun montant en attente",
+"No pending amounts"
+],
+"لا توجد مصاريف": [
+"Aucune dépense",
+"No expenses"
+],
+"لا توجد ملاحظات": [
+"Aucune note",
+"No notes"
+],
+"لا توجد منتجات": [
+"Aucun produit",
+"No products"
+],
+"لا توجد منتجات بعد": [
+"Aucun produit pour le moment",
+"No products yet"
+],
+"لا توجد مواعيد": [
+"Aucun rendez-vous",
+"No appointments"
+],
+"لا توجد نسخ بعد": [
+"Aucune sauvegarde pour le moment",
+"No backups yet"
+],
+"لا تُعدّ هنا": [
+"Non compté ici",
+"Not counted here"
+],
+"لا شيء": [
+"Rien",
+"Nothing"
+],
+"لا شيء اليوم": [
+"Rien aujourd’hui",
+"Nothing today"
+],
+"لا شيء بعد": [
+"Rien pour le moment",
+"Nothing yet"
+],
+"لا طلبات": [
+"Aucune demande",
+"No requests"
+],
+"لا فرق في الصندوق": [
+"Pas d’écart de caisse",
+"No cash difference"
+],
+"لا نقص في المخزون": [
+"Pas de manque de stock",
+"No stock shortage"
+],
+"لا يمكن حذف حصة مدفوعة": [
+"Impossible de supprimer une séance payée",
+"A paid session cannot be deleted"
+],
+"لا يوجد": [
+"Aucun",
+"None"
+],
+"لا يوجد استهلاك في هذه الفترة": [
+"Aucune consommation sur cette période",
+"No usage in this period"
+],
+"لا يوجد تسجيل": [
+"Aucun enregistrement",
+"No record"
+],
+"لا يوجد زبائن": [
+"Aucun client",
+"No clients"
+],
+"لا يوجد زبائن بهذه الشروط": [
+"Aucun client avec ces critères",
+"No clients match these criteria"
+],
+"لا يوجد زبائن في الانتظار": [
+"Aucun client en attente",
+"No clients waiting"
+],
+"لا يوجد عمال": [
+"Aucun employé",
+"No staff"
+],
+"لا يوجد عمال بعد": [
+"Aucun employé pour le moment",
+"No staff yet"
+],
+"لا يوجد عمال في هذا الفرع": [
+"Aucun employé dans cette branche",
+"No staff in this branch"
+],
+"لا يوجد عمال في هذا الفرع بعد": [
+"Aucun employé dans cette branche pour le moment",
+"No staff in this branch yet"
+],
+"لا يوجد متكونون بعد": [
+"Aucun stagiaire pour le moment",
+"No trainees yet"
+],
+"لا يوجد موردون": [
+"Aucun fournisseur",
+"No suppliers"
+],
+"لا يوجد موظفون بعد": [
+"Aucun employé pour le moment",
+"No employees yet"
+],
+"لا يُخصم شيء": [
+"Rien n’est déduit",
+"Nothing is deducted"
+],
+"لازم يكون نوعه": [
+"Son type doit être",
+"Its type must be"
+],
+"لاستعمالها في حدود ما يسمح به القانون": [
+"à utiliser dans les limites permises par la loi",
+"to be used within the limits allowed by law"
+],
+"لتر ماء في النهار": [
+"litres d’eau par jour",
+"liters of water a day"
+],
+"لتسجيل دين يجب أن يكون المبلغ مرتبطًا بزبون": [
+"Pour enregistrer une dette, le montant doit être lié à un client",
+"To record a debt, the amount must be linked to a client"
+],
+"لرسالة التنبيه": [
+"pour le message d’alerte",
+"for the alert message"
+],
+"لكل خدمة في صفحة الخدمات": [
+"pour chaque prestation dans la page Prestations",
+"for each service on the Services page"
+],
+"لكنه لا يرى الصندوق": [
+"mais il ne voit pas la caisse",
+"but cannot see the cash box"
+],
+"للإلغاء اتصلوا بنا": [
+"Pour annuler, appelez-nous",
+"To cancel, call us"
+],
+"للاستعمال": [
+"Pour usage",
+"For use"
+],
+"للبيع": [
+"À vendre",
+"For sale"
+],
+"للبيع وللاستعمال": [
+"À vendre et à utiliser",
+"For sale and use"
+],
+"للحاسوب": [
+"à l’ordinateur",
+"to the computer"
+],
+"للحصة": [
+"par séance",
+"per session"
+],
+"للخدمات بعدة حصص": [
+"pour les prestations en plusieurs séances",
+"for multi-session services"
+],
+"للشهادات": [
+"pour les certificats",
+"for certificates"
+],
+"للطب البديل": [
+"de médecine alternative",
+"alternative medicine"
+],
+"للغياب": [
+"pour l’absence",
+"for absence"
+],
+"للفرع": [
+"pour la branche",
+"for the branch"
+],
+"للمدير كل صباح بالمنتجات التي قاربت على النفاد": [
+"au directeur chaque matin avec les produits presque épuisés",
+"to the manager every morning with the products running low"
+],
+"لليوم": [
+"pour le jour",
+"for the day"
+],
+"لم تصل": [
+"Pas arrivée",
+"Not arrived"
+],
+"لم تُدفع": [
+"Non payée",
+"Unpaid"
+],
+"لم تُصنع بعد": [
+"Pas encore faite",
+"Not made yet"
+],
+"لم تُصنع نسخة احتياطية منذ أكثر من يومين": [
+"Aucune sauvegarde depuis plus de deux jours",
+"No backup for more than two days"
+],
+"لم يتصل بعد": [
+"Pas encore connecté",
+"Not connected yet"
+],
+"لم يحضر": [
+"Absent",
+"No-show"
+],
+"لم يعد ممكنًا": [
+"N’est plus possible",
+"No longer possible"
+],
+"لم يُحدد": [
+"Non défini",
+"Not set"
+],
+"لم يُسجَّل": [
+"Non enregistré",
+"Not recorded"
+],
+"لم يُعدّ": [
+"Non compté",
+"Not counted"
+],
+"لم يُكمل الدفع": [
+"Paiement incomplet",
+"Payment incomplete"
+],
+"لمرة واحدة": [
+"Une seule fois",
+"One time only"
+],
+"لمعان ودهون": [
+"Brillance et sébum",
+"Shine and oiliness"
+],
+"لن تُحسب له أجرة بعد": [
+"Aucun salaire ne lui sera plus compté",
+"No more pay will be counted for them"
+],
+"لوحة الفرع والصندوق": [
+"Tableau de la branche et caisse",
+"Branch dashboard and cash box"
+],
+"لون البشرة": [
+"Couleur de peau",
+"Skin color"
+],
+"ليزر": [
+"Laser",
+"Laser"
+],
+"ليست لديك صلاحية الدخول إلى هذه الصفحة": [
+"Vous n’avez pas la permission d’accéder à cette page",
+"You do not have permission to access this page"
+],
+"مؤمَّن": [
+"Assuré",
+"Insured"
+],
+"مؤمَّن في الضمان الاجتماعي": [
+"Assuré à la sécurité sociale",
+"Registered with social security"
+],
+"ما أخرجته اليوم": [
+"Ce que vous avez sorti aujourd’hui",
+"What you took out today"
+],
+"ما تتحدثش إذا كان العامل يكتب في خانة": [
+"Ne se met pas à jour si l’employé écrit dans un champ",
+"Does not refresh while staff are typing in a field"
+],
+"ما تحكّيش المنطقة": [
+"Ne grattez pas la zone",
+"Don’t scratch the area"
+],
+"ما تستعمليش مقشّر ولا منتجات قوية": [
+"N’utilisez ni gommage ni produits forts",
+"Don’t use scrubs or strong products"
+],
+"ما تقشريش ولا تحكّي البشرة حتى يطيح التقشير وحدو": [
+"Ne pelez pas et ne grattez pas la peau, laissez-la peler seule",
+"Don’t peel or scratch the skin; let it peel on its own"
+],
+"ما تلمسيش ولا تدلكيش المنطقة": [
+"Ne touchez pas et ne massez pas la zone",
+"Don’t touch or rub the area"
+],
+"ما تم تقديمه للزبون": [
+"Ce qui a été fourni au client",
+"What was provided to the client"
+],
+"ما جاتش": [
+"Pas venue",
+"Didn’t come"
+],
+"ما جاوش": [
+"Pas venus",
+"Didn’t come"
+],
+"ما خرج من الصندوق": [
+"Sorti de la caisse",
+"Taken from the cash box"
+],
+"ما كاين حتى حصة فاتت بلا موعد جديد": [
+"Aucune séance manquée sans nouveau rendez-vous",
+"No missed session without a new appointment"
+],
+"ما كاين حتى حصة في هاذ الفترة": [
+"Aucune séance sur cette période",
+"No session in this period"
+],
+"ما كاين حتى مادة لازم تتشرى دروك": [
+"Aucun produit à acheter pour le moment",
+"Nothing needs to be bought right now"
+],
+"ما كاين حتى مادة من نوع": [
+"Aucun produit de type",
+"No material of type"
+],
+"ما كاين حتى مشكل": [
+"Aucun problème",
+"No problem"
+],
+"ما كاين حتى منتج من نوع": [
+"Aucun produit de type",
+"No product of type"
+],
+"ما كاين حتى نصيحة مكتوبة لهاذ الخدمة": [
+"Aucun conseil écrit pour cette prestation",
+"No advice written for this service"
+],
+"ما كاينش بطاقة بشرة لهاذ الزبونة": [
+"Pas de fiche peau pour cette cliente",
+"No skin card for this client"
+],
+"ما كتبه العامل عند الإغلاق دون أن يرى المتوقع": [
+"Ce que l’employé a écrit à la fermeture sans voir l’attendu",
+"What staff wrote at closing without seeing the expected amount"
+],
+"ما لقيناش هذا المنتج": [
+"Nous n’avons pas trouvé ce produit",
+"We couldn’t find this product"
+],
+"ماء": [
+"Eau",
+"Water"
+],
+"مادة": [
+"Produit",
+"Material"
+],
+"مادة أخرى": [
+"Autre produit",
+"Another material"
+],
+"مادة على": [
+"produit sur",
+"material of"
+],
+"مادة لازم تتشرى": [
+"produit à acheter",
+"material to buy"
+],
+"مادة مستعملة": [
+"Produit utilisé",
+"Material used"
+],
+"ماذا يبيع": [
+"Ce qu’il vend",
+"What it sells"
+],
+"ماذا يريد الزبون": [
+"Ce que veut le client",
+"What the client wants"
+],
+"ماكا": [
+"Mac",
+"Mac"
+],
+"مبالغ تنتظر التحصيل": [
+"Montants à encaisser",
+"Amounts to collect"
+],
+"مبالغ من الأقسام تنتظر التحصيل": [
+"Montants des services à encaisser",
+"Department amounts awaiting collection"
+],
+"مبرر": [
+"Justifiée",
+"Justified"
+],
+"مبرمج": [
+"Planifié",
+"Scheduled"
+],
+"مبلغ التخفيض": [
+"Montant de la remise",
+"Discount amount"
+],
+"مبلغ من أيام سابقة مازال ما تخلّصش": [
+"Montant de jours précédents pas encore payé",
+"Amount from previous days not yet paid"
+],
+"مبلغ ينتظر التحصيل": [
+"Montant à encaisser",
+"Amount to collect"
+],
+"متأخر": [
+"En retard",
+"Late"
+],
+"متأخرة": [
+"En retard",
+"Overdue"
+],
+"متزوج": [
+"Marié",
+"Married"
+],
+"متصل بالحاسوب المركزي": [
+"Connecté à l’ordinateur central",
+"Connected to the central computer"
+],
+"متوسط فائدة الحصة": [
+"Bénéfice moyen par séance",
+"Average profit per session"
+],
+"متوفر": [
+"Disponible",
+"Available"
+],
+"مثال": [
+"Exemple",
+"Example"
+],
+"مثل الاحمرار": [
+"comme la rougeur",
+"such as redness"
+],
+"مثلا": [
+"par exemple",
+"for example"
+],
+"مثلاً": [
+"par exemple",
+"for example"
+],
+"مثلًا": [
+"par exemple",
+"for example"
+],
+"مثلًا اسم الزبونة": [
+"par exemple le nom de la cliente",
+"e.g. the client’s name"
+],
+"مجلد ثانٍ": [
+"Deuxième dossier",
+"Second folder"
+],
+"مجموع أسعار الحصص": [
+"Total des prix des séances",
+"Total of session prices"
+],
+"مجموع التسبيقات المقتطعة هذا الشهر": [
+"Total des avances déduites ce mois",
+"Total advances deducted this month"
+],
+"مجموع الحصص": [
+"Total des séances",
+"Total sessions"
+],
+"مجموع الديون": [
+"Total des dettes",
+"Total debts"
+],
+"مجموع المداخيل": [
+"Total des revenus",
+"Total income"
+],
+"مجموع المشتريات": [
+"Total des achats",
+"Total purchases"
+],
+"مجموع المصاريف": [
+"Total des dépenses",
+"Total expenses"
+],
+"مجموع مداخيل اليوم": [
+"Total des revenus du jour",
+"Today’s total income"
+],
+"محاولات كثيرة": [
+"Trop de tentatives",
+"Too many attempts"
+],
+"محفوظة": [
+"Enregistrées",
+"Saved"
+],
+"مختلطة": [
+"Mixte",
+"Combination"
+],
+"مخزون": [
+"Stock",
+"Stock"
+],
+"مخزون أولي": [
+"Stock initial",
+"Initial stock"
+],
+"مخزون الفرع": [
+"Stock de la branche",
+"Branch stock"
+],
+"مخلّصة": [
+"Payée",
+"Paid"
+],
+"مداخيل كل فرع": [
+"Revenus par branche",
+"Income per branch"
+],
+"مدفوعة": [
+"Payée",
+"Paid"
+],
+"مديرة المركز": [
+"Directrice du centre",
+"Center director"
+],
+"مرة على هاذ الحصة": [
+"fois pour cette séance",
+"times for this session"
+],
+"مرتّبة من الأكثر فائدة": [
+"Classées de la plus rentable",
+"Sorted by most profitable"
+],
+"مرحبا": [
+"Bonjour",
+"Hello"
+],
+"مرحبًا": [
+"Bonjour",
+"Hello"
+],
+"مرض جلدي": [
+"Maladie de peau",
+"Skin disease"
+],
+"مرضية": [
+"Maladie",
+"Sick"
+],
+"مرفوض": [
+"Refusé",
+"Rejected"
+],
+"مركز الطب البديل بيلسان": [
+"Centre de médecine alternative Bilsan",
+"Bilsan Alternative Medicine Center"
+],
+"مرهم": [
+"Pommade",
+"Ointment"
+],
+"مزامنة الآن": [
+"Synchroniser maintenant",
+"Sync now"
+],
+"مساج": [
+"Massage",
+"Massage"
+],
+"مسام واسعة": [
+"Pores dilatés",
+"Enlarged pores"
+],
+"مسبقًا": [
+"D’avance",
+"In advance"
+],
+"مستحسن": [
+"Recommandé",
+"Recommended"
+],
+"مستخدم جديد": [
+"Nouvel utilisateur",
+"New user"
+],
+"مسجّل": [
+"Inscrit",
+"Enrolled"
+],
+"مسمن": [
+"Prise de poids",
+"Weight gain"
+],
+"مشاكل البشرة": [
+"Problèmes de peau",
+"Skin concerns"
+],
+"مصاريف": [
+"Dépenses",
+"Expenses"
+],
+"مصاريف كل فرع": [
+"Dépenses de chaque branche",
+"Expenses per branch"
+],
+"مصروف": [
+"Dépense",
+"Expense"
+],
+"مطابق": [
+"Conforme",
+"Matches"
+],
+"مطلق": [
+"Divorcé",
+"Divorced"
+],
+"مطلوب من قبل": [
+"Déjà commandé",
+"Already ordered"
+],
+"مع الغيابات والمنح": [
+"Avec absences et primes",
+"With absences and bonuses"
+],
+"مع تطبيق": [
+"avec l’application",
+"with the app"
+],
+"مع عبارة": [
+"avec la mention",
+"with the note"
+],
+"معاينة وعدّ الزبائن": [
+"Consultation et comptage des clients",
+"Preview and count clients"
+],
+"معلومات الخطة": [
+"Informations du plan",
+"Plan information"
+],
+"معلومات العامل": [
+"Informations de l’employé",
+"Staff information"
+],
+"مغادرة": [
+"Départ",
+"Departure"
+],
+"مغادرة العمل نهائيًا": [
+"Quitter définitivement le travail",
+"Leave work permanently"
+],
+"مغادرة العمل وتصفية الحساب": [
+"Quitter le travail et solder le compte",
+"Leave work and settle the account"
+],
+"مغادرة عامل": [
+"Départ d’un employé",
+"Staff departure"
+],
+"مفتاح المزامنة": [
+"Clé de synchronisation",
+"Sync key"
+],
+"مفعّلة": [
+"Activée",
+"Enabled"
+],
+"مقارنة مع": [
+"Comparaison avec",
+"Compared with"
+],
+"مكافأة": [
+"Récompense",
+"Reward"
+],
+"مكان الميلاد": [
+"Lieu de naissance",
+"Place of birth"
+],
+"ملاحظات": [
+"Notes",
+"Notes"
+],
+"ملاحظة": [
+"Note",
+"Note"
+],
+"ملاحظة جديدة": [
+"Nouvelle note",
+"New note"
+],
+"ملاحظة للمعالج": [
+"Note pour le praticien",
+"Note for the practitioner"
+],
+"ملاحظة هذه الجلسة": [
+"Note de cette séance",
+"Note for this session"
+],
+"ملخص": [
+"Résumé",
+"Summary"
+],
+"ملخص اليوم كل ليلة": [
+"Résumé du jour chaque soir",
+"Daily summary every night"
+],
+"ملغاة": [
+"Annulée",
+"Cancelled"
+],
+"ملغى": [
+"Annulé",
+"Cancelled"
+],
+"ملف التحديث تالف": [
+"Le fichier de mise à jour est endommagé",
+"The update file is damaged"
+],
+"ملف التحديث ناقص": [
+"Le fichier de mise à jour est incomplet",
+"The update file is incomplete"
+],
+"ملف الزيارة رقم": [
+"Fiche de visite n°",
+"Visit file no."
+],
+"مليحة": [
+"Bonne",
+"Good"
+],
+"ممكن أقل من المطلوبة": [
+"peut être inférieure à la commande",
+"may be less than ordered"
+],
+"مميّع الدم": [
+"Anticoagulant",
+"Blood thinner"
+],
+"من": [
+"de",
+"from"
+],
+"من استلم المال": [
+"Qui a reçu l’argent",
+"Who received the money"
+],
+"من الصندوق": [
+"de la caisse",
+"from the cash box"
+],
+"من صفحة": [
+"depuis la page",
+"from the page"
+],
+"من فاتورة المورد": [
+"de la facture du fournisseur",
+"from the supplier invoice"
+],
+"من يقدر يدخل المشتريات": [
+"Qui peut saisir les achats",
+"Who can enter purchases"
+],
+"منتج": [
+"Produit",
+"Product"
+],
+"منتج جديد": [
+"Nouveau produit",
+"New product"
+],
+"منتج جديد أو سعر تبدّل يحتاج مراجعتك": [
+"Nouveau produit ou prix modifié à vérifier",
+"New product or changed price needs review"
+],
+"منتج جديد غير مسجّل": [
+"Nouveau produit non enregistré",
+"New unregistered product"
+],
+"منتج قارب على النفاد أو اقتربت صلاحيته": [
+"produit presque épuisé ou proche de l’expiration",
+"product running low or near expiry"
+],
+"منتج قارب على النفاد أو الصلاحية": [
+"produit presque épuisé ou périmé",
+"product running low or expiring"
+],
+"منتج من المخزون": [
+"Produit du stock",
+"Product from stock"
+],
+"منتجات": [
+"Produits",
+"Products"
+],
+"منتجات الفرع": [
+"Produits de la branche",
+"Branch products"
+],
+"منتجات جديدة أو أسعار بدّلها العمال": [
+"Nouveaux produits ou prix modifiés par les employés",
+"New products or prices changed by staff"
+],
+"منتجات قاربت على النفاد": [
+"Produits presque épuisés",
+"Products running low"
+],
+"منتجات قاربت على النفاد في فرعك": [
+"Produits presque épuisés dans votre branche",
+"Products running low in your branch"
+],
+"منتهية": [
+"Terminée",
+"Finished"
+],
+"منح": [
+"Primes",
+"Bonuses"
+],
+"منح الشهر": [
+"Primes du mois",
+"Monthly bonuses"
+],
+"منحة": [
+"Prime",
+"Bonus"
+],
+"منحة المردودية": [
+"Prime de rendement",
+"Performance bonus"
+],
+"منحف": [
+"Amincissant",
+"Slimming"
+],
+"منذ": [
+"depuis",
+"since"
+],
+"منها": [
+"dont",
+"of which"
+],
+"منها نقدًا": [
+"dont en espèces",
+"of which cash"
+],
+"مواد العمل": [
+"Produits de travail",
+"Work materials"
+],
+"مواد العمل المستعملة": [
+"Produits de travail utilisés",
+"Work materials used"
+],
+"مواد قربت تكمل": [
+"Produits presque épuisés",
+"Materials running out"
+],
+"مواد مستهلكة": [
+"Consommables",
+"Consumables"
+],
+"مواد ومستلزمات العلاج": [
+"Produits et fournitures de soin",
+"Treatment materials and supplies"
+],
+"مواعيد التجميل تصل الزبون تذكيرًا برسالة": [
+"Les rendez-vous esthétiques reçoivent un rappel par SMS",
+"Beauty appointments get an SMS reminder"
+],
+"مواعيد الحصص": [
+"Rendez-vous des séances",
+"Session appointments"
+],
+"مواعيد الفرع": [
+"Rendez-vous de la branche",
+"Branch appointments"
+],
+"مواعيد اليوم": [
+"Rendez-vous du jour",
+"Today’s appointments"
+],
+"مواعيد بعدة جلسات": [
+"Rendez-vous en plusieurs séances",
+"Multi-session appointments"
+],
+"مواعيد فات وقتها والزبونة ما جاتش": [
+"Rendez-vous passés où la cliente n’est pas venue",
+"Past appointments where the client didn’t come"
+],
+"موافق": [
+"D’accord",
+"OK"
+],
+"موافقة": [
+"Accord",
+"Approval"
+],
+"موانع": [
+"Contre-indications",
+"Contraindications"
+],
+"موبيليس": [
+"Mobilis",
+"Mobilis"
+],
+"مورد جديد": [
+"Nouveau fournisseur",
+"New supplier"
+],
+"موعد": [
+"Rendez-vous",
+"Appointment"
+],
+"موعد اليوم": [
+"Rendez-vous du jour",
+"Today’s appointment"
+],
+"موعد بعدة جلسات": [
+"Rendez-vous en plusieurs séances",
+"Multi-session appointment"
+],
+"موعد بعدة حصص": [
+"Rendez-vous en plusieurs séances",
+"Multi-session appointment"
+],
+"موعد جديد": [
+"Nouveau rendez-vous",
+"New appointment"
+],
+"موعد جديد بعد غياب": [
+"Nouveau rendez-vous après absence",
+"New appointment after absence"
+],
+"موعد واحد": [
+"Rendez-vous unique",
+"Single appointment"
+],
+"موعدك الجاي": [
+"Votre prochain rendez-vous",
+"Your next appointment"
+],
+"موقوف": [
+"Suspendu",
+"Suspended"
+],
+"موقوفة": [
+"Suspendue",
+"Suspended"
+],
+"ميزو": [
+"Méso",
+"Meso"
+],
+"ميغا": [
+"Mo",
+"MB"
+],
+"ميغا في": [
+"Mo dans",
+"MB in"
+],
+"مُسمن": [
+"Grossissant",
+"Fattening"
+],
+"مُنحف": [
+"Amincissant",
+"Slimming"
+],
+"نحت": [
+"Remodelage",
+"Body sculpting"
+],
+"نخيل": [
+"Palmier",
+"Palm"
+],
+"نذكركم بموعدكم في": [
+"Nous vous rappelons votre rendez-vous à",
+"We remind you of your appointment at"
+],
+"نذكّركم بموعدكم اليوم على الساعة": [
+"Nous vous rappelons votre rendez-vous aujourd’hui à",
+"We remind you of your appointment today at"
+],
+"نزيدو التركيز على الخدود": [
+"Insister davantage sur les joues",
+"Focus more on the cheeks"
+],
+"نسبة الفائدة": [
+"Taux de bénéfice",
+"Profit margin"
+],
+"نسجّل الحضور كل يوم": [
+"Nous enregistrons la présence chaque jour",
+"We record attendance every day"
+],
+"نسجّل الغياب فقط": [
+"Nous enregistrons seulement les absences",
+"We record absences only"
+],
+"نسخة احتياطية": [
+"Sauvegarde",
+"Backup"
+],
+"نسخة البرنامج في هذا الحاسوب": [
+"Version du programme sur cet ordinateur",
+"Program version on this computer"
+],
+"نسخة جديدة من البرنامج جاهزة في حاسوب المديرة": [
+"Une nouvelle version du programme est prête sur l’ordinateur de la directrice",
+"A new program version is ready on the director’s computer"
+],
+"نشط": [
+"Actif",
+"Active"
+],
+"نشطة": [
+"Active",
+"Active"
+],
+"نص التأكيد": [
+"Texte de confirmation",
+"Confirmation text"
+],
+"نص التهنئة": [
+"Texte de vœux",
+"Greeting text"
+],
+"نص الرسالة": [
+"Texte du message",
+"Message text"
+],
+"نص الشهادة الافتراضي": [
+"Texte par défaut du certificat",
+"Default certificate text"
+],
+"نص الملخص": [
+"Texte du résumé",
+"Summary text"
+],
+"نص تذكير الصباح": [
+"Texte du rappel du matin",
+"Morning reminder text"
+],
+"نصائح بعد الجلسة": [
+"Conseils après la séance",
+"Aftercare advice"
+],
+"نصف الأيام": [
+"Demi-journées",
+"Half days"
+],
+"نصف يوم": [
+"Demi-journée",
+"Half day"
+],
+"نضارة": [
+"Éclat",
+"Radiance"
+],
+"نعم": [
+"Oui",
+"Yes"
+],
+"نفد": [
+"Épuisé",
+"Out of stock"
+],
+"نقدًا": [
+"En espèces",
+"Cash"
+],
+"نقصت": [
+"ont diminué",
+"decreased"
+],
+"نقل": [
+"Transport",
+"Transport"
+],
+"نهاية العقد": [
+"Fin de contrat",
+"End of contract"
+],
+"نوع البشرة": [
+"Type de peau",
+"Skin type"
+],
+"هاتف أندرويد فيه شريحة": [
+"Téléphone Android avec une carte SIM",
+"Android phone with a SIM card"
+],
+"هاتف المدير": [
+"Téléphone du directeur",
+"Manager’s phone"
+],
+"هاذ الشهر": [
+"Ce mois",
+"This month"
+],
+"هالات سوداء": [
+"Cernes",
+"Dark circles"
+],
+"هذا الأسبوع": [
+"Cette semaine",
+"This week"
+],
+"هذا الحاسوب": [
+"Cet ordinateur",
+"This computer"
+],
+"هذا الحاسوب خاص بفرع واحد": [
+"Cet ordinateur est dédié à une seule branche",
+"This computer is dedicated to one branch"
+],
+"هذا الحاسوب موقوف من طرف المديرة": [
+"Cet ordinateur a été arrêté par la directrice",
+"This computer was stopped by the director"
+],
+"هذا الحاسوب يتحدّث وحده عند تشغيله أو بعد": [
+"Cet ordinateur se met à jour tout seul au démarrage ou après",
+"This computer updates itself at startup or after"
+],
+"هذا الدين سُدّد مسبقًا": [
+"Cette dette a déjà été réglée",
+"This debt has already been paid"
+],
+"هذا الشخص مسجّل في الدورة مسبقًا": [
+"Cette personne est déjà inscrite à la formation",
+"This person is already enrolled in the course"
+],
+"هذا العامل غادر مسبقًا": [
+"Cet employé est déjà parti",
+"This staff member has already left"
+],
+"هذا القسم غير موجود في الفرع المختار": [
+"Ce service n’existe pas dans la branche choisie",
+"This department does not exist in the chosen branch"
+],
+"هذا القسم غير موجود في هذا الفرع": [
+"Ce service n’existe pas dans cette branche",
+"This department does not exist in this branch"
+],
+"هذا المبلغ تم تحصيله أو إلغاؤه": [
+"Ce montant a déjà été encaissé ou annulé",
+"This amount was already collected or cancelled"
+],
+"هذا المكان غير موجود في الفرع المختار": [
+"Ce poste n’existe pas dans la branche choisie",
+"This place does not exist in the chosen branch"
+],
+"هذا المنتج مسجّل من قبل": [
+"Ce produit est déjà enregistré",
+"This product is already registered"
+],
+"هذا حاسوب الفرع": [
+"Ceci est l’ordinateur de la branche",
+"This is the branch computer"
+],
+"هذا يوم راحة": [
+"C’est un jour de repos",
+"This is a day off"
+],
+"هربس": [
+"Herpès",
+"Herpes"
+],
+"هكذا الزبونة توصلها رسالتين": [
+"Ainsi la cliente reçoit deux messages",
+"So the client gets two messages"
+],
+"هكذا تبقى نسخة خارج المحل حتى لو ضاع الحاسوب": [
+"Ainsi une copie reste hors du local même si l’ordinateur est perdu",
+"So a copy stays outside the premises even if the computer is lost"
+],
+"هنا": [
+"Ici",
+"Here"
+],
+"هيدرا": [
+"Hydra",
+"Hydra"
+],
+"و": [
+"et",
+"and"
+],
+"وأتحمل مسؤولية أي معلومة غير صحيحة أو ناقصة": [
+"et j’assume la responsabilité de toute information fausse ou incomplète",
+"and I take responsibility for any false or incomplete information"
+],
+"وأنه لا يمكن ضمان نتيجة معينة": [
+"et qu’aucun résultat précis ne peut être garanti",
+"and that no specific result can be guaranteed"
+],
+"وأنها غالبًا مؤقتة": [
+"et qu’ils sont le plus souvent temporaires",
+"and that they are usually temporary"
+],
+"وأي تبديل في السعر يبان للمديرة": [
+"et tout changement de prix est visible par la directrice",
+"and any price change is visible to the director"
+],
+"وأُتيحت لي فرصة طرح أسئلتي": [
+"et j’ai eu l’occasion de poser mes questions",
+"and I had the opportunity to ask my questions"
+],
+"وإذا وافقت المديرة يتبدّل السعر وحدو": [
+"et si la directrice accepte, le prix change tout seul",
+"and if the director agrees, the price changes by itself"
+],
+"وإيقافه": [
+"et l’arrêter",
+"and stop them"
+],
+"واحدة": [
+"une",
+"one"
+],
+"واضغط": [
+"et appuyez",
+"and press"
+],
+"واقي الشمس ضروري كل نهار": [
+"L’écran solaire est indispensable chaque jour",
+"Sunscreen is essential every day"
+],
+"واقي الشمس كل نهار": [
+"Écran solaire chaque jour",
+"Sunscreen every day"
+],
+"والبدائل الممكنة": [
+"et les alternatives possibles",
+"and the possible alternatives"
+],
+"والبرنامج يقترح أقرب وقت فارغ": [
+"et le programme propose l’heure libre la plus proche",
+"and the program suggests the nearest free time"
+],
+"والجديدة تُضاف": [
+"et les nouveaux sont ajoutés",
+"and new ones are added"
+],
+"والجواب يبان هنا": [
+"et la réponse apparaît ici",
+"and the answer shows here"
+],
+"والعمال يستعملونها كما هي": [
+"et les employés les utilisent tels quels",
+"and staff use them as they are"
+],
+"والغرفة تزيد واش طلبت": [
+"et la salle ajoute ce qu’elle demande",
+"and the room adds what she asks for"
+],
+"والغرفة غير تأكّد": [
+"et la salle n’a qu’à confirmer",
+"and the room just confirms"
+],
+"والكمية تُضاف للمخزون": [
+"et la quantité est ajoutée au stock",
+"and the quantity is added to stock"
+],
+"والمديرة تراجعه وتقدر تعدّل سعره": [
+"et la directrice le vérifie et peut modifier son prix",
+"and the director reviews it and can change its price"
+],
+"والمديرة ترى النتيجة": [
+"et la directrice voit le résultat",
+"and the director sees the result"
+],
+"والنتائج المتوقعة": [
+"et les résultats attendus",
+"and the expected results"
+],
+"وانتي توافقي ولا ترفضي": [
+"et vous acceptez ou refusez",
+"and you accept or reject"
+],
+"وبحالة الحمل أو الرضاعة إن وُجدت": [
+"et la grossesse ou l’allaitement le cas échéant",
+"and pregnancy or breastfeeding if applicable"
+],
+"وبدّل نوع المواد": [
+"et changez le type de produit",
+"and change the material type"
+],
+"وبقي على الزبون دين": [
+"et il reste une dette au client",
+"and the client still owes a debt"
+],
+"وبلا حمام بخار ولا سباحة": [
+"et pas de hammam ni de piscine",
+"and no steam bath or swimming"
+],
+"وتبدّل الكمية إذا لزم": [
+"et changez la quantité si nécessaire",
+"and change the quantity if needed"
+],
+"وتتحصّل في الاستقبال مع الحصة": [
+"et elle est encaissée à l’accueil avec la séance",
+"and it is collected at reception with the session"
+],
+"وتقدر تبدّل أي تاريخ": [
+"et vous pouvez changer n’importe quelle date",
+"and you can change any date"
+],
+"وثيقة الموافقة": [
+"Formulaire de consentement",
+"Consent form"
+],
+"وثيقة الموافقة على": [
+"Formulaire de consentement pour",
+"Consent form for"
+],
+"وجه": [
+"Visage",
+"Face"
+],
+"وحاسوب المديرة": [
+"et l’ordinateur de la directrice",
+"and the director’s computer"
+],
+"وحدة قبل الموعد": [
+"un avant le rendez-vous",
+"one before the appointment"
+],
+"وحدة لكل مورد": [
+"une par fournisseur",
+"one per supplier"
+],
+"وحده": [
+"seul",
+"by itself"
+],
+"وختم المركز": [
+"et le cachet du centre",
+"and the center’s stamp"
+],
+"وخرج من صندوق اليوم": [
+"et sorti de la caisse du jour",
+"and taken from today’s cash box"
+],
+"ورقة الحضور": [
+"Feuille de présence",
+"Attendance sheet"
+],
+"ورقة الحضور اليومية": [
+"Feuille de présence journalière",
+"Daily attendance sheet"
+],
+"ورقة وحدة": [
+"Une seule page",
+"One page"
+],
+"ورقم هاتف المديرة في خانة": [
+"et le numéro de téléphone de la directrice dans le champ",
+"and the director’s phone number in the field"
+],
+"وستُرسل تلقائيًا عند رجوع الإنترنت": [
+"et seront envoyées automatiquement au retour d’internet",
+"and will be sent automatically when the internet returns"
+],
+"وسعر الشراء تحدّث": [
+"et prix d’achat mis à jour",
+"and purchase price updated"
+],
+"وسعر الشراء لكل مادة": [
+"et le prix d’achat de chaque produit",
+"and the purchase price of each material"
+],
+"وشاشته تتحدث وحدها": [
+"et son écran se met à jour tout seul",
+"and its screen updates by itself"
+],
+"وصل": [
+"Reçu",
+"Receipt"
+],
+"وصل دفع رقم": [
+"Reçu de paiement n°",
+"Payment receipt no."
+],
+"وصلت": [
+"Arrivée",
+"Arrived"
+],
+"وصول زبون لموعد": [
+"Arrivée d’un client à son rendez-vous",
+"Client arrival for an appointment"
+],
+"وضع الحاسوب الفرعي": [
+"Mode ordinateur secondaire",
+"Secondary computer mode"
+],
+"وظيفة أو غرفة جديدة": [
+"Nouveau poste ou salle",
+"New job or room"
+],
+"وعدّل": [
+"et modifiez",
+"and edit"
+],
+"وقد يتطلب الأمر عدة جلسات": [
+"et plusieurs séances peuvent être nécessaires",
+"and several sessions may be required"
+],
+"وكلمة سر من": [
+"et un mot de passe de",
+"and a password from"
+],
+"وكي تكمل كل حصة": [
+"et quand chaque séance est terminée",
+"and when each session is finished"
+],
+"ولا": [
+"ou",
+"or"
+],
+"ولا اللي ما تكفّيش أسبوع حسب الاستهلاك تاع آخر": [
+"ou ceux qui ne tiennent pas une semaine selon la consommation des derniers",
+"or those that won’t last a week based on the usage of the last"
+],
+"ولا يرى إلا عمليات فرعه": [
+"et il ne voit que les opérations de sa branche",
+"and only sees their branch’s operations"
+],
+"ومازال ما خداتش موعد جديد": [
+"et elle n’a pas encore pris de nouveau rendez-vous",
+"and she hasn’t taken a new appointment yet"
+],
+"ومن بعد": [
+"Puis",
+"Then"
+],
+"وناقص منها اللي راهو مطلوب من قبل": [
+"moins ce qui est déjà commandé",
+"minus what is already ordered"
+],
+"ووحدة الصباح تاع النهار": [
+"et un le matin du jour",
+"and one on the morning of the day"
+],
+"ويدخل الصندوق": [
+"et entre dans la caisse",
+"and goes into the cash box"
+],
+"ويدخل بكلمة سر خاصة به": [
+"et se connecte avec son propre mot de passe",
+"and logs in with their own password"
+],
+"ويقتطع كل التسبيقات التي لم تُقتطع بعد": [
+"et déduit toutes les avances non encore déduites",
+"and deducts all advances not yet deducted"
+],
+"ويُوقف العامل فلا تُحسب له أجرة بعدها": [
+"et arrête l’employé, aucun salaire n’est compté ensuite",
+"and stops the staff member; no pay is counted afterwards"
+],
+"يأخذ التغيير عند اتصاله": [
+"Prend le changement à sa connexion",
+"Takes the change when it connects"
+],
+"يبعث طلب": [
+"Envoie une demande",
+"Sends a request"
+],
+"يبقى المبلغ حتى توافق": [
+"Le montant reste jusqu’à ce que vous acceptiez",
+"The amount stays until you approve"
+],
+"يتختار القسم تاعها وحدو": [
+"Son service est choisi automatiquement",
+"Its department is chosen automatically"
+],
+"يتزامن مع": [
+"Se synchronise avec",
+"Syncs with"
+],
+"يتكتب وحدو من الخدمة": [
+"Se remplit à partir de la prestation",
+"Filled in from the service"
+],
+"يتمنى لكم": [
+"vous souhaite",
+"wishes you"
+],
+"يتوقف دقيقة ثم يرجع وحده": [
+"S’arrête une minute puis revient tout seul",
+"Stops for a minute and comes back by itself"
+],
+"يحتاج انتباهك": [
+"Demande votre attention",
+"Needs your attention"
+],
+"يحصّل": [
+"Encaisse",
+"Collects"
+],
+"يدوي": [
+"Manuel",
+"Manual"
+],
+"يدوية": [
+"Manuelle",
+"Manual"
+],
+"يسمح له يسجّل المبلغ اللي خلّصه للمورد كمصروف": [
+"Lui permet d’enregistrer comme dépense le montant payé au fournisseur",
+"Lets them record the amount paid to the supplier as an expense"
+],
+"يشتكي من صداع": [
+"Se plaint de maux de tête",
+"Complains of headaches"
+],
+"يشهد": [
+"Atteste",
+"Certifies"
+],
+"يصل لحاسوبه في ثوانٍ": [
+"Arrive sur son ordinateur en quelques secondes",
+"Reaches their computer within seconds"
+],
+"يظهر لك الجواب هنا": [
+"La réponse apparaît ici",
+"The answer appears here"
+],
+"يعمل": [
+"Fonctionne",
+"Works"
+],
+"يعني": [
+"C’est-à-dire",
+"That is"
+],
+"يكفّي": [
+"Suffit pour",
+"Lasts"
+],
+"يمكن الدفع على عدة أقساط": [
+"Le paiement peut se faire en plusieurs fois",
+"Payment can be made in several installments"
+],
+"يمكنك تسجيل المتكونين وتحصيل المبالغ وطباعة الشهادات": [
+"Vous pouvez inscrire les stagiaires, encaisser et imprimer les certificats",
+"You can enroll trainees, collect payments and print certificates"
+],
+"يمكنك تسجيل حضور اليوم أو أمس فقط": [
+"Vous ne pouvez enregistrer la présence que d’aujourd’hui ou d’hier",
+"You can only record attendance for today or yesterday"
+],
+"يمكنك تصحيح المبلغ إن أخطأت في العدّ": [
+"Vous pouvez corriger le montant si vous vous êtes trompé en comptant",
+"You can correct the amount if you miscounted"
+],
+"ينبّه البرنامج عندما تصل الكمية إليه": [
+"Le programme alerte quand la quantité l’atteint",
+"The program alerts when the quantity reaches it"
+],
+"ينتظر الدفع": [
+"En attente de paiement",
+"Awaiting payment"
+],
+"يوجد استرجاع في الانتظار": [
+"Une restauration est en attente",
+"A restore is pending"
+],
+"يوصل للمديرة": [
+"Arrive chez la directrice",
+"Reaches the director"
+],
+"يوم": [
+"jour",
+"day"
+],
+"يوم استلام الأجرة": [
+"Jour de paie",
+"Pay day"
+],
+"يوم الأجرة": [
+"Jour de paie",
+"Pay day"
+],
+"يوم بداية العمل": [
+"Jour de début de travail",
+"Start day"
+],
+"يوم راحة": [
+"Jour de repos",
+"Day off"
+],
+"يومي في نظرة": [
+"Ma journée en un coup d’œil",
+"My day at a glance"
+],
+"يومًا": [
+"jours",
+"days"
+],
+"يُحسب نصف أجرة اليوم": [
+"La moitié du salaire du jour est comptée",
+"Half the day’s pay is counted"
+],
+"يُخصم نصف يوم": [
+"Une demi-journée est déduite",
+"Half a day is deducted"
+],
+"يُخصم يومًا": [
+"Un jour est déduit",
+"One day is deducted"
+],
+"يُسجَّل الباقي هنا دينًا عليه حتى يسدده": [
+"Le reste est enregistré ici comme dette jusqu’à son règlement",
+"The rest is recorded here as a debt until paid"
+],
+"يُسجَّل المبلغ في المصاريف مرة واحدة": [
+"Le montant est enregistré une seule fois dans les dépenses",
+"The amount is recorded once in expenses"
+],
+"يُضاف إلى قائمة المنتجات مباشرة": [
+"Ajouté directement à la liste des produits",
+"Added directly to the product list"
+],
+"يُقتطع من أجرة شهر": [
+"Déduit du salaire du mois",
+"Deducted from the pay of month"
+],
+"يُقتطع من شهر": [
+"Déduit du mois",
+"Deducted from month"
+],
+"يُنصح بمراجعة النص مع مختص قانوني": [
+"Il est conseillé de faire relire le texte par un juriste",
+"It is advisable to have the text reviewed by a legal professional"
+]
+}
