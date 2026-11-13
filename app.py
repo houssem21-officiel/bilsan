@@ -5199,7 +5199,8 @@ def sync_wait():
     old = data.get("s", -1)
     if old == -1 or old != sync.STAMP[0]:
         return {"s": sync.STAMP[0]}
-    return {"s": sync.wait_change(old, 25)}
+    r = sync.wait_change(old, 25, "n:" + str(data.get("device") or data.get("branch_id") or request.remote_addr))
+    return {"s": sync.STAMP[0] if r in (None, "x") else r}
 
 
 @app.route("/sync/hello", methods=["POST"])
@@ -5447,7 +5448,12 @@ def api_stamp():
     if request.args.get("wait") and request.args.get("s", "").lstrip("-").isdigit():
         old = int(request.args["s"])
         if old == sync.STAMP[0]:
-            sync.wait_change(old, 20)
+            key = "b:" + (request.args.get("t") or "")[:24] if request.args.get("t") else None
+            r = sync.wait_change(old, 20, key)
+            if r is None:
+                return {"s": sync.STAMP[0], "p": "", "busy": 1}
+            if r == "x":
+                return {"s": sync.STAMP[0], "p": "", "x": 1}
     p = ""
     if current_user():
         try:
@@ -5605,7 +5611,7 @@ def run_server(port=None):
     print(f"\n  {DEFAULT_SETTINGS['center_name']}\n  البرنامج يعمل على: http://localhost:{port}\n")
     try:
         from waitress import serve
-        serve(app, host=host, port=port, threads=32, channel_timeout=60)
+        serve(app, host=host, port=port, threads=48, channel_timeout=60)
     except ImportError:
         app.run(host=host, port=port, threaded=True)
 

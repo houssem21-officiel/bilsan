@@ -189,11 +189,19 @@ document.addEventListener('input',function(){dirty=true});document.addEventListe
 function busy(){return dirty||document.querySelector('details[open].dd')}
 function reload(){try{sessionStorage.setItem('bil_y',window.scrollY)}catch(e){}location.reload()}
 /* انتظار دائم: الخادم يرد فور ما تتسجل معلومة جديدة */
-function poll(){fetch('/api/stamp?wait='+(s===null?'':'1')+'&s='+(s===null?'':s),{cache:'no-store'}).then(function(r){return r.json()}).then(function(d){
- if(p!==null&&d.p!==p&&!busy()){reload();return}
+/* كل تبويب عندو رقم: الانتظار القديم تاعو يتحرّر كي يفتح صفحة جديدة (الضغط السريع ما يبلوكيش البرنامج) */
+var tab=null;try{tab=sessionStorage.getItem('bil_tab');if(!tab){tab=Math.random().toString(36).slice(2);sessionStorage.setItem('bil_tab',tab)}}catch(e){}
+var ctl=null,gone=false;window.addEventListener('pagehide',function(){gone=true;try{ctl&&ctl.abort()}catch(e){}});
+function poll(){if(gone)return;try{ctl=new AbortController()}catch(e){ctl=null}
+ fetch('/api/stamp?wait='+(s===null?'':'1')+'&s='+(s===null?'':s)+(tab?'&t='+tab:''),{cache:'no-store',signal:ctl?ctl.signal:undefined}).then(function(r){return r.json()}).then(function(d){
+ if(p!==null&&d.p!==p&&d.p&&!busy()){reload();return}
  if(live&&s!==null&&d.s!==s&&!busy()){reload();return}
- s=d.s;p=d.p;setTimeout(poll,200)}).catch(function(){setTimeout(poll,3000)})}
-poll();
+ if(d.x){tab=Math.random().toString(36).slice(2);try{sessionStorage.setItem('bil_tab',tab)}catch(e){}}
+ s=d.s;if(d.p)p=d.p;setTimeout(poll,d.busy?3000:d.x?1000:200)}).catch(function(){if(!gone)setTimeout(poll,3000)})}
+setTimeout(poll,800);  /* نستناو شوية: إذا العامل راهو يتنقّل بسرعة ما نحجزوش الخادم */
+/* ما نبعثوش نفس الاستمارة مرتين كي يضغط بزاف */
+document.addEventListener('submit',function(e){var f=e.target;if(f.target==='_blank'||f.method.toLowerCase()!=='post')return;
+ if(f.dataset.sent){e.preventDefault();return}f.dataset.sent=1;setTimeout(function(){delete f.dataset.sent},4000)},true);
 try{var y=sessionStorage.getItem('bil_y');if(y){window.scrollTo(0,+y);sessionStorage.removeItem('bil_y')}}catch(e){}
 })();</script>{% endif %}
 </body></html>"""

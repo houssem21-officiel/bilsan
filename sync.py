@@ -291,10 +291,30 @@ def bump():
         COND.notify_all()
 
 
-def wait_change(old, timeout=25):
-    """ينتظر حتى تتغيّر المعلومات (أو تنتهي المهلة). يعيد الرقم الحالي."""
+_WAITERS = {}        # لكل صفحة/حاسوب: آخر انتظار (الانتظار القديم يتحرّر كي يجي واحد جديد)
+MAX_WAITERS = 12     # ما نخلّوش الانتظار ياكل كل خيوط الخادم (كي العامل يضغط بزاف بسرعة)
+
+
+def wait_change(old, timeout=25, key=None):
+    """ينتظر حتى تتغيّر المعلومات (أو تنتهي المهلة). يعيد الرقم الحالي، أو None إذا الخادم مشغول."""
     with COND:
-        COND.wait_for(lambda: STAMP[0] != old, timeout)
+        if STAMP[0] != old:
+            return STAMP[0]
+        if key and key.startswith("b:") and key not in _WAITERS \
+                and sum(1 for k in _WAITERS if k.startswith("b:")) >= MAX_WAITERS:
+            return None
+        tok = object()
+        if key is not None:
+            _WAITERS[key] = tok   # صفحة جديدة من نفس المتصفح: القديمة تتحرّر فورًا
+            COND.notify_all()
+        try:
+            COND.wait_for(lambda: STAMP[0] != old or (key is not None and _WAITERS.get(key) is not tok), timeout)
+        finally:
+            mine = key is None or _WAITERS.get(key) is tok
+            if key is not None and mine:
+                del _WAITERS[key]
+        if not mine and STAMP[0] == old:
+            return "x"  # جا انتظار جديد بنفس الرقم (الصفحة تبدّلت)
         return STAMP[0]
 
 
