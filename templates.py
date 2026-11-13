@@ -131,6 +131,8 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 <a href="{{ url_for('backup_page') }}">{{ ic('backup') }}النسخ الاحتياطي</a>
 <a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>
 <a href="{{ url_for('stock_use') }}">{{ ic('cream') }}استهلاك مواد العمل</a>
+<a href="{{ url_for('month_report') }}">{{ ic('reports') }}تقرير الشهر (ورقة وحدة)</a>
+<a href="{{ url_for('services_profit') }}">{{ ic('services') }}فائدة كل خدمة</a>
 <a href="{{ url_for('sessions_profit') }}">{{ ic('reports') }}فائدة كل حصة</a>
 <a href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات والموردون</a>
 <a href="{{ url_for('services') }}">{{ ic('services') }}الخدمات والأسعار</a>
@@ -1465,7 +1467,8 @@ TEMPLATES["reports.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 <h1>{{ page_icon() }}التقارير{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 <div class="card noprint"><form class="row"><label>الشهر<input type="month" name="month" value="{{ mm or '' }}"></label>
 <span class="mut">أو</span><label>من<input type="date" name="from" value="{{ d1 if not mm else '' }}"></label><label>إلى<input type="date" name="to" value="{{ d2 if not mm else '' }}"></label>
-{{ branch_filter(br) }}<button class="btn light">عرض</button><button type="button" class="btn gold" onclick="window.print()">طباعة</button></form></div>
+{{ branch_filter(br) }}<button class="btn light">عرض</button><button type="button" class="btn gold" onclick="window.print()">طباعة</button>
+<a class="btn" href="{{ url_for('month_report', month=mm or d1[:7]) }}">تقرير الشهر في ورقة</a><a class="btn light" href="{{ url_for('services_profit', month=mm or None) }}">فائدة كل خدمة</a></form></div>
 <p class="mut">الفترة: {{ d1 }} ← {{ d2 }}</p>
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">المداخيل</div><div class="n">{{ r.income|money }}</div><div class="mut">{{ r.n_pay }} عملية</div></div>
@@ -1578,7 +1581,7 @@ TEMPLATES["suppliers.html"] = r"""{% extends "base.html" %}{% block body %}
 
 TEMPLATES["purchases.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}طلبيات الشراء</h1>
-<div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ فاتورة / طلبية شراء</a>{% if cu.role=='admin' %}<a class="btn light" href="{{ url_for('suppliers') }}">الموردون</a>{% endif %}</div>
+<div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ فاتورة / طلبية شراء</a><a class="btn gold" href="{{ url_for('purchase_auto') }}">{{ ic('truck') }} طلبية أوتوماتيكية (المواد اللي قربت تكمل)</a>{% if cu.role=='admin' %}<a class="btn light" href="{{ url_for('suppliers') }}">الموردون</a>{% endif %}</div>
 <div class="card"><form class="row" style="margin-bottom:10px">{{ branch_filter(br) }}<button class="btn light">عرض</button></form>
 <table><tr><th>#</th><th>التاريخ</th><th>المورد</th>{% if not br %}<th>الفرع</th>{% endif %}<th>أدخلها</th><th>المجموع</th><th>المدفوع</th><th>الحالة</th></tr>
 {% for p in rows %}<tr class="{{ 'cx' if p.status=='cancelled' }}"><td><a href="{{ url_for('purchase_view', pid=p.id) }}">{{ p.id|rid }}</a></td><td>{{ p.day }}</td><td>{{ p.supplier or '-' }}</td>{% if not br %}<td>{{ p.branch }}</td>{% endif %}<td>{{ p.by_name or '' }}</td>
@@ -1876,3 +1879,65 @@ TEMPLATES["sessions_profit.html"] = r"""{% extends "base.html" %}{% from "macros
 <td style="color:#b3261e">{% if r.e.cost %}− {{ r.e.cost|money }}{% else %}<span class="mut">—</span>{% endif %}</td>
 <td><b style="color:{{ '#145c32' if r.e.profit>=0 else '#b3261e' }}">{{ r.e.profit|money }}</b></td></tr>
 {% else %}<tr><td colspan="8" class="mut">لا توجد حصص منتهية في هذه الفترة</td></tr>{% endfor %}</table></div>{% endblock %}"""
+
+TEMPLATES["services_profit.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
+<h1>{{ page_icon() }}فائدة كل خدمة</h1>
+<div class="card noprint"><form class="row"><label>الشهر<input type="month" name="month" value="{{ mm or '' }}"></label>
+<span class="mut">أو</span><label>من<input type="date" name="from" value="{{ d1 if not mm else '' }}"></label><label>إلى<input type="date" name="to" value="{{ d2 if not mm else '' }}"></label>
+{{ branch_filter(br) }}<button class="btn light">عرض</button><button type="button" class="btn gold" onclick="window.print()">طباعة</button></form></div>
+<p class="mut">الفترة: {{ d1 }} ← {{ d2 }}. الفائدة = سعر الخدمة − المواد المستعملة فيها (بسعر الشراء). مرتّبة من الأكثر فائدة.</p>
+<div class="grid" style="margin-bottom:16px">
+<div class="stat"><div class="l">الحصص</div><div class="n">{{ grand.n }}</div></div>
+<div class="stat"><div class="l">الدخل</div><div class="n">{{ grand.income|money }}</div></div>
+<div class="stat"><div class="l">المواد</div><div class="n" style="color:#b3261e">{{ grand.cost|money }}</div></div>
+<div class="stat" style="border-top-color:#2a6153"><div class="l">الفائدة الصافية</div><div class="n" style="color:#145c32">{{ grand.profit|money }}</div></div></div>
+<div class="card"><table><tr><th>الخدمة</th><th>الغرفة</th><th>الحصص</th><th>الدخل</th><th>المواد</th><th>الفائدة الصافية</th><th>فائدة الحصة الوحدة</th><th>نسبة الفائدة</th></tr>
+{% for s in rows %}<tr><td>{{ item_ic(s.name) }}{{ s.name }}</td><td class="mut">{{ USE_ROOMS.get(s.room) or DEPTS.get(s.room) or '' }}</td><td>{{ s.n }}</td>
+<td>{{ s.income|money }}</td><td style="color:#b3261e">{{ s.cost|money }}</td><td><b style="color:{{ '#145c32' if s.profit>=0 else '#b3261e' }}">{{ s.profit|money }}</b></td><td>{{ s.avg|money }}</td>
+<td><div style="display:flex;align-items:center;gap:6px"><div style="width:80px;background:#eee;border-radius:3px;height:10px"><div style="width:{{ [[s.margin,0]|max,100]|min }}%;height:10px;border-radius:3px;background:{{ '#2a8a57' if s.margin>=50 else '#c99a5b' if s.margin>=30 else '#b3261e' }}"></div></div>{{ s.margin }}%</div></td></tr>
+{% else %}<tr><td colspan="8" class="mut">ما كاين حتى حصة في هاذ الفترة</td></tr>{% endfor %}</table>
+<p class="mut">🟢 فوق 50% مليحة · 🟡 بين 30 و50% · 🔴 تحت 30%: شوفي سعرها ولا المواد اللي تستعمل فيها. باش تكون الأرقام صحيحة: سجّلي «المواد المعتادة» لكل خدمة في صفحة الخدمات، وسعر الشراء لكل مادة.</p></div>{% endblock %}"""
+
+TEMPLATES["month_report.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
+<h1>{{ page_icon() }}تقرير الشهر{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<div class="card noprint"><form class="row"><label>الشهر<input type="month" name="month" value="{{ s.mm }}"></label>
+{{ branch_filter(br) }}<button class="btn light">عرض</button><button type="button" class="btn gold" onclick="window.print()">طباعة</button>
+<a class="btn light" href="{{ url_for('reports', month=s.mm) }}">التفاصيل الكاملة</a></form></div>
+<div class="card">
+<div style="display:flex;align-items:center;gap:12px;border-bottom:2px solid #c99a5b;padding-bottom:8px;margin-bottom:10px">
+<img src="{{ url_for('static', filename='logo_full.jpg') }}" style="width:60px;border-radius:6px"><div><b>{{ center }}</b><div class="mut">{{ branch_name(br) if br else 'كل الفروع' }}</div></div>
+<div style="margin-inline-start:auto;text-align:left"><b>تقرير شهر {{ s.mm }}</b><div class="mut">مقارنة مع {{ s.pm }}</div></div></div>
+{% if s.tips %}<div style="background:#f6efe3;border-radius:8px;padding:8px 12px;margin-bottom:12px">{% for t in s.tips %}<div>• {{ t }}</div>{% endfor %}</div>{% endif %}
+<table><tr><th></th><th>هاذ الشهر</th><th>الشهر الفايت</th><th>الفرق</th></tr>
+{% for l in s.lines %}<tr{% if l.key=='profit' %} style="background:#efe2cf;font-weight:bold"{% endif %}><td>{{ l.label }}</td>
+<td>{{ l.cur|money if l.money else l.cur }}</td><td class="mut">{{ l.prev|money if l.money else l.prev }}</td>
+<td>{% if l.pct is not none %}<span class="tag {{ '' if l.good else 'red' }}" style="{{ 'background:#dff3e6;color:#145c32' if l.good and l.pct }}">{{ '▲' if l.pct>0 else '▼' if l.pct<0 else '=' }} {{ l.pct|abs }}%</span>{% else %}<span class="mut">—</span>{% endif %}</td></tr>{% endfor %}</table>
+<p class="mut">الربح الصافي = المداخيل − المصاريف (المواد المستعملة داخلة في المصاريف كي تتشرى).</p></div>
+<div class="grid">
+<div class="card"><h2>{{ ic('services') }}أحسن الخدمات (الفائدة الصافية)</h2><table><tr><th>الخدمة</th><th>الحصص</th><th>الفائدة</th></tr>
+{% for x in s.svc %}<tr><td>{{ x.name }}</td><td>{{ x.n }}</td><td><b>{{ x.profit|money }}</b> <span class="mut">{{ x.margin }}%</span></td></tr>{% else %}<tr><td colspan="3" class="mut">لا شيء</td></tr>{% endfor %}</table>
+<p class="noprint"><a href="{{ url_for('services_profit', month=s.mm, branch=br or None) }}">كل الخدمات ←</a></p></div>
+<div class="card"><h2>{{ ic('staff') }}العاملات (الحصص اللي كمّلوها)</h2><table><tr><th>العاملة</th><th>الحصص</th><th>المداخيل</th></tr>
+{% for w in s.workers %}<tr><td>{{ '🥇 ' if loop.first }}{{ w.name }}</td><td>{{ w.n }}</td><td>{{ w.rev|money }}</td></tr>{% else %}<tr><td colspan="3" class="mut">لا شيء</td></tr>{% endfor %}</table></div>
+<div class="card"><h2>{{ ic('reports') }}أرقام أخرى</h2>
+{% if s.best_day %}<p>أحسن يوم: <b>{{ s.best_day[0] }}</b> — {{ s.best_day[1]|money }}</p>{% endif %}
+<p>تكلفة المنتجات المبيعة: {{ s.cur.cogs|money }}</p>
+<p>ديون الزبائن الحالية: <b>{{ s.cur.debts|money }}</b></p>
+{% for k,v in s.cur.by_method %}<div class="mut">{{ k }}: {{ v|money }}</div>{% endfor %}</div></div>{% endblock %}"""
+
+TEMPLATES["purchase_auto.html"] = r"""{% extends "base.html" %}{% block body %}
+<h1>{{ page_icon() }}طلبية أوتوماتيكية — {{ branch_name(br) }}</h1>
+{% if branches %}<div class="row noprint" style="margin-bottom:10px">{% for b in branches %}<a class="btn {{ '' if b.id==br else 'light' }}" href="{{ url_for('purchase_auto', branch=b.id) }}">{{ b.name }}</a>{% endfor %}</div>{% endif %}
+<div class="card"><p class="mut">البرنامج جمع المواد اللي وصلت حد التنبيه، ولا اللي ما تكفّيش أسبوع حسب الاستهلاك تاع آخر 30 يوم.
+الكمية المقترحة تكفّي شهر تقريبًا (وناقص منها اللي راهو مطلوب من قبل). بدّلي الكمية ولا المورد إذا حبيتي، ومن بعد «إنشاء الطلبيات» — تخرج طلبية لكل مورد.</p>
+{% if rows %}<form method="post"><input type="hidden" name="branch" value="{{ br }}">
+<table><tr><th><input type="checkbox" checked onclick="document.querySelectorAll('input[name=pick]').forEach(x=>x.checked=this.checked)"></th><th>المادة</th><th>الموجود</th><th>حد التنبيه</th><th>الاستهلاك (30 يوم)</th><th>يكفّي</th><th>مطلوب من قبل</th><th>الكمية للطلب</th><th>المورد</th></tr>
+{% for r in rows %}<tr><td><input type="checkbox" name="pick" value="{{ r.id }}" {{ 'checked' if r.suggest>0 }}></td>
+<td>{{ item_ic(r.name,'product') }}{{ r.name }}{% if r.usage=='use' %} <span class="tag" style="background:#e3eefc;color:#1d4f91">مواد العمل</span>{% endif %}</td>
+<td><span class="tag {{ 'red' if r.qty<=0 else 'amber' }}">{{ '%g'|format(r.qty) }}</span></td><td class="mut">{{ '%g'|format(r.min_qty) }}</td>
+<td class="mut">{{ '%g'|format(r.used30) }}</td><td>{% if r.days_left is not none %}<b style="color:{{ '#b3261e' if r.days_left<3 else '#9a6b16' }}">{{ r.days_left }} يوم</b>{% else %}<span class="mut">—</span>{% endif %}</td>
+<td class="mut">{{ '%g'|format(r.ordered) if r.ordered else '' }}</td>
+<td><input name="q_{{ r.id }}" type="number" min="0" step="any" value="{{ r.suggest }}" style="width:80px"></td>
+<td><select name="s_{{ r.id }}"><option value="">— بلا مورد —</option>{% for s in sups %}<option value="{{ s.id }}" {{ 'selected' if r.last_sup==s.id }}>{{ s.name }}</option>{% endfor %}</select></td></tr>{% endfor %}</table>
+<p class="row" style="margin-top:12px"><button class="btn gold">{{ ic('truck') }} إنشاء الطلبيات</button><a class="btn light" href="{{ url_for('purchases') }}">رجوع</a></p></form>
+{% else %}<p>✅ كلشي متوفّر، ما كاين حتى مادة لازم تتشرى دروك.</p>{% endif %}</div>{% endblock %}"""

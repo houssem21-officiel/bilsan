@@ -3,7 +3,7 @@
 برنامج تسيير مركز الطب البديل بيلسان
 الخادم يعمل على الحاسوب المركزي، والفروع (سكيكدة، الحروش) تتصل به عبر المتصفح.
 """
-import os, sys, csv, io, json, sqlite3, threading, time, base64
+import os, sys, csv, io, json, sqlite3, threading, time, base64, math
 from datetime import datetime, timedelta, date
 from functools import wraps
 from urllib import request as urlreq, error as urlerr
@@ -809,6 +809,11 @@ def director_alerts(db, due=None):
         out = sum(1 for s in st if s["out"])
         al.append(("amber", "alert", f"{len(st)} منتج قارب على النفاد أو الصلاحية" + (f" ({out} نفد)" if out else ""),
                    url_for("stock_alerts_page")))
+    for b in active_branches():
+        n = sum(1 for r in reorder_suggestions(b["id"]) if r["suggest"] > 0)
+        if n:
+            al.append(("amber", "truck", f"{b['name']}: {n} مادة لازم تتشرى — الطلبية جاهزة، غير وافقي",
+                       url_for("purchase_auto", branch=b["id"])))
     due = due if due is not None else due_salaries()
     if due:
         late = sum(1 for d in due if d.get("late"))
@@ -3290,6 +3295,206 @@ def reports():
     return render_template("reports.html", r=r, br=br, mm=mm, d1=d1, d2=d2, months=months, mx=mx)
 
 
+def service_profit(br, d1, d2):
+    """فائدة كل خدمة في الفترة: عدد الحصص، الدخل، المواد المستعملة (بسعر الشراء)، والفائدة الصافية."""
+    db = get_db()
+    q = "SELECT id FROM visits WHERE status IN ('done','paid') AND substr(created_at,1,10) BETWEEN ? AND ?"
+    args = [d1, d2]
+    if br:
+        q += " AND branch_id=?"
+        args.append(br)
+    out = {}
+
+    def add(key, name, room, n, inc, cost):
+        e = out.setdefault(key, {"name": name, "room": room, "n": 0, "income": 0.0, "cost": 0.0})
+        e["n"] += n
+        e["income"] += inc
+        e["cost"] += cost
+
+    for (vid,) in db.execute(q, args).fetchall():
+        v = db.execute("SELECT * FROM visits WHERE id=?", (vid,)).fetchone()
+        items = db.execute("SELECT * FROM visit_items WHERE visit_id=?", (vid,)).fetchall()
+        e = session_economics(db, v, items)
+        room = visit_room(v)
+        parts = [(i["service_id"] or ("d:" + (i["description"] or "")), i["description"], i["qty"] * i["unit_price"])
+                 for i in items if not i["product_id"]]
+        if e["prepaid"] and v["appointment_id"]:
+            ap = db.execute("SELECT a.service_id, s.name FROM appointments a LEFT JOIN services s ON s.id=a.service_id WHERE a.id=?",
+                            (v["appointment_id"],)).fetchone()
+            if ap:
+                parts.append((ap["service_id"] or "d:باقة", ap["name"] or "حصة من باقة", e["prepaid"]))
+        if not parts:
+            if e["mat_cost"]:
+                add("d:" + (v["request"] or "بدون خدمة"), v["request"] or "حصة بدون خدمة", room, 1, 0, e["mat_cost"])
+            continue
+        tot = sum(max(p[2], 0) for p in parts)
+        for k, name, amt in parts:
+            share = (max(amt, 0) / tot) if tot > 0 else 1 / len(parts)
+            add(k, name, room, 1, max(amt, 0), e["mat_cost"] * share)
+    # خدمات تخلّصت مباشرة بلا زيارة (موعد تكمّل)
+    q2 = """SELECT ch.service_id, s.name, s.dept, p.amount FROM charges ch JOIN payments p ON p.id=ch.payment_id
+        LEFT JOIN services s ON s.id=ch.service_id WHERE ch.visit_id IS NULL AND ch.service_id IS NOT NULL AND p.cancelled=0
+        AND substr(p.created_at,1,10) BETWEEN ? AND ?"""
+    args = [d1, d2]
+    if br:
+        q2 += " AND p.branch_id=?"
+        args.append(br)
+    for r in db.execute(q2, args):
+        add(r["service_id"], r["name"] or "خدمة", r["dept"] or "", 1, r["amount"] or 0, 0)
+    for k, e in out.items():
+        if isinstance(k, int):
+            s = db.execute("SELECT name FROM services WHERE id=?", (k,)).fetchone()
+            if s:
+                e["name"] = s["name"]
+        e["profit"] = round(e["income"] - e["cost"], 2)
+        e["avg"] = round(e["profit"] / e["n"], 2) if e["n"] else 0
+        e["margin"] = round(e["profit"] / e["income"] * 100) if e["income"] > 0 else 0
+    return sorted(out.values(), key=lambda e: -e["profit"])
+
+
+@app.route("/reports/services")
+@login_required("admin")
+def services_profit():
+    br = scope_branch()
+    if request.args.get("from"):
+        d1 = request.args["from"]
+        d2 = request.args.get("to") or d1
+        mm = None
+    else:
+        mm, d1, d2 = month_bounds(request.args.get("month"))
+    rows = service_profit(br, d1, d2)
+    grand = {k: sum(r[k] for r in rows) for k in ("n", "income", "cost", "profit")}
+    return render_template("services_profit.html", rows=rows, grand=grand, br=br, mm=mm, d1=d1, d2=d2)
+
+
+def month_digest(br, m):
+    """ملخص الشهر في ورقة: مقارنة بالشهر الفايت + أحسن خدمة وعاملة ويوم."""
+    db = get_db()
+    mm, d1, d2 = month_bounds(m)
+    pm, p1, p2 = month_bounds((datetime.strptime(d1, "%Y-%m-%d").date() - timedelta(days=1)).strftime("%Y-%m"))
+    cur, prev = report_data(br, d1, d2), report_data(br, p1, p2)
+
+    def mats(a, b):
+        q = """SELECT COALESCE(SUM(-m.qty*COALESCE(p.cost_price,0)),0) FROM stock_moves m JOIN products p ON p.id=m.product_id
+               WHERE m.kind='use' AND substr(m.created_at,1,10) BETWEEN ? AND ?"""
+        return db.execute(q + (" AND m.branch_id=?" if br else ""), [a, b] + ([br] if br else [])).fetchone()[0]
+
+    def visits_n(a, b):
+        q = "SELECT COUNT(*) FROM visits WHERE status IN ('done','paid') AND substr(created_at,1,10) BETWEEN ? AND ?"
+        return db.execute(q + (" AND branch_id=?" if br else ""), [a, b] + ([br] if br else [])).fetchone()[0]
+
+    def pct(a, b):
+        return None if not b else round((a - b) / abs(b) * 100)
+
+    lines = []
+    for key, label, a, b, good_up in (
+            ("income", "المداخيل", cur["income"], prev["income"], True),
+            ("expense", "المصاريف", cur["expense"], prev["expense"], False),
+            ("mats", "مواد العمل المستعملة", mats(d1, d2), mats(p1, p2), False),
+            ("profit", "الربح الصافي", cur["profit"], prev["profit"], True),
+            ("visits", "الحصص (الزيارات)", visits_n(d1, d2), visits_n(p1, p2), True),
+            ("served", "الزبائن اللي خلّصو", cur["served"], prev["served"], True),
+            ("new", "زبائن جدد", cur["new_clients"], prev["new_clients"], True)):
+        p = pct(a, b)
+        lines.append(dict(key=key, label=label, cur=a, prev=b, pct=p, money=key not in ("visits", "served", "new"),
+                          good=(p is None or p == 0) or ((p > 0) == good_up)))
+    q = """SELECT u.full_name AS name, COUNT(*) AS n, COALESCE(SUM((SELECT SUM(qty*unit_price) FROM visit_items i WHERE i.visit_id=v.id)),0) AS rev
+           FROM visits v JOIN users u ON u.id=v.done_by WHERE v.status IN ('done','paid') AND substr(v.created_at,1,10) BETWEEN ? AND ?"""
+    workers = db.execute(q + (" AND v.branch_id=?" if br else "") + " GROUP BY u.id ORDER BY n DESC LIMIT 5",
+                         [d1, d2] + ([br] if br else [])).fetchall()
+    svc = service_profit(br, d1, d2)
+    best_day = max(cur["days"], key=lambda x: x[1]) if cur["days"] and cur["max_day"] > 1 else None
+    tips = []
+    if lines[0]["pct"] is not None:
+        tips.append(f"المداخيل {'زادت' if lines[0]['pct'] >= 0 else 'نقصت'} بـ {abs(lines[0]['pct'])}% على الشهر الفايت.")
+    if svc:
+        tips.append(f"أكثر خدمة جابت فائدة: {svc[0]['name']} ({svc[0]['profit']:,.0f} دج صافي).")
+        low = [s for s in svc if s["income"] > 0 and s["margin"] < 30]
+        if low:
+            tips.append(f"خدمات فائدتها ضعيفة (أقل من 30%): {'، '.join(s['name'] for s in low[:3])} — شوفي سعرها ولا موادها.")
+    if cur["debts"] > 0:
+        tips.append(f"ديون الزبائن الحالية: {cur['debts']:,.0f} دج.")
+    return dict(mm=mm, pm=pm, d1=d1, d2=d2, lines=lines, workers=workers, svc=svc[:5], best_day=best_day,
+                tips=tips, cur=cur)
+
+
+@app.route("/reports/month")
+@login_required("admin")
+def month_report():
+    br = scope_branch()
+    s = month_digest(br, request.args.get("month"))
+    return render_template("month_report.html", s=s, br=br)
+
+
+def reorder_suggestions(br):
+    """المواد اللي لازم تتشرى: اللي وصلت حد التنبيه، ولا اللي ما تكفّيش أسبوع حسب الاستهلاك تاع آخر 30 يوم.
+    الكمية المقترحة تكفّي شهر (وما تنقصش على ضعف حد التنبيه)."""
+    db = get_db()
+    since = (date.today() - timedelta(days=30)).isoformat()
+    rows = db.execute("""SELECT p.id, p.name, p.category, p.usage, COALESCE(p.cost_price,0) AS cost, COALESCE(s.qty,0) AS qty,
+        COALESCE(s.min_qty,0) AS min_qty,
+        (SELECT COALESCE(SUM(-m.qty),0) FROM stock_moves m WHERE m.product_id=p.id AND m.branch_id=? AND m.qty<0
+           AND substr(m.created_at,1,10)>=?) AS used30,
+        (SELECT pu.supplier_id FROM purchase_items pi JOIN purchases pu ON pu.id=pi.purchase_id
+           WHERE pi.product_id=p.id AND pu.supplier_id IS NOT NULL ORDER BY pu.id DESC LIMIT 1) AS last_sup
+        FROM products p LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1
+        ORDER BY p.name""", (br, since, br)).fetchall()
+    out = []
+    open_q = {r[0]: r[1] for r in db.execute("""SELECT pi.product_id, SUM(pi.qty) FROM purchase_items pi JOIN purchases pu
+        ON pu.id=pi.purchase_id WHERE pu.status='ordered' AND pu.branch_id=? GROUP BY pi.product_id""", (br,))}
+    for r in rows:
+        daily = r["used30"] / 30
+        days_left = (r["qty"] / daily) if daily > 0 else None
+        low = r["min_qty"] > 0 and r["qty"] <= r["min_qty"]
+        fast = daily > 0 and days_left is not None and days_left < 7
+        if not (low or fast):
+            continue
+        target = max(r["min_qty"] * 2, daily * 30)
+        sug = math.ceil(max(target - r["qty"] - (open_q.get(r["id"]) or 0), 0))
+        d = dict(r)
+        d.update(daily=round(daily, 2), days_left=None if days_left is None else int(days_left), suggest=sug,
+                 ordered=open_q.get(r["id"]) or 0, low=low)
+        out.append(d)
+    out.sort(key=lambda d: (d["days_left"] if d["days_left"] is not None else (0 if d["qty"] <= 0 else 99)))
+    return out
+
+
+@app.route("/purchases/auto", methods=["GET", "POST"])
+@perm_required("purchases")
+def purchase_auto():
+    """طلبية أوتوماتيكية: البرنامج يجمع المواد اللي قربت تكمل، والمديرة (ولا اللي عندو الصلاحية) يوافق بضغطة."""
+    db = get_db()
+    u = current_user()
+    br = (int(request.values.get("branch")) if u["role"] == "admin" and (request.values.get("branch") or "").lstrip("-").isdigit()
+          else (scope_branch() or work_branch()) if u["role"] == "admin" else u["branch_id"])
+    if request.method == "POST":
+        f = request.form
+        groups = {}
+        for pid_ in f.getlist("pick"):
+            q = fnum(f.get(f"q_{pid_}"))
+            if q > 0 and pid_.lstrip("-").isdigit():
+                groups.setdefault(f.get(f"s_{pid_}") or "", []).append((int(pid_), q))
+        made = []
+        for sup, lines in groups.items():
+            pid = db.execute("""INSERT INTO purchases(supplier_id,branch_id,day,notes,created_by,created_at)
+                VALUES(?,?,?,?,?,?)""", (int(sup) if sup.lstrip("-").isdigit() else None, br, date.today().isoformat(),
+                                         "طلبية أوتوماتيكية (مواد قربت تكمل)", u["id"], now_str())).lastrowid
+            for p, q in lines:
+                db.execute("INSERT INTO purchase_items(purchase_id,product_id,qty,unit_cost) VALUES(?,?,?,0)", (pid, p, q))
+            made.append(pid)
+        if made:
+            audit("طلبية أوتوماتيكية", f"{len(made)} طلبية — {branch_name(br)}", br)
+            db.commit()
+            flash(f"تم إنشاء {len(made)} طلبية (وحدة لكل مورد). اطبعها وابعثها للمورد.", "ok")
+            return redirect(url_for("purchase_view", pid=made[0]) if len(made) == 1 else url_for("purchases"))
+        flash("اختر منتجًا واحدًا على الأقل", "err")
+        return redirect(url_for("purchase_auto", branch=br))
+    rows = reorder_suggestions(br)
+    return render_template("purchase_auto.html", rows=rows, br=br,
+                           sups=db.execute("SELECT * FROM suppliers WHERE active=1 ORDER BY name").fetchall(),
+                           branches=active_branches() if u["role"] == "admin" else [])
+
+
 # ---------------------------------------------------------------- الملف الطبي ووثيقة الموافقة
 def can_see_photos(u=None):
     return has_perm("medical", u)
@@ -4802,6 +5007,7 @@ PAGE_ICONS = {
     "devices": "monitor", "users": "users", "sms_page": "sms", "sms_campaign": "sms",
     "settings": "settings", "change_password": "key", "staff": "staff", "staff_view": "staff",
     "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream", "approvals": "key", "sessions_profit": "reports", "stock_use": "cream",
+    "services_profit": "services", "month_report": "reports", "purchase_auto": "truck",
 }
 
 
@@ -4916,7 +5122,8 @@ def _after_write(resp):
 # كل الصفحات تتحدث وحدها عند وصول معلومة جديدة، إلا الصفحات التي فيها عمل غير محفوظ أو للطباعة
 NOT_LIVE = {"login", "pos", "purchase_new", "plan_new", "payment_new", "charge_new", "visit_new", "consent",
             "receipt", "certificate", "payslip", "payslips_all", "settings", "settings_images",
-            "sms_campaign", "backup_page", "update_now", "setup_pair", "devices", "permissions"}
+            "sms_campaign", "backup_page", "update_now", "setup_pair", "devices", "permissions", "purchase_auto",
+            "services", "month_report"}
 
 
 @app.route("/api/stamp")
