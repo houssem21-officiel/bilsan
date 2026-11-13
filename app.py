@@ -155,6 +155,9 @@ DEFAULT_SETTINGS = {
     "sms_hours_before": "24",
     "sms_depts": "beauty",
     "sms_template": "مرحبا {name}، نذكركم بموعدكم في {center} - {branch} يوم {date} على الساعة {time}. للإلغاء اتصلوا بنا.",
+    "sms_morning": "1",
+    "sms_morning_hour": "8",
+    "sms_morning_template": "صباح الخير {name}، نذكّركم بموعدكم اليوم على الساعة {time} في {center} - {branch}. في انتظاركم.",
     "sms_confirm": "0",
     "sms_confirm_template": "مرحبا {name}، تم تسجيل موعدكم في {center} - {branch} يوم {date} على الساعة {time}. شكرا لثقتكم.",
     "sms_birthday": "0",
@@ -292,6 +295,8 @@ def init_db():
     add_col("expenses", "from_cash", "INTEGER DEFAULT 0")
     add_col("expenses", "role", "TEXT")
     add_col("appointments", "confirm_sent_at", "TEXT")
+    add_col("appointments", "morning_sent_at", "TEXT")
+    add_col("appointments", "missed", "INTEGER DEFAULT 0")
     add_col("charges", "debt_of", "INTEGER")
     add_col("products", "cost_price", "REAL DEFAULT 0")
     add_col("sale_items", "unit_cost", "REAL")
@@ -828,7 +833,7 @@ def director_alerts(db, due=None):
     n = db.execute("""SELECT COUNT(*) FROM appointments WHERE plan_id IS NOT NULL AND status='scheduled'
         AND start_at IS NOT NULL AND substr(start_at,1,10)<?""", (date.today().isoformat(),)).fetchone()[0]
     if n:
-        al.append(("amber", "calendar", f"{n} حصة فاتت وما تسجّلتش (الزبونة ما جاتش؟)", url_for("appointments")))
+        al.append(("amber", "calendar", f"{n} حصة فاتت وما تسجّلتش (الزبونة ما جاتش؟)", url_for("appts_missed")))
     n = db.execute("SELECT COUNT(*) FROM charges WHERE status='pending' AND substr(created_at,1,10)<?",
                    (date.today().isoformat(),)).fetchone()[0]
     if n:
@@ -1002,8 +1007,124 @@ def appt_status(aid):
     if st in APPT_STATUS and st != "done":
         audit("تغيير حالة موعد", f"موعد {a['start_at'] or ''} ← {APPT_STATUS[st]}", a["branch_id"])
         db.execute("UPDATE appointments SET status=? WHERE id=?", (st, aid))
+        if st == "noshow" and a["status"] != "noshow":
+            db.execute("UPDATE appointments SET missed=COALESCE(missed,0)+1 WHERE id=?", (aid,))
         db.commit()
+        if st == "noshow":  # ما جاتش: نقترحو موعد جديد مباشرة
+            return redirect(url_for("appt_reschedule", aid=aid))
     return redirect(request.referrer or url_for("appointments"))
+
+
+WORK_SLOTS = [f"{h:02d}:{m:02d}" for h in range(9, 18) for m in (0, 30)]
+
+
+def suggest_slot(db, a, start_day=None):
+    """أقرب يوم عمل فيه نفس الساعة فارغة في نفس الغرفة (ولا أقرب ساعة فارغة في ذاك اليوم)."""
+    t0 = (a["start_at"] or "")[11:16] or "09:00"
+    dur = appt_duration(a["service_id"])
+    d = start_day or (date.today() + timedelta(days=1))
+    for _ in range(21):
+        d = next_free_day(d)
+        times = [t0] + sorted(WORK_SLOTS, key=lambda x: abs(int(x[:2]) * 60 + int(x[3:]) - int(t0[:2]) * 60 - int(t0[3:5])))
+        for t in times:
+            at = f"{d.isoformat()} {t}"
+            if not a["post_id"] or not room_conflicts(db, a["post_id"], at, dur, exclude_id=a["id"]):
+                return at
+        d += timedelta(days=1)
+    return f"{next_free_day(date.today() + timedelta(days=1)).isoformat()} {t0}"
+
+
+def following_sessions(db, a):
+    if not a["plan_id"]:
+        return []
+    return db.execute("""SELECT * FROM appointments WHERE plan_id=? AND session_no>? AND status='scheduled'
+        AND start_at IS NOT NULL ORDER BY session_no""", (a["plan_id"], a["session_no"] or 0)).fetchall()
+
+
+def shift_plan(at_old, at_new, rows):
+    """الحصص اللي من بعد تتأخر بنفس عدد الأيام (وتتفادى يوم الراحة)، وتبقى في نفس الساعة."""
+    try:
+        delta = (datetime.strptime(at_new[:10], "%Y-%m-%d").date() - datetime.strptime(at_old[:10], "%Y-%m-%d").date()).days
+    except (TypeError, ValueError):
+        return []
+    out, last = [], datetime.strptime(at_new[:10], "%Y-%m-%d").date()
+    for r in rows:
+        d0 = datetime.strptime(r["start_at"][:10], "%Y-%m-%d").date()
+        d1 = next_free_day(max(d0 + timedelta(days=max(delta, 0)), last + timedelta(days=1)))
+        last = d1
+        out.append((r, f"{d1.isoformat()} {r['start_at'][11:16]}"))
+    return out
+
+
+@app.route("/appointments/<int(signed=True):aid>/reschedule", methods=["GET", "POST"])
+@login_required()
+def appt_reschedule(aid):
+    """الزبونة ما جاتش: البرنامج يقترح أقرب موعد فارغ في نفس الغرفة، والحصص اللي من بعد تتأخر وحدها."""
+    db = get_db()
+    u = current_user()
+    a = db.execute("""SELECT a.*, c.name AS client, c.phone, s.name AS service, pl.title AS plan_title, po.name AS room,
+        (SELECT COUNT(*) FROM appointments x WHERE x.plan_id=a.plan_id) AS plan_n
+        FROM appointments a JOIN clients c ON c.id=a.client_id LEFT JOIN services s ON s.id=a.service_id
+        LEFT JOIN plans pl ON pl.id=a.plan_id LEFT JOIN posts po ON po.id=a.post_id WHERE a.id=?""", (aid,)).fetchone() or abort(404)
+    if u["role"] != "admin" and a["branch_id"] != u["branch_id"]:
+        abort(403)
+    need("appointments")
+    if request.method == "POST":
+        d, t = request.form.get("date"), request.form.get("time") or "09:00"
+        if not d:
+            flash("اختر التاريخ", "err")
+            return redirect(url_for("appt_reschedule", aid=aid))
+        at = f"{d} {t}"
+        if a["post_id"] and not request.form.get("force"):
+            cf = room_conflicts(db, a["post_id"], at, appt_duration(a["service_id"]), exclude_id=aid)
+            if cf:
+                flash("الغرفة محجوزة في هذا الوقت: " + "، ".join(f"{x['start_at'][11:16]} {x['client']}" for x in cf)
+                      + " — اختر وقتًا آخر أو أشّر على «حجز رغم التعارض».", "err")
+                return redirect(url_for("appt_reschedule", aid=aid, at=at))
+        old = a["start_at"]
+        if a["status"] == "scheduled" and old and old < datetime.now().strftime("%Y-%m-%d %H:%M"):
+            db.execute("UPDATE appointments SET missed=COALESCE(missed,0)+1 WHERE id=?", (aid,))
+        db.execute("""UPDATE appointments SET start_at=?, status='scheduled', sms_sent_at=NULL, morning_sent_at=NULL
+            WHERE id=?""", (at, aid))
+        moved = 0
+        if request.form.get("shift") and old:
+            for r, nat in shift_plan(old, at, following_sessions(db, a)):
+                if nat != r["start_at"]:
+                    db.execute("UPDATE appointments SET start_at=?, sms_sent_at=NULL, morning_sent_at=NULL WHERE id=?",
+                               (nat, r["id"]))
+                    moved += 1
+        audit("موعد جديد بعد غياب", f"{a['client']}: {old or '-'} ← {at}" + (f" (+{moved} حصة تأخرت)" if moved else ""),
+              a["branch_id"])
+        db.commit()
+        flash(f"الموعد الجديد: {d} على {t}" + (f" — و{moved} حصة من بعد تأخرت معاها" if moved else ""), "ok")
+        return redirect(url_for("appointments", date=d))
+    at = request.args.get("at") or suggest_slot(db, a)
+    preview = shift_plan(a["start_at"], at, following_sessions(db, a)) if a["start_at"] else []
+    return render_template("appt_reschedule.html", a=a, at=at, preview=preview)
+
+
+@app.route("/appointments/missed")
+@perm_required("appointments")
+def appts_missed():
+    """الحصص اللي فاتت والزبونة ما جاتش، ومازال ما خداتش موعد جديد."""
+    db = get_db()
+    u = current_user()
+    br = u["branch_id"] or scope_branch()
+    q = """SELECT a.*, c.name AS client, c.phone, s.name AS service, pl.title AS plan_title, b.name AS branch,
+        (SELECT COUNT(*) FROM appointments x WHERE x.plan_id=a.plan_id) AS plan_n
+        FROM appointments a JOIN clients c ON c.id=a.client_id LEFT JOIN services s ON s.id=a.service_id
+        LEFT JOIN plans pl ON pl.id=a.plan_id JOIN branches b ON b.id=a.branch_id
+        WHERE ((a.status='scheduled' AND a.start_at < ?) OR a.status='noshow') AND a.start_at >= ?
+        AND NOT EXISTS (SELECT 1 FROM visits v WHERE v.appointment_id=a.id)"""
+    args = [datetime.now().strftime("%Y-%m-%d %H:%M"), (date.today() - timedelta(days=60)).isoformat()]
+    if br:
+        q += " AND a.branch_id=?"
+        args.append(br)
+    if u["role"] in ("laser", "beauty"):
+        q += " AND a.dept=?"
+        args.append(u["role"])
+    rows = db.execute(q + " ORDER BY a.start_at DESC", args).fetchall()
+    return render_template("appts_missed.html", rows=rows, br=br)
 
 
 @app.route("/appointments/<int(signed=True):aid>/arrived", methods=["POST"])
@@ -4113,7 +4234,7 @@ def plan_view(pid):
                 stt = f.get(f"s_{k}") if f.get(f"s_{k}") in APPT_STATUS else x["status"]
                 price = x["price"] if (x["paid"] or price_locked(u)) else fnum(f.get(f"p_{k}"), x["price"] or 0)
                 if at != (x["start_at"] or None):
-                    db.execute("UPDATE appointments SET sms_sent_at=NULL WHERE id=?", (x["id"],))
+                    db.execute("UPDATE appointments SET sms_sent_at=NULL, morning_sent_at=NULL WHERE id=?", (x["id"],))
                 db.execute("UPDATE appointments SET start_at=?, status=?, price=?, post_id=? WHERE id=?",
                            (at, stt, price, f.get(f"r_{k}") or None, x["id"]))
             if p["price_mode"] == "session":
@@ -4436,7 +4557,7 @@ def settings():
                 continue
             elif k in ("stamp_img", "signature_img", "img_ver"):
                 continue  # تُرفع من نموذج الصور
-            elif k in ("sms_confirm", "sms_birthday", "daily_summary", "approvals_sms"):
+            elif k in ("sms_confirm", "sms_birthday", "daily_summary", "approvals_sms", "sms_morning"):
                 v = "1" if request.form.get(k) else "0"
             elif k == "last_birthday_run":
                 continue
@@ -4700,6 +4821,32 @@ def sms_extra_jobs(con):
                         (a["id"], a["phone"], msg, "sent" if ok else "failed", resp, now_str()))
             con.execute("UPDATE appointments SET confirm_sent_at=? WHERE id=?", (now_str(), a["id"]))
             con.commit()
+    # 1-ب) التذكير الثاني: صباح نهار الموعد
+    if s.get("sms_morning") == "1" and now.hour >= int(fnum(s.get("sms_morning_hour"), 8)):
+        depts = [d for d in (s.get("sms_depts") or "").split(",") if d]
+        if depts:
+            rows = con.execute(f"""SELECT a.*, c.name AS client, c.phone, b.name AS branch FROM appointments a
+                JOIN clients c ON c.id=a.client_id JOIN branches b ON b.id=a.branch_id
+                WHERE a.status='scheduled' AND a.morning_sent_at IS NULL AND c.phone<>''
+                AND a.dept IN ({','.join('?' * len(depts))}) AND substr(a.start_at,1,10)=? AND a.start_at > ?
+                ORDER BY a.start_at LIMIT 20""", depts + [now.strftime("%Y-%m-%d"), now.strftime("%Y-%m-%d %H:%M")]).fetchall()
+            for a in rows:
+                # تذكير وصلها قبل أقل من 3 ساعات (موعد تسجّل اليوم): ما نعاودوش
+                if a["sms_sent_at"] and a["sms_sent_at"] >= (now - timedelta(hours=3)).strftime("%Y-%m-%d %H:%M"):
+                    con.execute("UPDATE appointments SET morning_sent_at=? WHERE id=?", (now_str(), a["id"]))
+                    con.commit()
+                    continue
+                dt = datetime.strptime(a["start_at"][:16], "%Y-%m-%d %H:%M")
+                msg = sms_fill(s.get("sms_morning_template", ""), name=a["client"], center=s.get("center_name"),
+                               branch=a["branch"], date=dt.strftime("%d/%m/%Y"), time=dt.strftime("%H:%M"))
+                ok, resp = send_sms(con, a["phone"], msg)
+                con.execute("INSERT INTO sms_log(appointment_id,phone,message,status,response,created_at) VALUES(?,?,?,?,?,?)",
+                            (a["id"], a["phone"], msg, "sent" if ok else "failed", resp, now_str()))
+                fails = con.execute("SELECT COUNT(*) FROM sms_log WHERE appointment_id=? AND status='failed' AND created_at>=?",
+                                    (a["id"], now.strftime("%Y-%m-%d"))).fetchone()[0]
+                if ok or fails >= 3:
+                    con.execute("UPDATE appointments SET morning_sent_at=? WHERE id=?", (now_str(), a["id"]))
+                con.commit()
     # 2) تهنئة عيد الميلاد مرة في اليوم بعد العاشرة صباحًا
     today = date.today().isoformat()
     if s.get("sms_birthday") == "1" and s.get("last_birthday_run") != today and now.hour >= 10:
@@ -5008,6 +5155,7 @@ PAGE_ICONS = {
     "settings": "settings", "change_password": "key", "staff": "staff", "staff_view": "staff",
     "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream", "approvals": "key", "sessions_profit": "reports", "stock_use": "cream",
     "services_profit": "services", "month_report": "reports", "purchase_auto": "truck",
+    "appt_reschedule": "calendar", "appts_missed": "calendar",
 }
 
 
@@ -5017,7 +5165,7 @@ def page_icon():
     return icons.ic(name, "pg")
 
 
-app.jinja_env.globals.update(live_page=lambda: bool(request.endpoint) and request.endpoint not in NOT_LIVE
+app.jinja_env.globals.update(now_hm=lambda: datetime.now().strftime("%Y-%m-%d %H:%M"), live_page=lambda: bool(request.endpoint) and request.endpoint not in NOT_LIVE
                              and not request.endpoint.endswith(("_print", "_csv")) and request.method == "GET", ic=icons.ic, item_ic=icons.item, avatar=icons.avatar,
                              icon_sprite=icons.sprite, page_icon=page_icon)
 RESTORE_MSG = backup.apply_pending_restore(DB_PATH)
@@ -5122,7 +5270,7 @@ def _after_write(resp):
 # كل الصفحات تتحدث وحدها عند وصول معلومة جديدة، إلا الصفحات التي فيها عمل غير محفوظ أو للطباعة
 NOT_LIVE = {"login", "pos", "purchase_new", "plan_new", "payment_new", "charge_new", "visit_new", "consent",
             "receipt", "certificate", "payslip", "payslips_all", "settings", "settings_images",
-            "sms_campaign", "backup_page", "update_now", "setup_pair", "devices", "permissions", "purchase_auto",
+            "sms_campaign", "backup_page", "update_now", "setup_pair", "devices", "permissions", "purchase_auto", "appt_reschedule",
             "services", "month_report"}
 
 

@@ -306,8 +306,9 @@ TEMPLATES["appt_table.html"] = r"""<table><tr><th>الساعة</th>{% if cu.role
 <td>{{ a.room or '' }}</td>
 <td><span class="tag {{ {'scheduled':'amber','cancelled':'red','noshow':'gray'}.get(a.status,'') }}">{{ APPT_STATUS[a.status] }}</span></td>
 <td>{% if a.paid %}<span class="tag">مدفوعة</span>{% elif a.plan_id %}<span class="tag amber">غير مدفوعة{% if a.price %} ({{ '%g'|format(a.price) }}){% endif %}</span>{% else %}<span class="mut">-</span>{% endif %}</td>
-<td>{% if a.sms_sent_at %}<span class="tag">أُرسل</span>{% else %}<span class="mut">-</span>{% endif %}</td>
+<td>{% if a.sms_sent_at %}<span class="tag">أُرسل</span>{% endif %}{% if a.morning_sent_at %} <span class="tag" title="تذكير الصباح">☀ أُرسل</span>{% endif %}{% if not a.sms_sent_at and not a.morning_sent_at %}<span class="mut">-</span>{% endif %}</td>
 <td>{% if a.status=='scheduled' %}
+{% if perm('appointments') and a.start_at and a.start_at < now_hm() %}<a class="btn red sm" href="{{ url_for('appt_reschedule', aid=a.id) }}" title="فات الوقت: موعد جديد">ما جاتش ← موعد جديد</a>{% endif %}
 {% if perm('appointments') %}<form method="post" action="{{ url_for('appt_arrived', aid=a.id) }}" style="display:inline"><button class="btn gold sm" title="تتبعث للغرفة، والغرفة تزيد واش طلبت">{{ ic('send') }} الزبونة جات</button></form>{% endif %}
 <form method="post" action="{{ url_for('appt_done', aid=a.id) }}" style="display:inline-flex;gap:4px">
 {% if a.paid %}<input type="hidden" name="amount" value="0">{% else %}<input name="amount" {% if locked %}readonly title="السعر تحدده المديرة"{% endif %} placeholder="المبلغ" style="width:90px" value="{{ ('%g'|format(a.price) if a.price else '') if a.plan_id else ('%g'|format(a.sprice) if a.sprice else '') }}">{% endif %}
@@ -317,6 +318,7 @@ TEMPLATES["appt_table.html"] = r"""<table><tr><th>الساعة</th>{% if cu.role
 <select name="status" onchange="this.form.submit()" style="padding:3px"><option value="">…</option>
 <option value="noshow">لم يحضر</option><option value="cancelled">إلغاء</option></select></form>
 {% elif a.status in ('cancelled','noshow') %}
+{% if a.status=='noshow' and perm('appointments') %}<a class="btn sm" href="{{ url_for('appt_reschedule', aid=a.id) }}">موعد جديد</a>{% endif %}
 <form method="post" action="{{ url_for('appt_status', aid=a.id) }}" style="display:inline"><input type="hidden" name="status" value="scheduled"><button class="btn light sm">إرجاع</button></form>
 {% endif %}</td></tr>
 {% else %}<tr><td colspan="11" class="mut">لا توجد مواعيد</td></tr>{% endfor %}</table>"""
@@ -383,7 +385,8 @@ TEMPLATES["client_view.html"] = r"""{% extends "base.html" %}{% block body %}
 TEMPLATES["appointments.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box, branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}المواعيد</h1>
 <div class="row" style="margin-bottom:14px"><a class="btn" href="{{ url_for('plan_new') }}">+ موعد بعدة حصص (خطة جلسات)</a>
-<a class="btn light" href="{{ url_for('plans') }}">كل خطط الحصص</a></div>
+<a class="btn light" href="{{ url_for('plans') }}">كل خطط الحصص</a>
+{% if perm('appointments') %}<a class="btn light" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }} الحصص اللي فاتت (ما جاوش)</a>{% endif %}</div>
 {% if perm('appointments') %}<div class="card"><h2>موعد واحد</h2>
 <form method="post" class="row">
 {{ client_picker(sel_client, True) }}
@@ -825,6 +828,10 @@ TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
 <p><label>نص الرسالة<textarea name="sms_template" rows="3">{{ s.sms_template }}</textarea></label></p>
 <p class="mut">المتغيرات المتاحة: {name} اسم الزبون، {center} اسم المركز، {branch} الفرع، {date} التاريخ، {time} الساعة.</p>
 <h2>رسائل أخرى</h2>
+<p><label><input type="checkbox" name="sms_morning" value="1" {{ 'checked' if s.sms_morning=='1' }}> تذكير ثاني صباح نهار الموعد</label>
+<label style="display:inline-flex;margin-inline-start:12px">ابتداءً من الساعة<input name="sms_morning_hour" value="{{ s.sms_morning_hour }}" style="width:50px"></label></p>
+<p><label>نص تذكير الصباح<textarea name="sms_morning_template" rows="2">{{ s.sms_morning_template }}</textarea></label></p>
+<p class="mut">هكذا الزبونة توصلها رسالتين: وحدة قبل الموعد (حسب الساعات المكتوبة فوق، مثلا 24 = قبل بيوم) ووحدة الصباح تاع النهار.</p>
 <p><label><input type="checkbox" name="sms_confirm" value="1" {{ 'checked' if s.sms_confirm=='1' }}> رسالة تأكيد للزبون عند تسجيل موعده</label></p>
 <p><label>نص التأكيد<textarea name="sms_confirm_template" rows="2">{{ s.sms_confirm_template }}</textarea></label></p>
 <p><label><input type="checkbox" name="sms_birthday" value="1" {{ 'checked' if s.sms_birthday=='1' }}> تهنئة الزبائن بعيد ميلادهم (صباحًا)</label></p>
@@ -1941,3 +1948,33 @@ TEMPLATES["purchase_auto.html"] = r"""{% extends "base.html" %}{% block body %}
 <td><select name="s_{{ r.id }}"><option value="">— بلا مورد —</option>{% for s in sups %}<option value="{{ s.id }}" {{ 'selected' if r.last_sup==s.id }}>{{ s.name }}</option>{% endfor %}</select></td></tr>{% endfor %}</table>
 <p class="row" style="margin-top:12px"><button class="btn gold">{{ ic('truck') }} إنشاء الطلبيات</button><a class="btn light" href="{{ url_for('purchases') }}">رجوع</a></p></form>
 {% else %}<p>✅ كلشي متوفّر، ما كاين حتى مادة لازم تتشرى دروك.</p>{% endif %}</div>{% endblock %}"""
+
+
+TEMPLATES["appt_reschedule.html"] = r"""{% extends "base.html" %}{% block body %}
+<h1>{{ page_icon() }}موعد جديد — {{ a.client }}</h1>
+<div class="card"><p>{% if a.plan_id %}<b>{{ a.plan_title }}</b> — حصة {{ a.session_no }} من {{ a.plan_n }}{% else %}<b>{{ a.service or 'موعد' }}</b>{% endif %}
+{% if a.room %} · الغرفة: {{ a.room }}{% endif %} · الهاتف: <a href="tel:{{ a.phone }}">{{ a.phone }}</a></p>
+<p class="mut">الموعد اللي فات: {{ a.start_at or '-' }}{% if a.missed %} · <span class="tag red">غابت {{ a.missed }} مرة على هاذ الحصة</span>{% endif %}</p>
+<form method="post"><div class="row">
+<label>التاريخ الجديد<input type="date" name="date" value="{{ at[:10] }}" required></label>
+<label>الساعة<input type="time" name="time" value="{{ at[11:16] }}" required></label>
+<label style="flex-direction:row;align-items:center;gap:4px"><input type="checkbox" name="force" value="1"> حجز رغم التعارض</label></div>
+<p style="background:#eef7ee;border-radius:8px;padding:6px 10px">✅ البرنامج اختار أقرب يوم الغرفة فيه فارغة في نفس الساعة. بدّليه إذا الزبونة حبّت وقت آخر.</p>
+{% if preview %}<p><label><input type="checkbox" name="shift" value="1" checked> أخّر الحصص اللي من بعد بنفس الفرق (باش تبقى المدة بين الحصص كيما هي)</label></p>
+<table style="max-width:520px"><tr><th>الحصة</th><th>كانت</th><th>تولّي</th></tr>
+{% for r, nat in preview %}<tr><td>{{ r.session_no }}</td><td class="mut">{{ r.start_at }}</td><td><b>{{ nat }}</b></td></tr>{% endfor %}</table>
+<p class="mut">(التواريخ هاذو حسب الاقتراح؛ إذا بدّلتي التاريخ يتحسبو من جديد كي تحفظي.)</p>{% endif %}
+<p class="row"><button class="btn gold">حفظ الموعد الجديد</button><a class="btn light" href="{{ url_for('appts_missed') }}">رجوع</a></p></form>
+<p class="mut">التذكير بالرسالة يتعاود وحدو للموعد الجديد (قبل بيوم والصباح).</p></div>{% endblock %}"""
+
+TEMPLATES["appts_missed.html"] = r"""{% extends "base.html" %}{% block body %}
+<h1>{{ page_icon() }}الحصص اللي فاتت (ما جاوش)</h1>
+<div class="card"><p class="mut">مواعيد فات وقتها والزبونة ما جاتش (آخر 60 يوم)، ومازال ما خداتش موعد جديد. اضغطي «موعد جديد» والبرنامج يقترح أقرب وقت فارغ.</p>
+<table><tr><th>الموعد اللي فات</th>{% if not br %}<th>الفرع</th>{% endif %}<th>الزبونة</th><th>الهاتف</th><th>الخدمة / الحصة</th><th>غابت</th><th></th></tr>
+{% for a in rows %}<tr><td>{{ a.start_at }}</td>{% if not br %}<td>{{ a.branch }}</td>{% endif %}
+<td><a href="{{ url_for('client_view', cid=a.client_id) }}">{{ a.client }}</a></td><td><a href="tel:{{ a.phone }}">{{ a.phone }}</a></td>
+<td>{% if a.plan_id %}{{ a.plan_title }} <span class="tag">حصة {{ a.session_no }} من {{ a.plan_n }}</span>{% else %}{{ a.service or '-' }}{% endif %}</td>
+<td>{% if a.missed %}<span class="tag red">{{ a.missed }}</span>{% endif %}</td>
+<td><a class="btn gold sm" href="{{ url_for('appt_reschedule', aid=a.id) }}">{{ ic('calendar') }} موعد جديد</a>
+<form method="post" action="{{ url_for('appt_status', aid=a.id) }}" style="display:inline" onsubmit="return confirm('إلغاء هاذ الموعد نهائيًا؟')"><input type="hidden" name="status" value="cancelled"><button class="btn light sm">إلغاء</button></form></td></tr>
+{% else %}<tr><td colspan="7" class="mut">✅ ما كاين حتى حصة فاتت بلا موعد جديد</td></tr>{% endfor %}</table></div>{% endblock %}"""
