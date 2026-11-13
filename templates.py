@@ -305,6 +305,7 @@ TEMPLATES["appt_table.html"] = r"""<table><tr><th>الساعة</th>{% if cu.role
 <td>{% if a.paid %}<span class="tag">مدفوعة</span>{% elif a.plan_id %}<span class="tag amber">غير مدفوعة{% if a.price %} ({{ '%g'|format(a.price) }}){% endif %}</span>{% else %}<span class="mut">-</span>{% endif %}</td>
 <td>{% if a.sms_sent_at %}<span class="tag">أُرسل</span>{% else %}<span class="mut">-</span>{% endif %}</td>
 <td>{% if a.status=='scheduled' %}
+{% if perm('appointments') %}<form method="post" action="{{ url_for('appt_arrived', aid=a.id) }}" style="display:inline"><button class="btn gold sm" title="تتبعث للغرفة، والغرفة تزيد واش طلبت">{{ ic('send') }} الزبونة جات</button></form>{% endif %}
 <form method="post" action="{{ url_for('appt_done', aid=a.id) }}" style="display:inline-flex;gap:4px">
 {% if a.paid %}<input type="hidden" name="amount" value="0">{% else %}<input name="amount" {% if locked %}readonly title="السعر تحدده المديرة"{% endif %} placeholder="المبلغ" style="width:90px" value="{{ ('%g'|format(a.price) if a.price else '') if a.plan_id else ('%g'|format(a.sprice) if a.sprice else '') }}">{% endif %}
 <button class="btn sm" title="إنهاء وإرسال المبلغ للاستقبال">تم ✓</button>
@@ -765,10 +766,18 @@ TEMPLATES["services.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>المدة (دقيقة)<input name="duration" value="{{ edit.duration or 30 if edit else 30 }}" style="width:70px"></label>
 <label>الفرع<select name="branch_id"><option value="">كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if edit and edit.branch_id==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>
 {% if edit %}<label>الحالة<select name="active"><option value="1">نشطة</option><option value="0" {{ 'selected' if not edit.active }}>موقوفة</option></select></label>{% endif %}
+<div style="flex-basis:100%;border-top:1px dashed #d9cbb3;margin-top:6px;padding-top:8px"><b>{{ ic('plans') }} الباقة (للخدمات بعدة حصص):</b>
+<span class="mut">كي العامل يختار هذه الخدمة في «خطة حصص»، البرنامج يعمّر عدد الحصص وتواريخها وسعرها وحدو.</span></div>
+<label>عدد الحصص<input name="pkg_sessions" type="number" min="1" value="{{ edit.pkg_sessions or 1 if edit else 1 }}" style="width:70px"></label>
+<label>كل كم يوم حصة<input name="pkg_interval" type="number" min="0" value="{{ edit.pkg_interval or 0 if edit else 0 }}" style="width:70px"></label>
+<label>سعر الباقة كاملة ({{ cur }})<input name="pkg_total" value="{{ '%g'|format(edit.pkg_total or 0) if edit else '' }}" placeholder="فارغ = سعر الحصة × العدد" style="width:150px"></label>
+<label>طريقة الدفع<select name="pkg_pay"><option value="session">بالحصة (كل حصة تتخلّص وحدها)</option><option value="full" {{ 'selected' if edit and edit.pkg_pay=='full' }}>الباقة كاملة مسبقًا</option></select></label>
 <button class="btn">حفظ</button></form></div>
-<div class="card"><table><tr><th>الخدمة</th><th>النوع</th><th>القسم</th><th>الفرع</th><th>المدة</th><th>السعر</th><th></th></tr>
+<div class="card"><table><tr><th>الخدمة</th><th>النوع</th><th>القسم</th><th>الفرع</th><th>المدة</th><th>السعر</th><th>الباقة</th><th></th></tr>
 {% for s in rows %}<tr class="{{ 'cx' if not s.active }}"><td>{{ item_ic(s.name) }}{{ s.name }}</td><td>{{ SERVICE_KINDS[s.kind] }}</td><td>{{ DEPTS[s.dept] }}</td><td>{{ s.branch or 'كل الفروع' }}</td><td class="mut">{{ s.duration or 30 }} د</td>
-<td>{{ s.price|money }}{% if not s.price %} <span class="tag amber">حدد السعر</span>{% endif %}</td><td><a class="btn light sm" href="?edit={{ s.id }}">تعديل</a></td></tr>{% endfor %}</table></div>{% endblock %}"""
+<td>{{ s.price|money }}{% if not s.price %} <span class="tag amber">حدد السعر</span>{% endif %}</td>
+<td class="mut">{% if (s.pkg_sessions or 1)>1 %}{{ s.pkg_sessions }} حصص{% if s.pkg_interval %} · كل {{ s.pkg_interval }} يوم{% endif %}{% if s.pkg_total %} · {{ s.pkg_total|money }}{% endif %} · {{ 'مسبقًا' if s.pkg_pay=='full' else 'بالحصة' }}{% endif %}</td>
+<td><a class="btn light sm" href="?edit={{ s.id }}">تعديل</a></td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["users.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}المستخدمون</h1>
@@ -1066,23 +1075,49 @@ TEMPLATES["plan_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" 
 <div class="row">{{ client_picker(sel_client, True) }}
 {% if cu.role=='admin' %}<label>الفرع<select name="branch_id" onchange="location='?branch_id='+this.value">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% else %}<input type="hidden" name="branch_id" value="{{ br }}">{% endif %}
 {% if cu.role in ('admin','reception') %}<label>القسم<select name="dept">{% for k in depts %}<option value="{{ k }}" {{ 'selected' if k!='reception' and loop.index==2 }}>{{ DEPTS[k] }}</option>{% endfor %}</select></label>{% endif %}
-<label>الخدمة<select name="service_id"><option value="">—</option>{% for s in services %}{% if cu.role not in ('laser','beauty') or s.dept==cu.role %}<option value="{{ s.id }}">{{ s.name }}</option>{% endif %}{% endfor %}</select></label>
+<label>الخدمة<select name="service_id" id="svc" onchange="fillPkg()" required><option value="">—</option>{% for s in services %}{% if cu.role not in ('laser','beauty') or s.dept==cu.role %}<option value="{{ s.id }}" data-n="{{ s.pkg_sessions or 1 }}" data-i="{{ s.pkg_interval or 0 }}" data-p="{{ s.price or 0 }}" data-t="{{ s.pkg_total or 0 }}" data-pay="{{ s.pkg_pay or 'session' }}" data-d="{{ s.dept }}">{{ s.name }}</option>{% endif %}{% endfor %}</select></label>
 <label>الغرفة<select name="post_id"><option value="">—</option>{% for p in posts %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></label>
-<label>اسم الخطة<input name="title" placeholder="مثلاً: ليزر إزالة الشعر — 8 حصص" style="width:260px"></label></div>
-<h2 style="margin-top:16px">الحصص والسعر</h2>
+<label>اسم الخطة<input name="title" placeholder="يتكتب وحدو من الخدمة" style="width:240px"></label></div>
+<h2 style="margin-top:16px">{{ ic('plans') }} الحصص والسعر</h2>
 <div class="row">
-<label>عدد الحصص<input name="n" type="number" min="1" max="100" value="6" style="width:80px" required></label>
-<label {{ 'hidden' if locked }}>طريقة التسعير<select name="price_mode" onchange="document.getElementById('sp').style.display=this.value=='session'?'':'none';document.getElementById('tp').style.display=this.value=='total'?'':'none'">
-<option value="session">سعر لكل حصة</option><option value="total">سعر إجمالي للخطة</option></select></label>
-<label id="sp">سعر الحصة ({{ cur }})<input name="session_price" {% if locked %}readonly title="السعر تحدده المديرة"{% endif %} style="width:110px"></label>
-<label id="tp" style="display:none" {{ 'hidden' if locked }}>السعر الإجمالي ({{ cur }})<input name="total_price" style="width:120px"></label></div>
-<h2 style="margin-top:16px">المواعيد (اختياري)</h2>
-<div class="row">
-<label>تاريخ الحصة الأولى<input type="date" name="first_date"></label>
-<label>الساعة<input type="time" name="time" value="09:00"></label>
-<label>كل كم يوم حصة؟<input name="interval" type="number" min="0" value="7" style="width:80px"></label>
-<label>ملاحظة<input name="notes" style="width:240px"></label></div>
-<p class="mut">إن تركت التاريخ فارغًا تُنشأ الحصص بدون موعد، وتحدد تاريخ كل حصة لاحقًا. يمكنك بعدها إضافة أو حذف حصص وتغيير سعر أي حصة.</p>
+<label>عدد الحصص<input name="n" id="n" type="number" min="1" max="100" value="1" style="width:80px" required oninput="dates()"></label>
+<label>تاريخ الحصة الأولى<input type="date" name="first_date" id="d0" oninput="dates()"></label>
+<label>الساعة<input type="time" name="time" id="tm" value="09:00" oninput="dates()"></label>
+<label>كل كم يوم حصة؟<input name="interval" id="iv" type="number" min="0" value="7" style="width:70px" oninput="dates()"></label></div>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:10px 0">
+<div class="stat"><div class="l">سعر الباقة</div><div class="n" id="tot">—</div><div class="mut" id="each"></div></div>
+<div class="stat"><div class="l">طريقة الدفع</div><div class="n" style="font-size:18px" id="paylbl">—</div><div class="mut">حسب نظام المركز (تحدده المديرة في الخدمة)</div></div></div>
+{% if cu.role=='admin' %}<div class="row"><label>سعر آخر لهذه الزبونة ({{ cur }})<input name="total_price" placeholder="فارغ = سعر الباقة" style="width:150px"></label>
+<label>طريقة الدفع<select name="pay_mode" id="pm"><option value="session">بالحصة</option><option value="full">الباقة كاملة مسبقًا</option></select></label></div>
+{% else %}<details style="margin:6px 0"><summary class="btn light sm" style="list-style:none">طلب سعر آخر من المديرة</summary>
+<div class="row" style="margin-top:6px"><label>السعر المطلوب للباقة كاملة<input name="want_price" type="number" min="0" step="any" style="width:130px"></label>
+<label>السبب<input name="want_reason" style="width:220px"></label></div>
+<p class="mut">الخطة تتسجّل بالسعر العادي، وإذا وافقت المديرة يتبدّل السعر وحدو.</p></details>{% endif %}
+<h2 style="margin-top:12px">{{ ic('calendar') }} مواعيد الحصص <span class="mut" style="font-size:13px">(تتعمّر وحدها، وتقدر تبدّل أي تاريخ)</span></h2>
+<table id="sess" style="max-width:520px"><tr><th>الحصة</th><th>التاريخ</th><th>الساعة</th></tr></table>
+<label style="margin-top:8px">ملاحظة<input name="notes" style="width:300px"></label>
+<p class="mut">إذا تركت التاريخ فارغ، الحصة تتسجّل بلا موعد. وكي تكمل كل حصة، البرنامج يحدد تاريخ الحصة الجاية وحدو.</p>
+<script>
+var OFF={{ weekly_off|tojson }}, ADMIN={{ 'true' if cu.role=='admin' else 'false' }}, CUR='{{ cur }}';
+function fmt(x){return Number(x).toLocaleString('fr-FR',{maximumFractionDigits:2})+' '+CUR}
+function fillPkg(){var o=document.getElementById('svc').selectedOptions[0];if(!o||!o.value)return;
+ document.getElementById('n').value=o.dataset.n||1;document.getElementById('iv').value=(+o.dataset.i||7);
+ if(ADMIN&&document.getElementById('pm'))document.getElementById('pm').value=o.dataset.pay;
+ if(!document.getElementById('d0').value){var d=new Date();document.getElementById('d0').value=d.toISOString().slice(0,10)}
+ dates()}
+function price(){var o=document.getElementById('svc').selectedOptions[0];if(!o||!o.value){return}
+ var n=+document.getElementById('n').value||1,t=(+o.dataset.t>0&&n==(+o.dataset.n||1))?+o.dataset.t:(+o.dataset.p)*n;
+ document.getElementById('tot').textContent=fmt(t);document.getElementById('each').textContent=n>1?('يعني '+fmt(Math.round(t/n*100)/100)+' للحصة'):'';
+ var pay=ADMIN&&document.getElementById('pm')?document.getElementById('pm').value:o.dataset.pay;
+ document.getElementById('paylbl').textContent=pay=='full'?'الباقة كاملة مسبقًا':'بالحصة'}
+function dates(){price();var tb=document.getElementById('sess');tb.querySelectorAll('tr.s').forEach(r=>r.remove());
+ var n=Math.min(+document.getElementById('n').value||1,100),d0=document.getElementById('d0').value,iv=+document.getElementById('iv').value||0,tm=document.getElementById('tm').value||'09:00';
+ for(var i=0;i<n;i++){var v='';if(d0&&(i==0||iv>0)){var d=new Date(d0+'T12:00:00');d.setDate(d.getDate()+iv*i);
+   for(var k=0;k<7&&OFF.indexOf((d.getDay()+6)%7)>-1;k++)d.setDate(d.getDate()+1);v=d.toISOString().slice(0,10)}
+  var r=document.createElement('tr');r.className='s';r.innerHTML='<td><b>'+(i+1)+'</b></td><td><input type="date" name="sd" value="'+v+'"></td><td><input type="time" name="st" value="'+tm+'"></td>';tb.appendChild(r)}}
+if(document.getElementById('pm'))document.getElementById('pm').onchange=price;
+dates();
+</script>
 <button class="btn">إنشاء الخطة</button></form></div>
 {{ new_client_box(request.path) }}{% endblock %}"""
 
@@ -1203,6 +1238,14 @@ TEMPLATES["visits.html"] = r"""{% extends "base.html" %}{% from "macros.html" im
 
 TEMPLATES["visit_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}ملف الزيارة رقم {{ v.id|rid }} — {{ v.client }}</h1>
+{% if v.plan_id %}<div class="card" style="border-inline-start:6px solid #e4ab74;display:flex;align-items:center;gap:14px;flex-wrap:wrap">
+<span class="itm" style="width:44px;height:44px">{{ ic('plans') }}</span>
+<div><div style="font-size:20px;font-weight:bold">الحصة {{ v.session_no }} من {{ v.plan_n }}</div><div class="mut">{{ v.plan_title }}</div></div>
+<div style="flex:1;min-width:160px;background:#efe2cf;border-radius:8px;height:12px;overflow:hidden"><div style="height:100%;background:#0f4c45;width:{{ (100*(v.plan_done or 0)/(v.plan_n or 1))|round }}%"></div></div>
+<span class="mut">{{ v.plan_done or 0 }} كملو</span>
+{% if v.session_paid %}<span class="tag" style="background:#e2f5e9;color:#145c32">الحصة مخلّصة</span>{% endif %}
+<a class="btn light sm" href="{{ url_for('plan_view', pid=v.plan_id) }}">الخطة كاملة</a></div>
+<p class="mut" style="color:#f3e3c8;margin-top:-6px">إذا طلبت الزبونة حاجة زايدة (خدمة أخرى ولا منتج)، زيدها تحت، وتتحصّل في الاستقبال مع الحصة.</p>{% endif %}
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">الزبون</div><div class="n" style="font-size:18px"><a href="{{ url_for('client_view', cid=v.client_id) }}">{{ v.client }}</a></div>
 <div class="mut">{{ v.phone or '' }}{% if v.birth_date %} · {{ v.birth_date|age }} سنة{% endif %}{% if v.gender %} · {{ v.gender }}{% endif %}{% if v.address %} · {{ v.address }}{% endif %}</div></div>

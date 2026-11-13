@@ -319,6 +319,15 @@ def init_db():
     add_col("products", "review_note", "TEXT")
     add_col("products", "usage", "TEXT DEFAULT 'sale'")
     add_col("stock_moves", "kind", "TEXT")
+    # الباقات: عدد الحصص، المدة بينها، سعر الباقة، وطريقة الدفع (بالحصة / الباقة كاملة)
+    add_col("services", "pkg_sessions", "INTEGER DEFAULT 1")
+    add_col("services", "pkg_interval", "INTEGER DEFAULT 0")
+    add_col("services", "pkg_total", "REAL DEFAULT 0")
+    add_col("services", "pkg_pay", "TEXT DEFAULT 'session'")
+    add_col("plans", "pay_mode", "TEXT DEFAULT 'session'")
+    add_col("charges", "plan_id", "INTEGER")
+    add_col("visit_items", "appt_id", "INTEGER")
+    add_col("visits", "appointment_id", "INTEGER")
     add_col("stock_moves", "dept", "TEXT")
     sync.install(con)
     sync.migrate_v2(con)
@@ -808,6 +817,10 @@ def director_alerts(db, due=None):
             AND last_seen<?""", (lim,)).fetchall()
         if off and 8 <= datetime.now().hour < 20:
             al.append(("amber", "monitor", "حواسيب غير متصلة: " + "، ".join(o[0] for o in off[:4]), url_for("devices")))
+    n = db.execute("""SELECT COUNT(*) FROM appointments WHERE plan_id IS NOT NULL AND status='scheduled'
+        AND start_at IS NOT NULL AND substr(start_at,1,10)<?""", (date.today().isoformat(),)).fetchone()[0]
+    if n:
+        al.append(("amber", "calendar", f"{n} حصة فاتت وما تسجّلتش (الزبونة ما جاتش؟)", url_for("appointments")))
     n = db.execute("SELECT COUNT(*) FROM charges WHERE status='pending' AND substr(created_at,1,10)<?",
                    (date.today().isoformat(),)).fetchone()[0]
     if n:
@@ -985,6 +998,46 @@ def appt_status(aid):
     return redirect(request.referrer or url_for("appointments"))
 
 
+@app.route("/appointments/<int(signed=True):aid>/arrived", methods=["POST"])
+@login_required()
+def appt_arrived(aid):
+    """«الزبونة جات»: تتبعث للغرفة كزيارة. الغرفة تشوف رقم الحصة، وتزيد واش طلبت الزبونة.
+    ثمن الحصة يدخل في الزيارة إذا ما تخلّصش (الدفع بالحصة)، وإلا يبان «مخلّصة»."""
+    db = get_db()
+    u = current_user()
+    a = db.execute("""SELECT a.*, s.name AS service, pl.title AS plan_title, pl.pay_mode,
+        (SELECT COUNT(*) FROM appointments x WHERE x.plan_id=a.plan_id) AS plan_n
+        FROM appointments a LEFT JOIN services s ON s.id=a.service_id LEFT JOIN plans pl ON pl.id=a.plan_id
+        WHERE a.id=?""", (aid,)).fetchone() or abort(404)
+    if u["role"] != "admin" and a["branch_id"] != u["branch_id"]:
+        abort(403)
+    need("appointments")
+    ex = db.execute("SELECT id FROM visits WHERE appointment_id=? AND status IN ('waiting','treating')", (aid,)).fetchone()
+    if ex:
+        return redirect(url_for("visit_view", vid=ex["id"]))
+    target = a["dept"] if a["dept"] in ("laser", "beauty") else "reception"
+    if target not in branch_depts(a["branch_id"]) and target != "reception":
+        target = "reception"
+    title = a["plan_title"] or a["service"] or "موعد"
+    label = f"{title} — حصة {a['session_no']} من {a['plan_n']}" if a["plan_id"] else title
+    pending_plan = a["plan_id"] and db.execute("SELECT 1 FROM charges WHERE plan_id=? AND status='pending'",
+                                               (a["plan_id"],)).fetchone()
+    price = 0 if (a["paid"] or (a["pay_mode"] == "full") or pending_plan) else (
+        (a["price"] or 0) if a["plan_id"] else service_price(a["service_id"]))
+    if a["plan_id"] and db.execute("SELECT 1 FROM charges WHERE appointment_id=? AND status='pending'", (aid,)).fetchone():
+        price = 0  # ثمنها أُرسل للاستقبال من قبل
+    vid = db.execute("""INSERT INTO visits(client_id,branch_id,target,request,status,created_by,created_at,appointment_id)
+        VALUES(?,?,?,?,'waiting',?,?,?)""", (a["client_id"], a["branch_id"], target,
+                                             (a["notes"] or "")[:300], u["id"], now_str(), aid)).lastrowid
+    note = "" if price else (" (مخلّصة)" if a["paid"] else " (ضمن الباقة)" if a["plan_id"] else "")
+    db.execute("""INSERT INTO visit_items(visit_id,kind,service_id,description,qty,unit_price,stage,added_by,created_at,appt_id)
+        VALUES(?,'service',?,?,1,?,'reception',?,?,?)""", (vid, a["service_id"], label + note, price, u["id"], now_str(), aid))
+    audit("وصول زبون لموعد", label, a["branch_id"])
+    db.commit()
+    flash(f"تم إرسال الزبونة إلى {VISIT_TARGETS.get(target, '')}", "ok")
+    return redirect(request.referrer or url_for("appointments"))
+
+
 @app.route("/appointments/<int(signed=True):aid>/done", methods=["POST"])
 @login_required()
 def appt_done(aid):
@@ -1139,6 +1192,11 @@ def pay_charge(db, ch, method, u, amount=None, discount=0.0):
         db.execute("UPDATE appointments SET paid=1, payment_id=? WHERE id=?", (pid, ch["appointment_id"]))
     if ch["visit_id"]:
         db.execute("UPDATE visits SET status='paid' WHERE id=?", (ch["visit_id"],))
+        # حصة خطة دُفع ثمنها مع الزيارة
+        db.execute("""UPDATE appointments SET paid=1, payment_id=? WHERE paid=0 AND id IN
+            (SELECT appt_id FROM visit_items WHERE visit_id=? AND appt_id IS NOT NULL AND unit_price>0)""", (pid, ch["visit_id"]))
+    if ch["plan_id"]:  # الباقة كاملة مدفوعة: كل الحصص مدفوعة
+        db.execute("UPDATE appointments SET paid=1, payment_id=? WHERE plan_id=? AND paid=0", (pid, ch["plan_id"]))
     return pid
 
 
@@ -1266,7 +1324,8 @@ def payment_new():
 
 
 # ---------------------------------------------------------------- موافقة المديرة
-APPROVAL_KINDS = {"discount": "تخفيض", "cancel_charge": "إلغاء مبلغ", "cancel_payment": "إلغاء وصل"}
+APPROVAL_KINDS = {"discount": "تخفيض", "cancel_charge": "إلغاء مبلغ", "cancel_payment": "إلغاء وصل",
+                  "plan_price": "سعر باقة"}
 
 
 def request_approval(db, kind, ref_id, branch_id, amount, reason, info):
@@ -1345,6 +1404,8 @@ def approvals():
                                     (a_["ref_id"],)).rowcount > 0
                 elif a_["kind"] == "cancel_payment":
                     ok = cancel_payment_now(db, a_["ref_id"])
+                elif a_["kind"] == "plan_price":
+                    ok = set_plan_price(db, a_["ref_id"], a_["amount"])
             if not ok:
                 flash("تعذّر التنفيذ: العملية تبدّلت (تخلّصت أو تلغات من قبل)", "err")
                 dec, note = "rejected", "لم يعد ممكنًا"
@@ -1362,6 +1423,53 @@ def approvals():
         LEFT JOIN users u ON u.id=a.requested_by LEFT JOIN branches b ON b.id=a.branch_id
         ORDER BY a.status='pending' DESC, a.id DESC LIMIT 200""").fetchall()
     return render_template("approvals.html", rows=rows)
+
+
+def set_plan_price(db, plan_id, total):
+    """سعر جديد للباقة: يتوزع على الحصص غير المدفوعة، ويتعدّل مبلغ الباقة المنتظر في الاستقبال."""
+    p = db.execute("SELECT * FROM plans WHERE id=?", (plan_id,)).fetchone()
+    if not p:
+        return False
+    paid = db.execute("SELECT COALESCE(SUM(price),0) FROM appointments WHERE plan_id=? AND paid=1", (plan_id,)).fetchone()[0]
+    unpaid = db.execute("SELECT id FROM appointments WHERE plan_id=? AND paid=0 ORDER BY session_no", (plan_id,)).fetchall()
+    rest = round(total - paid, 2)
+    if rest < 0:
+        return False
+    if unpaid:
+        each = round(rest / len(unpaid), 2)
+        for i, x in enumerate(unpaid):
+            v = each if i < len(unpaid) - 1 else round(rest - each * (len(unpaid) - 1), 2)
+            db.execute("UPDATE appointments SET price=? WHERE id=?", (v, x["id"]))
+    db.execute("UPDATE plans SET total_price=?, price_mode='total' WHERE id=?", (total, plan_id))
+    db.execute("UPDATE charges SET amount=? WHERE plan_id=? AND status='pending'", (rest, plan_id))
+    return True
+
+
+def next_free_day(d):
+    """أول يوم عمل (يتجنب يوم الراحة الأسبوعي، الجمعة من الأصل)."""
+    off = {int(x) for x in (setting("weekly_off") or "4").split(",") if x.strip().isdigit()}
+    for _ in range(7):
+        if d.weekday() not in off:
+            return d
+        d += timedelta(days=1)
+    return d
+
+
+def schedule_next_session(db, appt):
+    """بعد ما تكمل حصة: إذا الحصة الجاية بلا تاريخ، نعطيها تاريخ (اليوم + المدة بين الحصص)."""
+    if not appt["plan_id"]:
+        return None
+    nx = db.execute("""SELECT * FROM appointments WHERE plan_id=? AND session_no>? AND status='scheduled'
+        ORDER BY session_no LIMIT 1""", (appt["plan_id"], appt["session_no"] or 0)).fetchone()
+    if not nx or nx["start_at"]:
+        return None
+    srv = db.execute("SELECT pkg_interval FROM services WHERE id=?", (appt["service_id"],)).fetchone()
+    step = (srv["pkg_interval"] if srv and srv["pkg_interval"] else 0) or 7
+    t = (appt["start_at"] or now_str())[11:16] or "09:00"
+    d = next_free_day(date.today() + timedelta(days=step))
+    at = f"{d.isoformat()} {t}"
+    db.execute("UPDATE appointments SET start_at=? WHERE id=?", (at, nx["id"]))
+    return at
 
 
 def cancel_payment_now(db, pid):
@@ -2388,9 +2496,13 @@ def queue_count():
 def visit_data(vid):
     db = get_db()
     v = db.execute("""SELECT v.*, c.name AS client, c.phone, c.birth_date, c.gender, c.address, c.chronic,
-        c.allergies, c.medications, c.notes AS cnotes, b.name AS branch, u.full_name AS by_name
+        c.allergies, c.medications, c.notes AS cnotes, b.name AS branch, u.full_name AS by_name,
+        ap.plan_id, ap.session_no, ap.paid AS session_paid, pl.title AS plan_title,
+        (SELECT COUNT(*) FROM appointments x WHERE x.plan_id=ap.plan_id) AS plan_n,
+        (SELECT COUNT(*) FROM appointments x WHERE x.plan_id=ap.plan_id AND x.status='done') AS plan_done
         FROM visits v JOIN clients c ON c.id=v.client_id JOIN branches b ON b.id=v.branch_id
-        LEFT JOIN users u ON u.id=v.created_by WHERE v.id=?""", (vid,)).fetchone() or abort(404)
+        LEFT JOIN users u ON u.id=v.created_by LEFT JOIN appointments ap ON ap.id=v.appointment_id
+        LEFT JOIN plans pl ON pl.id=ap.plan_id WHERE v.id=?""", (vid,)).fetchone() or abort(404)
     u = current_user()
     if u["role"] != "admin" and v["branch_id"] != u["branch_id"]:
         abort(403)
@@ -2561,6 +2673,16 @@ def visit_view(vid):
         elif act == "finish" and can_treat and v["status"] in ("waiting", "treating"):
             _, items, total = visit_data(vid)
             db.execute("UPDATE visits SET status='done', done_at=?, done_by=? WHERE id=?", (now_str(), u["id"], vid))
+            if v["appointment_id"]:  # حصة من خطة: تكمل، والحصة الجاية تاخذ تاريخها
+                ap = db.execute("SELECT * FROM appointments WHERE id=?", (v["appointment_id"],)).fetchone()
+                if ap:
+                    db.execute("UPDATE appointments SET status='done' WHERE id=?", (ap["id"],))
+                    nxt = schedule_next_session(db, ap)
+                    if nxt:
+                        flash(f"الحصة الجاية تحددت: {nxt}", "ok")
+                    if ap["plan_id"] and not db.execute("SELECT 1 FROM appointments WHERE plan_id=? AND status='scheduled'",
+                                                        (ap["plan_id"],)).fetchone():
+                        db.execute("UPDATE plans SET status='done' WHERE id=? AND status='active'", (ap["plan_id"],))
             if total > 0:
                 desc = "، ".join(f"{i['description']}" + (f" ×{i['qty']:g}" if i["qty"] != 1 else "") for i in items)
                 chid = db.execute("""INSERT INTO charges(branch_id,client_id,dept,description,amount,created_by,created_at,visit_id)
@@ -3559,31 +3681,36 @@ def plan_new():
             flash("اختر الزبون", "err")
             return redirect(url_for("plan_new"))
         n = max(1, min(100, int(fnum(f.get("n"), 1))))
-        mode = "total" if f.get("price_mode") == "total" else "session"
-        if price_locked(u):
-            mode = "session"
-            f = f.copy()
-            f["session_price"] = str(service_price(f.get("service_id")))
-        if mode == "total":
-            total = fnum(f.get("total_price"))
-            prices = [round(total / n, 2)] * n
-            prices[-1] = round(total - sum(prices[:-1]), 2)
+        srv_row = db.execute("SELECT * FROM services WHERE id=?", (f.get("service_id") or 0,)).fetchone()
+        # السعر: من الباقة التي حددتها المديرة. العامل ما يبدّلوش: يطلب سعر آخر (موافقة المديرة)
+        if srv_row and (srv_row["pkg_total"] or 0) > 0 and n == (srv_row["pkg_sessions"] or 1):
+            list_total, list_mode = srv_row["pkg_total"], "total"
         else:
-            total = 0
-            prices = [fnum(f.get("session_price"))] * n
+            list_total, list_mode = round((srv_row["price"] if srv_row else 0) * n, 2), "session"
+        admin = u["role"] == "admin"
+        if admin and f.get("total_price") not in (None, ""):
+            total, mode = fnum(f.get("total_price")), "total"
+        else:
+            total, mode = list_total, list_mode
+        each = round(total / n, 2) if n else 0
+        prices = [each] * n
+        prices[-1] = round(total - each * (n - 1), 2)
+        pay_mode = f.get("pay_mode") if (admin and f.get("pay_mode") in ("session", "full")) else \
+            ((srv_row["pkg_pay"] if srv_row else None) or "session")
         srv = f.get("service_id") or None
         title = f.get("title", "").strip()
-        if not title and srv:
-            r = db.execute("SELECT name FROM services WHERE id=?", (srv,)).fetchone()
-            title = r["name"] if r else ""
+        if not title and srv_row:
+            title = srv_row["name"] + (f" — {n} حصص" if n > 1 else "")
         title = title or f"{DEPTS.get(dept)} — {n} حصص"
         post = f.get("post_id") or None
         pid = db.execute("""INSERT INTO plans(client_id,branch_id,dept,service_id,post_id,title,total_price,price_mode,
-            notes,created_by,created_at) VALUES(?,?,?,?,?,?,?,?,?,?,?)""",
+            notes,created_by,created_at,pay_mode) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
                          (int(f["client_id"]), br, dept, srv, post, title, total, mode,
-                          f.get("notes", "").strip(), u["id"], now_str())).lastrowid
+                          f.get("notes", "").strip(), u["id"], now_str(), pay_mode)).lastrowid
+        # التواريخ: من الجدول المعروض (يتعمّر وحدو ويتبدّل باليد)
+        ds, ts = f.getlist("sd"), f.getlist("st")
         start = None
-        if f.get("first_date"):
+        if not ds and f.get("first_date"):
             try:
                 start = datetime.strptime(f"{f['first_date']} {f.get('time') or '09:00'}", "%Y-%m-%d %H:%M")
             except ValueError:
@@ -3591,19 +3718,31 @@ def plan_new():
         step = int(fnum(f.get("interval"), 0))
         for i in range(n):
             at = None
-            if start and (i == 0 or step > 0):
+            if i < len(ds) and ds[i]:
+                at = f"{ds[i]} {(ts[i] if i < len(ts) and ts[i] else f.get('time') or '09:00')}"
+            elif start and (i == 0 or step > 0):
                 at = (start + timedelta(days=step * i)).strftime("%Y-%m-%d %H:%M")
             db.execute("""INSERT INTO appointments(client_id,branch_id,dept,service_id,start_at,status,created_by,
                 created_at,plan_id,session_no,price,paid,post_id) VALUES(?,?,?,?,?,'scheduled',?,?,?,?,?,0,?)""",
                        (int(f["client_id"]), br, dept, srv, at, u["id"], now_str(), pid, i + 1, prices[i], post))
+        if pay_mode == "full" and total > 0:  # الباقة كاملة: المبلغ كله يروح للاستقبال يتخلّص
+            db.execute("""INSERT INTO charges(branch_id,client_id,dept,service_id,description,amount,created_by,created_at,plan_id)
+                VALUES(?,?,?,?,?,?,?,?,?)""", (br, int(f["client_id"]), dept, srv, f"باقة: {title}", total, u["id"],
+                                               now_str(), pid))
+        want = f.get("want_price", "").strip()
+        if want and not admin and fnum(want) > 0 and fnum(want) != total:
+            request_approval(db, "plan_price", pid, br, fnum(want), f.get("want_reason"),
+                             f"{title} — السعر الحالي {total:g}")
+            flash("أُرسل طلب السعر الجديد للمديرة", "ok")
         db.commit()
         flash(f"تم إنشاء خطة من {n} حصص", "ok")
         return redirect(url_for("plan_view", pid=pid))
     sel_client = None
     if request.args.get("client_id"):
         sel_client = db.execute("SELECT id,name,phone FROM clients WHERE id=?", (request.args["client_id"],)).fetchone()
+    off = [int(x) for x in (setting("weekly_off") or "4").split(",") if x.strip().isdigit()]
     return render_template("plan_new.html", br=br, depts=branch_depts(br), services=services_for(br),
-                           posts=posts_for(br), sel_client=sel_client)
+                           posts=posts_for(br), sel_client=sel_client, weekly_off=off)
 
 
 @app.route("/plans/<int(signed=True):pid>", methods=["GET", "POST"])
@@ -3843,10 +3982,17 @@ def services():
             if old and old["price"] != vals[3]:
                 audit("تغيير سعر خدمة", f"{vals[0]}: {old['price']:g} ← {vals[3]:g}")
             db.execute("UPDATE services SET name=?,kind=?,dept=?,price=?,branch_id=?,active=?,duration=? WHERE id=?", vals + (sid,))
+            pkg_sid = sid
             flash("تم التعديل", "ok")
         else:
-            db.execute("INSERT INTO services(name,kind,dept,price,branch_id,active,duration) VALUES(?,?,?,?,?,?,?)", vals)
+            pkg_sid = db.execute("INSERT INTO services(name,kind,dept,price,branch_id,active,duration) VALUES(?,?,?,?,?,?,?)",
+                                 vals).lastrowid
             flash("تمت الإضافة", "ok")
+        if vals[0]:
+            db.execute("UPDATE services SET pkg_sessions=?, pkg_interval=?, pkg_total=?, pkg_pay=? WHERE id=?",
+                       (max(1, int(fnum(request.form.get("pkg_sessions"), 1))), int(fnum(request.form.get("pkg_interval"), 0)),
+                        fnum(request.form.get("pkg_total")),
+                        "full" if request.form.get("pkg_pay") == "full" else "session", pkg_sid))
         db.commit()
         return redirect(url_for("services"))
     rows = db.execute("""SELECT s.*, b.name AS branch FROM services s LEFT JOIN branches b ON b.id=s.branch_id
