@@ -1,0 +1,62 @@
+**********************
+PowerShell transcript start
+Start time: 20261113162430
+Username: runnervm9zap3\runneradmin
+RunAs User: runnervm9zap3\runneradmin
+Configuration Name: 
+Machine: runnervm9zap3 (Microsoft Windows NT 10.0.20348.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -command . 'D:\a\_temp\36880080-7a50-4fa5-a485-8e9ac0939ef0.ps1'
+Process ID: 6832
+PSVersion: 7.6.10
+PSEdition: Core
+GitCommitId: 7.6.10
+OS: Microsoft Windows 10.0.20348
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.4
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+Transcript started, output file is build-log.txt
+== Bilsan 21.1
+
+
+
+
+translations: D:\a\bilsan\bilsan\dist\Bilsan\_internal\i18n_dict.json
+smoke test OK
+  وضع الحاسوب الفرعي: يتزامن مع http://127.0.0.1:5000
+
+  مركز الطب البديل بيلسان
+  البرنامج يعمل على: http://localhost:5001
+
+تحديث البرنامج إلى 99.0
+  وضع الحاسوب الفرعي: يتزامن مع http://127.0.0.1:5000
+
+  مركز الطب البديل بيلسان
+  البرنامج يعمل على: http://localhost:5001
+
+ok
+auto-update test OK
+
+
+
+
+
+
+
+
+Name                            Length
+----                            ------
+Bilsan-Central.exe            38294050
+Bilsan-Harrouch-Beauty.exe    17291020
+Bilsan-Harrouch-Reception.exe 17291022
+Bilsan-Setup.exe              17290920
+Bilsan-Skikda-Beauty.exe      17291018
+Bilsan-Skikda-Laser.exe       17291018
+Bilsan-Skikda-Reception.exe   17291018
+
+**********************
+PowerShell transcript end
+End time: 20261113162648
+**********************
