@@ -6,7 +6,7 @@
 import os, sys, csv, io, json, sqlite3, threading, time, base64
 from datetime import datetime, timedelta, date
 from functools import wraps
-from urllib import request as urlreq
+from urllib import request as urlreq, error as urlerr
 
 from flask import (Flask, g, request, redirect, url_for, session, flash,
                    render_template, abort, Response, send_file)
@@ -311,6 +311,9 @@ def init_db():
     add_col("products", "needs_review", "INTEGER DEFAULT 0")
     add_col("products", "added_by", "INTEGER")
     add_col("products", "review_note", "TEXT")
+    add_col("products", "usage", "TEXT DEFAULT 'sale'")
+    add_col("stock_moves", "kind", "TEXT")
+    add_col("stock_moves", "dept", "TEXT")
     sync.install(con)
     sync.migrate_v2(con)
     # فهارس لتبقى السرعة جيدة حتى مع بيانات عشرات السنين
@@ -482,11 +485,19 @@ PERMS = [
     ("products_edit", "إضافة المنتجات وتعديلها وتعديل المخزون", ("reception",)),
     ("sale_prices", "تعديل أسعار بيع المنتجات", ("reception",)),
     ("purchases", "إدخال فاتورة شراء (استلام سلعة)", ("reception",)),
+    ("stock_use", "تسجيل استهلاك المواد (مواد العمل)", ("reception", "laser", "beauty")),
     ("expenses", "إخراج مبلغ من الصندوق (مصروف)", ()),
     ("medical", "الملف الطبي وصور قبل/بعد", ("laser", "beauty")),
     ("consent", "طباعة وثيقة الموافقة", ("reception", "laser", "beauty")),
 ]
 PERM_LABELS = {k: v for k, v, _ in PERMS}
+# الأقسام/الغرف في حساب الصندوق (من أين جاء المال)
+SECTIONS = {"hijama": "غرفة الحجامة", "herbs": "الأعشاب والعلاج", "laser": "غرفة الليزر", "beauty": "غرفة التجميل",
+            "director": "علاج المديرة", "product": "بيع المنتجات", "course": "الدورات", "other": "أخرى"}
+# أين تُستعمل المادة (للاستهلاك)
+USE_ROOMS = {"hijama": "غرفة الحجامة", "laser": "غرفة الليزر", "beauty": "غرفة التجميل",
+             "director": "غرفة المديرة", "reception": "الاستقبال / عام"}
+PRODUCT_USAGE = {"sale": "للبيع", "use": "للاستعمال (مواد العمل)", "both": "للبيع وللاستعمال"}
 PLACES = {"reception": "الاستقبال", "laser": "غرفة الليزر", "beauty": "غرفة التجميل"}
 
 
@@ -578,7 +589,7 @@ def inject():
         view_branch=session.get("view_branch"),
         alerts_count=len(stock_alerts(scope_branch())) if current_user() else 0,
         branch_name=branch_name,
-        NODE=sync.NODE, perm=has_perm, bk=backup_status() if (current_user() and current_user()["role"] == "admin") else None, PLACES=PLACES, locked=price_locked() if current_user() else False, can_collect=can_collect() if current_user() else False, node_status=node_status() if sync.NODE else None,
+        NODE=sync.NODE, perm=has_perm, bk=backup_status() if (current_user() and current_user()["role"] == "admin") else None, PLACES=PLACES, SECTIONS=SECTIONS, USE_ROOMS=USE_ROOMS, PRODUCT_USAGE=PRODUCT_USAGE, locked=price_locked() if current_user() else False, can_collect=can_collect() if current_user() else False, node_status=node_status() if sync.NODE else None,
     )
 
 
@@ -1236,11 +1247,11 @@ def receipt(pid):
 
 
 # ---------------------------------------------------------------- نقطة البيع (منتجات)
-def move_stock(db, product_id, branch_id, qty, reason, uid=None):
+def move_stock(db, product_id, branch_id, qty, reason, uid=None, kind=None, dept=None):
     db.execute("INSERT OR IGNORE INTO stock(product_id,branch_id,qty) VALUES(?,?,0)", (product_id, branch_id))
     db.execute("UPDATE stock SET qty=qty+? WHERE product_id=? AND branch_id=?", (qty, product_id, branch_id))
-    db.execute("INSERT INTO stock_moves(product_id,branch_id,qty,reason,user_id,created_at) VALUES(?,?,?,?,?,?)",
-               (product_id, branch_id, qty, reason, uid, now_str()))
+    db.execute("INSERT INTO stock_moves(product_id,branch_id,qty,reason,user_id,created_at,kind,dept) VALUES(?,?,?,?,?,?,?,?)",
+               (product_id, branch_id, qty, reason, uid, now_str(), kind, dept))
 
 
 @app.route("/pos", methods=["GET", "POST"])
@@ -1256,7 +1267,8 @@ def pos():
             cart = []
         lines, total = [], 0.0
         for it in cart:
-            pr = db.execute("SELECT * FROM products WHERE id=? AND active=1", (it.get("id"),)).fetchone()
+            pr = db.execute("SELECT * FROM products WHERE id=? AND active=1 AND COALESCE(usage,'sale')<>'use'",
+                            (it.get("id"),)).fetchone()
             qty = fnum(it.get("qty"))
             if pr and qty > 0:
                 price = pr["price"] if price_locked(u) else fnum(it.get("price"), pr["price"])
@@ -1280,7 +1292,7 @@ def pos():
         flash("تم البيع وتسجيل المبلغ في الصندوق المركزي", "ok")
         return redirect(url_for("receipt", pid=pid))
     prods = db.execute("""SELECT p.*, COALESCE(s.qty,0) AS qty FROM products p
-        LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1
+        LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1 AND COALESCE(p.usage,'sale')<>'use'
         ORDER BY p.category, p.name""", (br,)).fetchall()
     return render_template("pos.html", prods=[dict(p, ic=icons.item_icon(p["name"], "product")) for p in prods], br=br)
 
@@ -1314,9 +1326,95 @@ def cashbox():
         by_branch[r["branch"]] = by_branch.get(r["branch"], 0) + r["amount"]
         by_kind[PAY_KINDS.get(r["kind"], r["kind"])] = by_kind.get(PAY_KINDS.get(r["kind"], r["kind"]), 0) + r["amount"]
         by_method[METHODS.get(r["method"], r["method"])] = by_method.get(METHODS.get(r["method"], r["method"]), 0) + r["amount"]
+    rooms = room_accounts(d1, d2, br, valid)
     return render_template("cashbox.html", rows=rows, total=total, d1=d1, d2=d2, br=br,
                            kind=request.args.get("kind", ""), by_branch=by_branch,
-                           by_kind=by_kind, by_method=by_method)
+                           by_kind=by_kind, by_method=by_method, rooms=rooms)
+
+
+def room_accounts(d1, d2, br, valid):
+    """حساب كل غرفة/قسم في كل فرع:
+    - المداخيل: من أين جاء المال (الحجامة، الليزر، التجميل، علاج المديرة، بيع المنتجات...).
+    - الصناديق: من استلم المال فعلًا (صندوق الاستقبال، صندوق غرفة التجميل...) ونقدًا كم.
+    - مواد العمل المستهلكة في كل غرفة (بسعر الشراء)."""
+    db = get_db()
+    ids = [r["id"] for r in valid]
+    charges, vitems = {}, {}
+    for i in range(0, len(ids), 500):
+        chunk = ids[i:i + 500]
+        for c in db.execute(f"""SELECT ch.payment_id, ch.visit_id, ch.amount - COALESCE(ch.discount,0) AS amt, ch.dept,
+                s.kind, v.target FROM charges ch LEFT JOIN services s ON s.id=ch.service_id
+                LEFT JOIN visits v ON v.id=ch.visit_id
+                WHERE ch.payment_id IN ({','.join('?' * len(chunk))})""", chunk):
+            charges.setdefault(c["payment_id"], []).append(c)
+    vids = sorted({c["visit_id"] for cs in charges.values() for c in cs if c["visit_id"]})
+    for i in range(0, len(vids), 500):
+        chunk = vids[i:i + 500]
+        for it in db.execute(f"""SELECT vi.visit_id, vi.qty*vi.unit_price AS amt, vi.product_id, s.kind
+                FROM visit_items vi LEFT JOIN services s ON s.id=vi.service_id
+                WHERE vi.visit_id IN ({','.join('?' * len(chunk))})""", chunk):
+            vitems.setdefault(it["visit_id"], []).append(it)
+    out = {}
+
+    def sec_of(kind, dept, target, product=False):
+        if product:
+            return "product"
+        if target == "director":
+            return "director"
+        if kind in ("hijama", "herbs", "laser", "beauty", "course"):
+            return kind
+        if target in ("laser", "beauty"):
+            return target
+        return dept if dept in ("laser", "beauty") else "other"
+
+    def charge_parts(c):
+        """أجزاء المبلغ حسب الغرفة: زيارة فيها حجامة + منتج تُقسم على الحجامة وبيع المنتجات."""
+        net = max(c["amt"] or 0, 0)
+        its = vitems.get(c["visit_id"]) if c["visit_id"] else None
+        if its:
+            tot = sum(max(x["amt"] or 0, 0) for x in its)
+            if tot > 0:
+                return [(sec_of(x["kind"], c["dept"], c["target"], bool(x["product_id"])), net * max(x["amt"] or 0, 0) / tot)
+                        for x in its]
+        return [(sec_of(c["kind"], c["dept"], c["target"]), net)]
+
+    for r in valid:
+        b = out.setdefault(r["branch"], {"income": {}, "boxes": {}, "use": {}, "total": 0})
+        b["total"] += r["amount"]
+        box = b["boxes"].setdefault(r["dept"] or "reception", {"total": 0, "cash": 0, "n": 0})
+        box["total"] += r["amount"]
+        box["n"] += 1
+        if r["method"] == "cash":
+            box["cash"] += r["amount"]
+        parts = []
+        chs = charges.get(r["id"]) or []
+        s = sum(max(c["amt"] or 0, 0) for c in chs)
+        if r["kind"] == "product":
+            parts = [("product", r["amount"])]
+        elif r["kind"] == "course":
+            parts = [("course", r["amount"])]
+        elif chs and s > 0:
+            parts = [(k, r["amount"] * v / s) for c in chs for k, v in charge_parts(c)]
+        else:
+            parts = [(r["dept"] if r["dept"] in ("laser", "beauty") else "other", r["amount"])]
+        for k, v in parts:
+            e = b["income"].setdefault(k, {"amount": 0, "n": 0})
+            e["amount"] += v
+            e["n"] += 1
+    # مواد العمل المستهلكة
+    q = """SELECT b.name AS branch, m.dept, SUM(-m.qty * COALESCE(p.cost_price,0)) AS cost, COUNT(*) AS n
+           FROM stock_moves m JOIN products p ON p.id=m.product_id JOIN branches b ON b.id=m.branch_id
+           WHERE m.kind='use' AND substr(m.created_at,1,10) BETWEEN ? AND ?"""
+    args = [d1, d2]
+    if br:
+        q += " AND m.branch_id=?"
+        args.append(br)
+    for u in db.execute(q + " GROUP BY b.name, m.dept", args):
+        b = out.setdefault(u["branch"], {"income": {}, "boxes": {}, "use": {}, "total": 0})
+        b["use"][u["dept"] or "reception"] = {"cost": u["cost"] or 0, "n": u["n"]}
+    for b in out.values():
+        b["income"] = dict(sorted(b["income"].items(), key=lambda kv: -kv[1]["amount"]))
+    return out
 
 
 @app.route("/cashbox.csv")
@@ -1391,6 +1489,9 @@ def products():
             return redirect(url_for("products"))
         price = fnum(request.form.get("price")) if can_price else (old["price"] if old else 0)
         cost = fnum(request.form.get("cost_price")) if admin else (old["cost_price"] if old else 0) or 0
+        usage = request.form.get("usage") if request.form.get("usage") in PRODUCT_USAGE else "sale"
+        if usage == "use" and not can_price:
+            price = old["price"] if old else 0
         vals = (name, request.form.get("barcode", "").strip(), request.form.get("category", "").strip(), price,
                 request.form.get("expiry") or None, 1 if request.form.get("active", "1") == "1" else 0, cost)
         if old:
@@ -1402,10 +1503,12 @@ def products():
                        vals + (pid,))
             if note and not admin:
                 db.execute("UPDATE products SET needs_review=1, review_note=?, added_by=? WHERE id=?", (note, u["id"], pid))
+            db.execute("UPDATE products SET usage=? WHERE id=?", (usage, pid))
             flash("تم تعديل المنتج", "ok")
         else:
             pid = db.execute("""INSERT INTO products(name,barcode,category,price,expiry,active,cost_price,needs_review,added_by,review_note)
                 VALUES(?,?,?,?,?,?,?,?,?,?)""", vals + (0 if admin else 1, u["id"], None if admin else "منتج جديد")).lastrowid
+            db.execute("UPDATE products SET usage=? WHERE id=?", (usage, pid))
             if not admin:
                 audit("منتج جديد", f"{name} — سعر البيع {price:g}")
             for b in branches:
@@ -1422,12 +1525,19 @@ def products():
     br = scope_branch() if admin else u["branch_id"]
     show = [b for b in branches if not br or b["id"] == br]
     q = request.args.get("q", "").strip()
-    sql = "SELECT * FROM products"
+    usage = request.args.get("usage", "")
+    sql = "SELECT * FROM products WHERE 1=1"
     args = []
     if q:
-        sql += " WHERE name LIKE ? OR category LIKE ? OR barcode=?"
+        sql += " AND (name LIKE ? OR category LIKE ? OR barcode=?)"
         args = [f"%{q}%", f"%{q}%", q]
+    if usage == "sale":
+        sql += " AND COALESCE(usage,'sale') IN ('sale','both')"
+    elif usage == "use":
+        sql += " AND usage IN ('use','both')"
     rows = db.execute(sql + " ORDER BY active DESC, category, name", args).fetchall()
+    counts = {k: db.execute(f"SELECT COUNT(*) FROM products WHERE active=1 AND {w}").fetchone()[0] for k, w in
+              (("all", "1=1"), ("sale", "COALESCE(usage,'sale') IN ('sale','both')"), ("use", "usage IN ('use','both')"))}
     stock = {(r["product_id"], r["branch_id"]): r for r in db.execute("SELECT * FROM stock")}
     edit = db.execute("SELECT * FROM products WHERE id=?", (request.args.get("edit"),)).fetchone() \
         if request.args.get("edit") else None
@@ -1437,7 +1547,7 @@ def products():
         WHERE p.needs_review=1 ORDER BY p.id DESC""").fetchall() if admin else []
     return render_template("products.html", rows=rows, branches=branches, show=show, stock=stock, edit=edit,
                            br=br, q=q, soon=soon, default_min=setting("default_min_qty"), review=review,
-                           can_price=can_price, admin=admin)
+                           can_price=can_price, admin=admin, usage=usage, counts=counts)
 
 
 @app.route("/api/products/quick", methods=["POST"])
@@ -1464,6 +1574,8 @@ def product_quick():
                                          0 if u["role"] == "admin" else 1, u["id"])).lastrowid
         if u["role"] != "admin":
             db.execute("UPDATE products SET review_note='منتج جديد' WHERE id=?", (pid,))
+        if (f.get("usage") or "") in PRODUCT_USAGE:
+            db.execute("UPDATE products SET usage=? WHERE id=?", (f.get("usage"), pid))
         dm = setting("default_min_qty")
         for b in active_branches():
             if dm not in (None, ""):
@@ -1477,6 +1589,56 @@ def product_quick():
     return {"ok": True, "existed": bool(ex), "product": dict(id=p["id"], name=p["name"], price=p["price"] or 0,
             cost_price=p["cost_price"] or 0, category=p["category"] or "", barcode=p["barcode"] or "",
             qty=(st["qty"] if st else 0), ic=icons.item_icon(p["name"], "product"))}
+
+
+@app.route("/stock/use", methods=["GET", "POST"])
+@perm_required("stock_use")
+def stock_use():
+    """استهلاك مواد العمل: ما تستعمله الغرف (كؤوس الحجامة، الجل، الكريمات...) يخرج من المخزون ويُحسب على الغرفة."""
+    db = get_db()
+    u = current_user()
+    admin = u["role"] == "admin"
+    br = (int(request.values.get("branch")) if admin and (request.values.get("branch") or "").isdigit()
+          else (scope_branch() or u["branch_id"]) if admin else u["branch_id"]) or 1
+    default_room = u["role"] if u["role"] in ("laser", "beauty") else ("director" if admin else "hijama")
+    if request.method == "POST":
+        room = request.form.get("room") if request.form.get("room") in USE_ROOMS else default_room
+        n = 0
+        for pid, q in zip(request.form.getlist("product_id"), request.form.getlist("qty")):
+            q = fnum(q)
+            if not pid.lstrip("-").isdigit() or q <= 0:
+                continue
+            p = db.execute("SELECT * FROM products WHERE id=?", (pid,)).fetchone()
+            if not p:
+                continue
+            move_stock(db, p["id"], br, -q, f"استهلاك — {USE_ROOMS[room]}" +
+                       (f": {request.form.get('note').strip()}" if request.form.get("note", "").strip() else ""),
+                       u["id"], kind="use", dept=room)
+            n += 1
+        if n:
+            audit("استهلاك مواد", f"{USE_ROOMS[room]} — {n} مادة", br)
+            flash(f"تم تسجيل استهلاك {n} مادة على {USE_ROOMS[room]}", "ok")
+        db.commit()
+        return redirect(url_for("stock_use", branch=br if admin else None))
+    mats = db.execute("""SELECT p.id, p.name, p.category, p.usage, COALESCE(s.qty,0) AS qty FROM products p
+        LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1 AND p.usage IN ('use','both')
+        ORDER BY p.usage='both', p.category, p.name""", (br,)).fetchall()
+    d1 = request.args.get("from") or date.today().replace(day=1).isoformat()
+    d2 = request.args.get("to") or date.today().isoformat()
+    hist = db.execute("""SELECT m.*, p.name, u.full_name AS by_name, -m.qty*COALESCE(p.cost_price,0) AS cost
+        FROM stock_moves m JOIN products p ON p.id=m.product_id LEFT JOIN users u ON u.id=m.user_id
+        WHERE m.kind='use' AND m.branch_id=? AND substr(m.created_at,1,10) BETWEEN ? AND ?
+        ORDER BY m.id DESC LIMIT 200""", (br, d1, d2)).fetchall()
+    summary = db.execute("""SELECT m.dept, p.name, SUM(-m.qty) AS qty, SUM(-m.qty*COALESCE(p.cost_price,0)) AS cost
+        FROM stock_moves m JOIN products p ON p.id=m.product_id
+        WHERE m.kind='use' AND m.branch_id=? AND substr(m.created_at,1,10) BETWEEN ? AND ?
+        GROUP BY m.dept, p.name ORDER BY m.dept, cost DESC""", (br, d1, d2)).fetchall()
+    rooms = {k: v for k, v in USE_ROOMS.items()
+             if k in ("hijama", "reception") or (k == "director" and str(br) == str(setting("director_branch")))
+             or k in branch_depts(br)}
+    return render_template("stock_use.html", mats=mats, hist=hist, summary=summary, br=br, rooms=rooms,
+                           default_room=default_room, d1=d1, d2=d2, admin=admin,
+                           branches=active_branches() if admin else [])
 
 
 @app.route("/products/<int(signed=True):pid>/reviewed", methods=["POST"])
@@ -2257,7 +2419,8 @@ def visit_view(vid):
         db.commit()
         return redirect(url_for("visit_view", vid=vid))
     prods = db.execute("""SELECT p.*, COALESCE(s.qty,0) AS qty FROM products p LEFT JOIN stock s
-        ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1 ORDER BY p.name""", (v["branch_id"],)).fetchall()
+        ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1 AND COALESCE(p.usage,'sale')<>'use'
+        ORDER BY p.name""", (v["branch_id"],)).fetchall()
     vnotes = db.execute("""SELECT n.*, u.full_name AS by_name FROM client_notes n LEFT JOIN users u ON u.id=n.created_by
         WHERE n.client_id=? ORDER BY n.id DESC LIMIT 8""", (v["client_id"],)).fetchall() if has_perm("medical") else []
     return render_template("visit_view.html", v=v, items=items, total=total, services=services_for(v["branch_id"]),
@@ -3633,16 +3796,29 @@ def send_sms(con, phone, message):
     if s.get("sms_enabled") != "1" or not s.get("sms_url"):
         return False, "بوابة SMS غير مفعلة"
     body = json.dumps({"message": message, "phoneNumbers": [norm_phone(phone)]}).encode("utf-8")
-    req = urlreq.Request(s["sms_url"], data=body, method="POST",
-                         headers={"Content-Type": "application/json"})
-    if s.get("sms_user"):
-        tok = base64.b64encode(f"{s['sms_user']}:{s.get('sms_pass', '')}".encode()).decode()
-        req.add_header("Authorization", "Basic " + tok)
-    try:
-        with urlreq.urlopen(req, timeout=20) as r:
-            return 200 <= r.status < 300, r.read(500).decode("utf-8", "replace")
-    except Exception as e:
-        return False, str(e)[:300]
+    url = s["sms_url"].strip()
+    urls = [url]
+    # الإصدارات الجديدة من SMS Gateway تستعمل /messages بدل /message
+    if url.rstrip("/").endswith("/message"):
+        urls.append(url.rstrip("/") + "s")
+    err = ""
+    for u in urls:
+        req = urlreq.Request(u, data=body, method="POST", headers={"Content-Type": "application/json"})
+        if s.get("sms_user"):
+            tok = base64.b64encode(f"{s['sms_user'].strip()}:{s.get('sms_pass', '').strip()}".encode()).decode()
+            req.add_header("Authorization", "Basic " + tok)
+        try:
+            with urlreq.urlopen(req, timeout=20) as r:
+                return 200 <= r.status < 300, r.read(500).decode("utf-8", "replace")
+        except urlerr.HTTPError as e:
+            err = f"HTTP {e.code}"
+            if e.code == 401:
+                return False, "اسم المستخدم أو كلمة المرور خاطئة (انسخهما من تطبيق SMS Gateway)"
+            if e.code not in (404, 405):
+                return False, err
+        except Exception as e:
+            return False, str(e)[:300]
+    return False, err
 
 
 def reminder_text(con, a):
@@ -4099,7 +4275,7 @@ PAGE_ICONS = {
     "suppliers": "truck", "services": "services", "branches": "branch", "branch_edit": "branch",
     "devices": "monitor", "users": "users", "sms_page": "sms", "sms_campaign": "sms",
     "settings": "settings", "change_password": "key", "staff": "staff", "staff_view": "staff",
-    "attendance": "staff", "courses": "course", "course_view": "course",
+    "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream",
 }
 
 

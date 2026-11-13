@@ -115,6 +115,7 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 {% if perm('cash_close') and cu.role!='admin' %}<a href="{{ url_for('cash_close') }}">{{ ic('lock') }}إغلاق صندوق اليوم</a>{% endif %}
 {% if perm('expenses') and cu.role!='admin' %}<a href="{{ url_for('expenses') }}">{{ ic('expense') }}إخراج مبلغ (مصروف)</a>{% endif %}
 {% if perm('products_edit') and cu.role!='admin' %}<a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>{% endif %}
+{% if perm('stock_use') and cu.role!='admin' %}<a href="{{ url_for('stock_use') }}">{{ ic('cream') }}استهلاك مواد العمل</a>{% endif %}
 {% if perm('purchases') and cu.role!='admin' %}<a href="{{ url_for('purchases') }}">{{ ic('invoice') }}فواتير الشراء</a>{% endif %}
 {% if perm('courses') %}<a href="{{ url_for('courses') }}">{{ ic('course') }}الدورات والشهادات</a>{% endif %}
 {% if perm('attendance') %}<a href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}
@@ -129,6 +130,7 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 <a href="{{ url_for('audit_page') }}">{{ ic('audit') }}سجل العمليات</a>
 <a href="{{ url_for('backup_page') }}">{{ ic('backup') }}النسخ الاحتياطي</a>
 <a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>
+<a href="{{ url_for('stock_use') }}">{{ ic('cream') }}استهلاك مواد العمل</a>
 <a href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات والموردون</a>
 <a href="{{ url_for('services') }}">{{ ic('services') }}الخدمات والأسعار</a>
 <a href="{{ url_for('branches') }}">{{ ic('branch') }}الفروع والغرف</a>
@@ -497,6 +499,7 @@ TEMPLATES["quick_product.html"] = r"""<div id="qp" class="card" style="display:n
 <label>سعر الشراء<input id="qp_cost" type="number" min="0" step="any" style="width:110px"></label>
 <label>الفئة<input id="qp_cat" style="width:130px" placeholder="عسل، زيوت..."></label>
 <label>الباركود<input id="qp_bar" style="width:130px" placeholder="اختياري"></label>
+<label>النوع<select id="qp_use">{% for k,v in PRODUCT_USAGE.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
 <button type="button" class="btn gold" onclick="qpSave()">إضافة</button><button type="button" class="btn light" onclick="qpShow(false)">إلغاء</button></div>
 <div id="qp_err" class="flash err" style="display:none;margin-top:8px"></div></div>
 <script>
@@ -506,9 +509,10 @@ function qpShow(on,pre){var b=document.getElementById('qp');b.style.display=on?'
  document.getElementById('qp_err').style.display='none';b.scrollIntoView({behavior:'smooth',block:'center'});document.getElementById('qp_name').focus()}}
 function qpSave(){var e=document.getElementById('qp_err');var d={name:document.getElementById('qp_name').value.trim(),
  price:document.getElementById('qp_price').value,cost:document.getElementById('qp_cost').value,
- category:document.getElementById('qp_cat').value.trim(),barcode:document.getElementById('qp_bar').value.trim(),branch:'{{ br or "" }}'};
+ category:document.getElementById('qp_cat').value.trim(),barcode:document.getElementById('qp_bar').value.trim(),branch:'{{ br or "" }}',
+ usage:(document.getElementById('qp_use')||{}).value||'sale'};
  if(!d.name){e.textContent='اكتب اسم المنتج';e.style.display='';return}
- if(QP_NEED_PRICE&&!(parseFloat(d.price)>0)){e.textContent='اكتب سعر البيع';e.style.display='';return}
+ if(QP_NEED_PRICE&&d.usage!='use'&&!(parseFloat(d.price)>0)){e.textContent='اكتب سعر البيع';e.style.display='';return}
  fetch('{{ url_for("product_quick") }}',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)})
  .then(function(r){return r.json()}).then(function(r){if(!r.ok){e.textContent=r.error||'خطأ';e.style.display='';return}
   qpShow(false);qpDone(r.product,r.existed)}).catch(function(){e.textContent='تعذّر الحفظ';e.style.display=''})}
@@ -546,6 +550,16 @@ TEMPLATES["cashbox.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 {% if cu.role=='admin' %}<div class="stat"><div class="l">حسب الفرع</div>{% for k,v in by_branch.items() %}<div>{{ k }}: <b>{{ v|money }}</b></div>{% endfor %}</div>{% endif %}
 <div class="stat"><div class="l">حسب النوع</div>{% for k,v in by_kind.items() %}<div>{{ k }}: <b>{{ v|money }}</b></div>{% endfor %}</div>
 <div class="stat"><div class="l">حسب طريقة الدفع</div>{% for k,v in by_method.items() %}<div>{{ k }}: <b>{{ v|money }}</b></div>{% endfor %}</div></div>
+{% if rooms %}<h2 style="color:var(--gold,#e4ab74);margin:8px 0">{{ ic('rooms') }}حساب كل غرفة</h2>
+<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(340px,1fr));margin-bottom:16px">
+{% for bname, b in rooms.items() %}<div class="card" style="margin:0"><h2>{{ ic('branch') }}{{ bname }} <span class="mut" style="font-size:14px">— {{ b.total|money }} {{ cur }}</span></h2>
+<table><tr><th>الغرفة / القسم</th><th>المداخيل</th>{% if b.use %}<th>مواد مستهلكة</th>{% endif %}</tr>
+{% for k, e in b.income.items() %}{% set uk = 'director' if k=='director' else k %}<tr><td><span class="itm">{{ ic({'hijama':'hijama','herbs':'leaf','laser':'laser','beauty':'face','director':'shield','product':'cart','course':'course'}.get(k,'services')) }}</span>{{ SECTIONS.get(k,k) }}</td>
+<td><b>{{ e.amount|money }}</b></td>{% if b.use %}<td class="mut">{% if b.use.get(uk) %}− {{ b.use[uk].cost|money }}{% endif %}</td>{% endif %}</tr>{% endfor %}
+{% for k, x in b.use.items() if k not in b.income %}<tr><td class="mut">{{ USE_ROOMS.get(k,k) }}</td><td class="mut">—</td><td class="mut">− {{ x.cost|money }}</td></tr>{% endfor %}
+</table>
+<div class="mut" style="margin-top:10px"><b>الصناديق (من استلم المال):</b></div>
+<table>{% for k, x in b.boxes.items() %}<tr><td>{{ ic('safe') }} صندوق {{ PLACES.get(k, k) }}</td><td>{{ x.total|money }}</td><td class="mut">منها نقدًا {{ x.cash|money }}</td></tr>{% endfor %}</table></div>{% endfor %}</div>{% endif %}
 <div class="card"><table><tr><th>الوصل</th><th>التاريخ</th>{% if cu.role=='admin' %}<th>الفرع</th>{% endif %}<th>الزبون</th><th>النوع</th><th>البيان</th><th>الدفع</th><th>استلمه</th><th>المبلغ</th></tr>
 {% for p in rows %}<tr class="{{ 'cx' if p.cancelled }}"><td><a href="{{ url_for('receipt', pid=p.id) }}">{{ p.id|rid }}</a></td><td>{{ p.created_at[:16] }}</td>
 {% if cu.role=='admin' %}<td>{{ p.branch }}</td>{% endif %}<td>{{ p.client or '-' }}</td><td>{{ PAY_KINDS[p.kind] }}</td><td>{{ p.description }}</td>
@@ -569,6 +583,7 @@ TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
 <datalist id="cats">{% for c in rows|map(attribute='category')|unique %}{% if c %}<option value="{{ c }}">{% endif %}{% endfor %}</datalist>
 <label>سعر البيع ({{ cur }})<input name="price" value="{{ '%g'|format(edit.price) if edit else '' }}" style="width:110px" {% if not can_price %}readonly title="السعر تحدده المديرة"{% endif %}></label>
 {% if admin %}<label>سعر الشراء ({{ cur }})<input name="cost_price" value="{{ '%g'|format(edit.cost_price or 0) if edit else '' }}" style="width:110px"></label>{% endif %}
+<label>النوع<select name="usage">{% for k,v in PRODUCT_USAGE.items() %}<option value="{{ k }}" {{ 'selected' if edit and (edit.usage or 'sale')==k }}>{{ v }}</option>{% endfor %}</select></label>
 <label>الباركود<input name="barcode" value="{{ edit.barcode or '' if edit else '' }}"></label>
 <label>تاريخ انتهاء الصلاحية<input type="date" name="expiry" value="{{ edit.expiry or '' if edit else '' }}"></label>
 {% if edit %}<label>الحالة<select name="active"><option value="1">نشط</option><option value="0" {{ 'selected' if not edit.active }}>موقوف</option></select></label>{% endif %}
@@ -585,11 +600,16 @@ TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
 <a class="btn light" href="{{ url_for('products_template') }}">تحميل قائمة المنتجات (Excel)</a></form>
 <p class="mut">حمّل القائمة: فيها كل المنتجات بأسعارها. اكتب أمام كل منتج الكمية الموجودة في كل فرع وحد التنبيه،
 احفظها بصيغة CSV UTF-8 ثم استوردها. المنتجات الموجودة تُحدَّث (والكمية تُضاف للمخزون)، والجديدة تُضاف.</p></div>{% endif %}
-<div class="card"><form class="row" style="margin-bottom:10px"><label>بحث<input name="q" value="{{ q }}"></label>
+<div class="row noprint" style="margin-bottom:10px">
+{% for k,lbl,icn in (('','كل المنتجات','products'),('sale','للبيع','cart'),('use','مواد العمل (للاستعمال)','cream')) %}
+<a class="btn {{ '' if usage==k else 'light' }}" href="{{ url_for('products', usage=k or None, q=q or None) }}">{{ ic(icn) }} {{ lbl }} <span class="tag">{{ counts[k or 'all'] }}</span></a>{% endfor %}
+{% if perm('stock_use') %}<a class="btn gold" href="{{ url_for('stock_use') }}">{{ ic('cream') }} تسجيل استهلاك مواد العمل</a>{% endif %}</div>
+<div class="card"><form class="row" style="margin-bottom:10px"><input type="hidden" name="usage" value="{{ usage }}"><label>بحث<input name="q" value="{{ q }}"></label>
 {% if admin %}<label>الفرع<select name="branch"><option value="">كل الفروع</option>{% for b in branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
 <button class="btn light">عرض</button></form>
 <table><tr><th>المنتج</th><th>الفئة</th><th>السعر</th>{% if admin %}<th>الشراء</th>{% endif %}<th>الصلاحية</th>{% for b in show %}<th>{{ b.name }}<div class="mut">الكمية / الحد</div></th>{% endfor %}<th>تعديل الكمية أو الحد</th><th></th></tr>
-{% for p in rows %}<tr class="{{ 'cx' if not p.active }}"><td>{{ item_ic(p.name, 'product') }}{{ p.name }}</td><td>{{ p.category or '' }}</td><td>{{ p.price|money }}</td>
+{% for p in rows %}<tr class="{{ 'cx' if not p.active }}"><td>{{ item_ic(p.name, 'product') }}{{ p.name }}
+{% if p.usage=='use' %}<span class="tag" style="background:#e3eefc;color:#1d4f91">مواد العمل</span>{% elif p.usage=='both' %}<span class="tag" style="background:#efe3fc;color:#5b2a91">للبيع وللاستعمال</span>{% endif %}</td><td>{{ p.category or '' }}</td><td>{% if p.usage!='use' %}{{ p.price|money }}{% else %}<span class="mut">—</span>{% endif %}</td>
 {% if admin %}<td class="mut">{{ (p.cost_price or 0)|money }}</td>{% endif %}
 <td>{% if p.expiry %}<span class="tag {{ 'red' if p.expiry<today else 'amber' if p.expiry<=soon else '' }}">{{ p.expiry }}</span>{% endif %}</td>
 {% for b in show %}{% set st = stock.get((p.id,b.id)) %}{% set q = st.qty if st else 0 %}{% set m = st.min_qty or 0 if st else 0 %}
@@ -1687,3 +1707,31 @@ TEMPLATES["tiles.html"] = r"""<div class="tiles noprint">
 {% if perm('courses') %}<a class="tile" href="{{ url_for('courses') }}">{{ ic('course') }}الدورات</a>{% endif %}
 {% if perm('cash_close') %}<a class="tile" href="{{ url_for('cash_close') }}">{{ ic('lock') }}إغلاق الصندوق</a>{% endif %}
 {% endif %}</div>"""
+
+
+TEMPLATES["stock_use.html"] = r"""{% extends "base.html" %}{% block body %}
+<h1>{{ page_icon() }}استهلاك مواد العمل — {{ branch_name(br) }}</h1>
+{% if admin %}<div class="card noprint"><form class="row"><label>الفرع<select name="branch" onchange="this.form.submit()">{% for b in branches %}<option value="{{ b.id }}" {{ 'selected' if b.id==br }}>{{ b.name }}</option>{% endfor %}</select></label></form></div>{% endif %}
+<div class="card"><h2>{{ ic('cream') }}تسجيل ما استُعمل</h2>
+<p class="mut">المواد اللي تستعملها الغرف في العلاج (كؤوس الحجامة، الجل، الكريمات، الإبر...). تخرج من المخزون وتنحسب على الغرفة.
+باش يبان منتج هنا، لازم يكون نوعه «للاستعمال» ولا «للبيع وللاستعمال» في صفحة المنتجات.</p>
+{% if not mats %}<p class="flash">ما كاين حتى منتج من نوع «مواد العمل» بعد. روح لـ <a href="{{ url_for('products', usage='use') }}">المنتجات والمخزون</a> وبدّل نوع المواد.</p>{% else %}
+<form method="post"><input type="hidden" name="branch" value="{{ br }}">
+<h2 style="margin-top:6px">في أي غرفة؟</h2>
+<style>.tgts{display:flex;gap:10px;flex-wrap:wrap}.tgts label{cursor:pointer}.tgts input{position:absolute;opacity:0}
+.tgts span{display:flex;align-items:center;gap:8px;padding:10px 16px;border-radius:12px;border:2px solid #d9cbb3;background:#fff;font-weight:bold;color:#0f4c45}
+.tgts input:checked+span{border-color:#0f4c45;background:#0f4c45;color:#f3d6a8}</style>
+<div class="tgts">{% for k,v in rooms.items() %}<label><input type="radio" name="room" value="{{ k }}" {{ 'checked' if k==default_room }}><span>{{ ic({'hijama':'hijama','laser':'laser','beauty':'face','director':'shield','reception':'reception'}[k]) }}{{ v }}</span></label>{% endfor %}</div>
+<table style="margin-top:12px;max-width:720px" id="ul"><tr><th>المادة</th><th>الموجود</th><th>الكمية المستعملة</th></tr>
+{% for i in range(4) %}<tr><td><select name="product_id" style="min-width:300px" onchange="var o=this.selectedOptions[0];this.closest('tr').querySelector('.have').textContent=o.dataset.q||''"><option value="">—</option>
+{% for m in mats %}<option value="{{ m.id }}" data-q="{{ '%g'|format(m.qty) }}">{{ m.name }}{% if m.category %} ({{ m.category }}){% endif %}</option>{% endfor %}</select></td>
+<td class="have mut"></td><td><input name="qty" type="number" min="0" step="any" style="width:90px"></td></tr>{% endfor %}</table>
+<p class="row"><label>ملاحظة<input name="note" placeholder="اختياري: مثلًا اسم الزبونة" style="min-width:240px"></label>
+<button class="btn gold">تسجيل الاستهلاك</button></p></form>{% endif %}</div>
+<div class="card"><form class="row"><input type="hidden" name="branch" value="{{ br }}"><label>من<input type="date" name="from" value="{{ d1 }}"></label><label>إلى<input type="date" name="to" value="{{ d2 }}"></label><button class="btn light">عرض</button></form>
+{% if summary %}<h2>{{ ic('reports') }}المجموع حسب الغرفة</h2><table><tr><th>الغرفة</th><th>المادة</th><th>الكمية</th>{% if admin %}<th>التكلفة</th>{% endif %}</tr>
+{% for s in summary %}<tr><td>{{ USE_ROOMS.get(s.dept, s.dept) }}</td><td>{{ s.name }}</td><td>{{ '%g'|format(s.qty) }}</td>{% if admin %}<td>{{ s.cost|money }}</td>{% endif %}</tr>{% endfor %}</table>{% endif %}
+<h2>آخر العمليات</h2><table><tr><th>التاريخ</th><th>المادة</th><th>الكمية</th><th>البيان</th><th>سجّلها</th>{% if admin %}<th>التكلفة</th>{% endif %}</tr>
+{% for h in hist %}<tr><td>{{ h.created_at[:16] }}</td><td>{{ h.name }}</td><td>{{ '%g'|format(-h.qty) }}</td><td>{{ h.reason }}</td><td>{{ h.by_name or '' }}</td>{% if admin %}<td>{{ h.cost|money }}</td>{% endif %}</tr>
+{% else %}<tr><td colspan="6" class="mut">لا يوجد استهلاك في هذه الفترة</td></tr>{% endfor %}</table></div>
+{% endblock %}"""
