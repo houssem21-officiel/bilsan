@@ -137,6 +137,9 @@ CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, branch_id INTEGER, user
     details TEXT, created_at TEXT);
 CREATE TABLE IF NOT EXISTS cash_days(id INTEGER PRIMARY KEY, branch_id INTEGER, day TEXT, role TEXT, counted REAL,
     expected REAL, note TEXT, closed_by INTEGER, closed_at TEXT, UNIQUE(branch_id, day, role));
+CREATE TABLE IF NOT EXISTS approvals(id INTEGER PRIMARY KEY, branch_id INTEGER, kind TEXT, ref_id INTEGER,
+    amount REAL DEFAULT 0, reason TEXT, status TEXT DEFAULT 'pending', requested_by INTEGER, requested_at TEXT,
+    decided_by INTEGER, decided_at TEXT, note TEXT, info TEXT);
 CREATE TABLE IF NOT EXISTS sms_log(id INTEGER PRIMARY KEY, appointment_id INTEGER, phone TEXT,
     message TEXT, status TEXT, response TEXT, created_at TEXT);
 """
@@ -159,6 +162,9 @@ DEFAULT_SETTINGS = {
     "expiry_days": "30",
     "default_min_qty": "5",
     "manager_phone": "",
+    "daily_summary": "0",
+    "daily_summary_time": "21:00",
+    "approvals_sms": "1",
     "stock_sms_enabled": "0",
     "last_stock_sms": "",
     "work_days": "26",
@@ -589,7 +595,7 @@ def inject():
         view_branch=session.get("view_branch"),
         alerts_count=len(stock_alerts(scope_branch())) if current_user() else 0,
         branch_name=branch_name,
-        NODE=sync.NODE, perm=has_perm, bk=backup_status() if (current_user() and current_user()["role"] == "admin") else None, PLACES=PLACES, SECTIONS=SECTIONS, USE_ROOMS=USE_ROOMS, PRODUCT_USAGE=PRODUCT_USAGE, locked=price_locked() if current_user() else False, can_collect=can_collect() if current_user() else False, node_status=node_status() if sync.NODE else None,
+        NODE=sync.NODE, perm=has_perm, bk=backup_status() if (current_user() and current_user()["role"] == "admin") else None, PLACES=PLACES, SECTIONS=SECTIONS, napprovals=pending_approvals(get_db()) if (current_user() and current_user()["role"] == "admin" and not sync.NODE) else 0, USE_ROOMS=USE_ROOMS, PRODUCT_USAGE=PRODUCT_USAGE, locked=price_locked() if current_user() else False, can_collect=can_collect() if current_user() else False, node_status=node_status() if sync.NODE else None,
     )
 
 
@@ -745,8 +751,13 @@ def dashboard():
             FROM payments p JOIN branches b ON b.id=p.branch_id LEFT JOIN clients c ON c.id=p.client_id
             LEFT JOIN users us ON us.id=p.received_by ORDER BY p.id DESC LIMIT 15""").fetchall()
         low = stock_alerts(None)[:10]
-        return render_template("dash_admin.html", per_branch=per_branch, grand=grand, due=due_salaries(),
-                               recent=recent, low=low)
+        due = due_salaries()
+        return render_template("dash_admin.html", per_branch=per_branch, grand=grand, due=due,
+                               recent=recent, low=low, alerts=director_alerts(db, due),
+                               rooms=room_accounts(today, today, None, db.execute(
+                                   """SELECT p.*, b.name AS branch FROM payments p JOIN branches b ON b.id=p.branch_id
+                                      WHERE p.cancelled=0 AND substr(p.created_at,1,10)=?""", (today,)).fetchall()),
+                               waiting=db.execute("SELECT COUNT(*) FROM visits WHERE target='director' AND status IN ('waiting','treating')").fetchone()[0])
     b = u["branch_id"]
     dept = u["role"] if u["role"] in ("laser", "beauty") else None
     q = """SELECT a.*, c.name AS client, c.phone, s.name AS service, s.price AS sprice, b.name AS branch,
@@ -766,6 +777,42 @@ def dashboard():
         AND cancelled=0 AND substr(created_at,1,10)=?""", (b, today)).fetchone()["t"]
     return render_template("dash_staff.html", appts=appts, pending=pending, my_total=my_total,
                            low=stock_alerts(b)[:10])
+
+
+def director_alerts(db, due=None):
+    """كل ما يحتاج انتباه المديرة، في قائمة وحدة، وكل عنصر برابط للحل."""
+    al = []
+    n = pending_approvals(db)
+    if n:
+        al.append(("red", "key", f"{n} طلب ينتظر موافقتك (تخفيض أو إلغاء)", url_for("approvals")))
+    n = db.execute("""SELECT COUNT(*) FROM cash_days WHERE day>=? AND counted IS NOT NULL
+        AND ABS(counted-expected)>=1""", ((date.today() - timedelta(days=2)).isoformat(),)).fetchone()[0]
+    if n:
+        al.append(("red", "safe", f"فرق في عدّ الصندوق ({n})", url_for("cash_daily")))
+    n = db.execute("SELECT COUNT(*) FROM products WHERE needs_review=1").fetchone()[0]
+    if n:
+        al.append(("amber", "products", f"{n} منتج جديد أو سعر تبدّل يحتاج مراجعتك", url_for("products")))
+    st = stock_alerts(None)
+    if st:
+        out = sum(1 for s in st if s["out"])
+        al.append(("amber", "alert", f"{len(st)} منتج قارب على النفاد أو الصلاحية" + (f" ({out} نفد)" if out else ""),
+                   url_for("stock_alerts_page")))
+    due = due if due is not None else due_salaries()
+    if due:
+        late = sum(1 for d in due if d.get("late"))
+        al.append(("red" if late else "amber", "staff", f"{len(due)} أجرة حان وقتها" + (f" ({late} متأخرة)" if late else ""),
+                   url_for("staff")))
+    if not sync.NODE:
+        lim = (datetime.now() - timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M:%S")
+        off = db.execute("""SELECT full_name FROM users WHERE device=1 AND active=1 AND last_seen IS NOT NULL
+            AND last_seen<?""", (lim,)).fetchall()
+        if off and 8 <= datetime.now().hour < 20:
+            al.append(("amber", "monitor", "حواسيب غير متصلة: " + "، ".join(o[0] for o in off[:4]), url_for("devices")))
+    n = db.execute("SELECT COUNT(*) FROM charges WHERE status='pending' AND substr(created_at,1,10)<?",
+                   (date.today().isoformat(),)).fetchone()[0]
+    if n:
+        al.append(("amber", "debt", f"{n} مبلغ من أيام سابقة مازال ما تخلّصش", url_for("reception")))
+    return al
 
 
 # ---------------------------------------------------------------- الزبائن
@@ -1029,7 +1076,9 @@ def make_payment(db, branch_id, client_id, amount, method, kind, desc, uid, dept
 def reception():
     db = get_db()
     br = scope_branch()
-    q = """SELECT ch.*, c.name AS client, c.phone, b.name AS branch, us.full_name AS by_name
+    q = """SELECT ch.*, c.name AS client, c.phone, b.name AS branch, us.full_name AS by_name,
+           (SELECT CASE ap.kind WHEN 'discount' THEN 'طلب تخفيض ' || ap.amount ELSE 'طلب إلغاء' END FROM approvals ap
+            WHERE ap.ref_id=ch.id AND ap.kind IN ('discount','cancel_charge') AND ap.status='pending' LIMIT 1) AS req
            FROM charges ch LEFT JOIN clients c ON c.id=ch.client_id JOIN branches b ON b.id=ch.branch_id
            LEFT JOIN users us ON us.id=ch.created_by WHERE ch.status='pending'"""
     args = []
@@ -1112,7 +1161,8 @@ def charge_pay(chid):
         return redirect(url_for("reception"))
     u = current_user()
     check_charge_access(ch, u)
-    disc = 0.0 if price_locked(u) else min(max(fnum(request.form.get("discount")), 0), ch["amount"])
+    approved = ch["discount"] or 0  # تخفيض وافقت عليه المديرة
+    disc = approved if price_locked(u) else min(max(fnum(request.form.get("discount")), approved), ch["amount"])
     amt = fnum(request.form.get("paid"), ch["amount"] - disc) if request.form.get("paid") not in (None, "") else None
     if amt is not None and amt < ch["amount"] - disc and not ch["client_id"]:
         flash("لتسجيل دين يجب أن يكون المبلغ مرتبطًا بزبون", "err")
@@ -1170,6 +1220,12 @@ def charge_cancel(chid):
     ch = db.execute("SELECT * FROM charges WHERE id=?", (chid,)).fetchone() or abort(404)
     u = current_user()
     check_charge_access(ch, u)
+    if u["role"] != "admin":  # العامل لا يلغي وحده: يطلب من المديرة
+        request_approval(db, "cancel_charge", ch["id"], ch["branch_id"], ch["amount"],
+                         request.form.get("reason", ""), f"{ch['description'] or ''}")
+        db.commit()
+        flash("أُرسل طلب الإلغاء للمديرة. يبقى المبلغ حتى توافق.", "ok")
+        return redirect(url_for("reception"))
     audit("إلغاء مبلغ معلّق", f"{ch['description'] or ''} — {ch['amount']:g}", ch["branch_id"])
     db.execute("UPDATE charges SET status='cancelled' WHERE id=? AND status='pending'", (chid,))
     db.commit()
@@ -1207,6 +1263,120 @@ def payment_new():
     dept_ = u["role"] if u["role"] in ("laser", "beauty") else "reception"
     return render_template("payment_new.html", services=services_for(br, dept_), br=br,
                            sel_client=sel_client)
+
+
+# ---------------------------------------------------------------- موافقة المديرة
+APPROVAL_KINDS = {"discount": "تخفيض", "cancel_charge": "إلغاء مبلغ", "cancel_payment": "إلغاء وصل"}
+
+
+def request_approval(db, kind, ref_id, branch_id, amount, reason, info):
+    u = current_user()
+    if db.execute("SELECT 1 FROM approvals WHERE kind=? AND ref_id=? AND status='pending'", (kind, ref_id)).fetchone():
+        return
+    db.execute("""INSERT INTO approvals(branch_id,kind,ref_id,amount,reason,status,requested_by,requested_at,info)
+        VALUES(?,?,?,?,?,'pending',?,?,?)""", (branch_id, kind, ref_id, amount, (reason or "").strip()[:300],
+                                                u["id"], now_str(), (info or "")[:300]))
+    audit("طلب موافقة", f"{APPROVAL_KINDS[kind]} {amount:g} — {info}", branch_id)
+    if setting("approvals_sms") == "1" and setting("sms_enabled") == "1" and setting("manager_phone"):
+        msg = f"{setting('center_name')}: طلب {APPROVAL_KINDS[kind]} {amount:g} من {u['full_name'] or u['username']}" \
+              + (f" - {reason.strip()}" if (reason or "").strip() else "")
+
+        def go(m=msg):
+            try:
+                con = connect()
+                send_sms(con, setting("manager_phone"), m)
+                con.close()
+            except Exception:
+                pass
+        if not sync.NODE:
+            threading.Thread(target=go, daemon=True).start()
+
+
+def pending_approvals(db):
+    return db.execute("SELECT COUNT(*) FROM approvals WHERE status='pending'").fetchone()[0]
+
+
+@app.route("/approvals/request", methods=["POST"])
+@login_required()
+def approval_request():
+    db = get_db()
+    u = current_user()
+    kind = request.form.get("kind")
+    ref = request.form.get("ref_id", "")
+    if kind == "discount":
+        ch = db.execute("SELECT * FROM charges WHERE id=? AND status='pending'", (ref,)).fetchone() or abort(404)
+        check_charge_access(ch, u)
+        amt = min(max(fnum(request.form.get("amount")), 0), ch["amount"])
+        if amt <= 0:
+            flash("اكتب مبلغ التخفيض", "err")
+            return redirect(request.referrer or url_for("reception"))
+        request_approval(db, "discount", ch["id"], ch["branch_id"], amt, request.form.get("reason"),
+                         f"{ch['description'] or ''} ({ch['amount']:g})")
+    elif kind == "cancel_payment":
+        p = db.execute("SELECT * FROM payments WHERE id=? AND cancelled=0", (ref,)).fetchone() or abort(404)
+        if u["role"] != "admin" and p["branch_id"] != u["branch_id"]:
+            abort(403)
+        request_approval(db, "cancel_payment", p["id"], p["branch_id"], p["amount"], request.form.get("reason"),
+                         f"وصل {rid_filter(p['id'])}: {p['description'] or ''}")
+    else:
+        abort(400)
+    db.commit()
+    flash("أُرسل الطلب للمديرة. يظهر لك الجواب هنا.", "ok")
+    return redirect(request.referrer or url_for("reception"))
+
+
+@app.route("/approvals", methods=["GET", "POST"])
+@login_required("admin")
+def approvals():
+    db = get_db()
+    if request.method == "POST":
+        a_ = db.execute("SELECT * FROM approvals WHERE id=? AND status='pending'", (request.form.get("id"),)).fetchone()
+        dec = request.form.get("decision")
+        if a_ and dec in ("approved", "rejected"):
+            ok = True
+            if dec == "approved":
+                if a_["kind"] == "discount":
+                    ch = db.execute("SELECT * FROM charges WHERE id=? AND status='pending'", (a_["ref_id"],)).fetchone()
+                    ok = bool(ch)
+                    if ch:
+                        db.execute("UPDATE charges SET discount=? WHERE id=?", (min(a_["amount"], ch["amount"]), ch["id"]))
+                elif a_["kind"] == "cancel_charge":
+                    ok = db.execute("UPDATE charges SET status='cancelled' WHERE id=? AND status='pending'",
+                                    (a_["ref_id"],)).rowcount > 0
+                elif a_["kind"] == "cancel_payment":
+                    ok = cancel_payment_now(db, a_["ref_id"])
+            if not ok:
+                flash("تعذّر التنفيذ: العملية تبدّلت (تخلّصت أو تلغات من قبل)", "err")
+                dec, note = "rejected", "لم يعد ممكنًا"
+            else:
+                note = request.form.get("note", "").strip()
+            db.execute("UPDATE approvals SET status=?, decided_by=?, decided_at=?, note=? WHERE id=?",
+                       (dec, current_user()["id"], now_str(), note, a_["id"]))
+            audit("موافقة" if dec == "approved" else "رفض", f"{APPROVAL_KINDS[a_['kind']]} {a_['amount']:g} — {a_['info']}",
+                  a_["branch_id"])
+            if ok:
+                flash("تمت الموافقة ونُفّذت" if dec == "approved" else "تم الرفض", "ok")
+            db.commit()
+        return redirect(url_for("approvals"))
+    rows = db.execute("""SELECT a.*, u.full_name AS by_name, b.name AS branch FROM approvals a
+        LEFT JOIN users u ON u.id=a.requested_by LEFT JOIN branches b ON b.id=a.branch_id
+        ORDER BY a.status='pending' DESC, a.id DESC LIMIT 200""").fetchall()
+    return render_template("approvals.html", rows=rows)
+
+
+def cancel_payment_now(db, pid):
+    p = db.execute("SELECT * FROM payments WHERE id=? AND cancelled=0", (pid,)).fetchone()
+    if not p:
+        return False
+    audit("إلغاء وصل", f"وصل {rid_filter(pid)} — {p['amount']:g} — {p['description'] or ''}", p["branch_id"])
+    db.execute("UPDATE payments SET cancelled=1 WHERE id=?", (pid,))
+    for it in db.execute("SELECT * FROM sale_items WHERE payment_id=?", (pid,)).fetchall():
+        move_stock(db, it["product_id"], p["branch_id"], it["qty"], f"إلغاء الوصل {rid_filter(pid)}")
+    db.execute("UPDATE charges SET status='pending', payment_id=NULL WHERE payment_id=?", (pid,))
+    db.execute("UPDATE appointments SET paid=0, payment_id=NULL WHERE payment_id=?", (pid,))
+    db.execute("""UPDATE visits SET status='done' WHERE status='paid' AND id IN
+        (SELECT visit_id FROM charges WHERE payment_id IS NULL AND status='pending' AND visit_id IS NOT NULL)""")
+    return True
 
 
 @app.route("/payments/<int(signed=True):pid>/cancel", methods=["POST"])
@@ -3733,6 +3903,20 @@ def users():
 
 
 # ---------------------------------------------------------------- الإعدادات وSMS
+@app.route("/settings/summary-test", methods=["POST"])
+@login_required("admin")
+def summary_test():
+    db = get_db()
+    msg = daily_summary_text(db, date.today().isoformat())
+    if not setting("manager_phone"):
+        flash("اكتب هاتف المديرة أولًا ثم احفظ", "err")
+        return redirect(url_for("settings") + "#dir")
+    ok, resp = send_sms(db, setting("manager_phone"), msg)
+    flash(("تم إرسال الملخص: " if ok else "تعذّر الإرسال: " + resp + " — نص الملخص: ") + msg.replace("\n", " | "),
+          "ok" if ok else "err")
+    return redirect(url_for("settings") + "#dir")
+
+
 @app.route("/settings", methods=["GET", "POST"])
 @login_required("admin")
 def settings():
@@ -3747,7 +3931,7 @@ def settings():
                 continue
             elif k in ("stamp_img", "signature_img", "img_ver"):
                 continue  # تُرفع من نموذج الصور
-            elif k in ("sms_confirm", "sms_birthday"):
+            elif k in ("sms_confirm", "sms_birthday", "daily_summary", "approvals_sms"):
                 v = "1" if request.form.get(k) else "0"
             elif k == "last_birthday_run":
                 continue
@@ -3856,6 +4040,47 @@ def send_reminder(con, a):
         con.execute("UPDATE appointments SET sms_sent_at=? WHERE id=?", (now_str(), a["id"]))
     con.commit()
     return ok
+
+
+def daily_summary_text(db, day):
+    lines = [f"{setting('center_name')} - ملخص {day[8:10]}/{day[5:7]}:"]
+    grand = 0
+    for b in active_branches():
+        t = db.execute("""SELECT COALESCE(SUM(amount),0), COUNT(*) FROM payments WHERE branch_id=? AND cancelled=0
+            AND substr(created_at,1,10)=?""", (b["id"], day)).fetchone()
+        ex = db.execute("""SELECT COALESCE(SUM(amount),0) FROM expenses WHERE branch_id=?
+            AND day=?""", (b["id"], day)).fetchone()[0]
+        grand += t[0]
+        lines.append(f"{b['name'].replace('فرع ', '').replace(' للطب البديل', '')}: {t[0]:,.0f} ({t[1]} عملية)"
+                     + (f"، مصاريف {ex:,.0f}" if ex else ""))
+    lines.append(f"المجموع: {grand:,.0f} {setting('currency')}")
+    for r in db.execute("""SELECT c.role, b.name AS branch, c.counted-c.expected AS diff FROM cash_days c
+            JOIN branches b ON b.id=c.branch_id WHERE c.day=? AND c.counted IS NOT NULL AND ABS(c.counted-c.expected)>=1""", (day,)):
+        lines.append(f"فرق الصندوق ({PLACES.get(r['role'], r['role'])} {r['branch'].replace('فرع ', '')}): {r['diff']:+,.0f}")
+    n = pending_approvals(db)
+    if n:
+        lines.append(f"طلبات تنتظر موافقتك: {n}")
+    st = stock_alerts(None)
+    if st:
+        lines.append(f"منتجات قاربت على النفاد: {len(st)}")
+    return "\n".join(lines)
+
+
+def daily_summary_check():
+    """كل ليلة في الساعة المحددة: ملخص اليوم في هاتف المديرة."""
+    if sync.NODE or setting("daily_summary") != "1" or setting("sms_enabled") != "1" or not setting("manager_phone"):
+        return
+    today = date.today().isoformat()
+    if setting("last_daily_summary") == today or datetime.now().strftime("%H:%M") < (setting("daily_summary_time") or "21:00"):
+        return
+    db = get_db()
+    db.execute("INSERT OR REPLACE INTO settings(key,value) VALUES('last_daily_summary',?)", (today,))
+    db.commit()
+    msg = daily_summary_text(db, today)
+    ok, resp = send_sms(db, setting("manager_phone"), msg)
+    db.execute("INSERT INTO sms_log(appointment_id,phone,message,status,response,created_at) VALUES(NULL,?,?,?,?,?)",
+               (setting("manager_phone"), msg, "sent" if ok else "failed", resp, now_str()))
+    db.commit()
 
 
 def stock_sms_check():
@@ -4033,6 +4258,7 @@ def reminder_loop():
         try:
             with app.app_context():
                 stock_sms_check()
+                daily_summary_check()
         except Exception as e:
             print("stock sms error:", e)
         try:
@@ -4275,7 +4501,7 @@ PAGE_ICONS = {
     "suppliers": "truck", "services": "services", "branches": "branch", "branch_edit": "branch",
     "devices": "monitor", "users": "users", "sms_page": "sms", "sms_campaign": "sms",
     "settings": "settings", "change_password": "key", "staff": "staff", "staff_view": "staff",
-    "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream",
+    "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream", "approvals": "key", "stock_use": "cream",
 }
 
 

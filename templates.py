@@ -134,7 +134,8 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 <a href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات والموردون</a>
 <a href="{{ url_for('services') }}">{{ ic('services') }}الخدمات والأسعار</a>
 <a href="{{ url_for('branches') }}">{{ ic('branch') }}الفروع والغرف</a>
-{% if not NODE %}<a href="{{ url_for('devices') }}">{{ ic('monitor') }}الحواسيب وكلمات السر</a>{% endif %}
+{% if not NODE %}<a href="{{ url_for('approvals') }}">{{ ic('key') }}طلبات الموافقة{% if napprovals %} <span class="tag red">{{ napprovals }}</span>{% endif %}</a>
+<a href="{{ url_for('devices') }}">{{ ic('monitor') }}الحواسيب وكلمات السر</a>{% endif %}
 <a href="{{ url_for('users') }}">{{ ic('users') }}المستخدمون</a>
 <a href="{{ url_for('sms_page') }}">{{ ic('sms') }}رسائل SMS</a>
 <a href="{{ url_for('settings') }}">{{ ic('settings') }}الإعدادات</a>
@@ -244,10 +245,21 @@ TEMPLATES["msg.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card"><h1>{{ page_icon() }}{{ msg }}</h1><a class="btn" href="{{ url_for('dashboard') }}">الرجوع للرئيسية</a></div>{% endblock %}"""
 
 TEMPLATES["dash_admin.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ page_icon() }}الحاسوب المركزي — مداخيل اليوم</h1>
+<h1>{{ page_icon() }}يومي في نظرة</h1>
+<div class="card" style="border-inline-start:6px solid {{ '#b3261e' if alerts|selectattr(0,'equalto','red')|list else '#e4ab74' if alerts else '#2a8a57' }}">
+<h2>{{ ic('alert') }}{% if alerts %}يحتاج انتباهك ({{ alerts|length }}){% else %}كل شيء على ما يرام ✅{% endif %}</h2>
+{% for lvl, icn, txt, url in alerts %}<a href="{{ url }}" style="display:flex;align-items:center;gap:10px;padding:10px 12px;margin:6px 0;border-radius:10px;text-decoration:none;
+ background:{{ '#fdecea' if lvl=='red' else '#fff4df' }};color:{{ '#8a1c1c' if lvl=='red' else '#6b4a12' }};font-weight:bold">
+<span class="itm" style="background:#fff">{{ ic(icn) }}</span>{{ txt }}<span style="margin-inline-start:auto">←</span></a>{% endfor %}
+{% if not alerts %}<p class="mut">لا طلبات، لا فرق في الصندوق، لا نقص في المخزون، كل الحواسيب متصلة.</p>{% endif %}</div>
+<div class="grid" style="margin-bottom:16px">
+<a class="stat" href="{{ url_for('visit_queue') }}" style="text-decoration:none"><div class="l">زبائن ينتظرونك الآن</div><div class="n">{{ waiting }}</div></a>
+<div class="stat"><div class="l">مجموع مداخيل اليوم (كل الفروع)</div><div class="n">{{ grand|money }} {{ cur }}</div></div></div>
+{% if rooms %}<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:16px">
+{% for bname, b in rooms.items() %}<div class="card" style="margin:0"><h2>{{ ic('branch') }}{{ bname }} — {{ b.total|money }}</h2>
+<table>{% for k, e in b.income.items() %}<tr><td><span class="itm">{{ ic({'hijama':'hijama','herbs':'leaf','laser':'laser','beauty':'face','director':'shield','product':'cart','course':'course'}.get(k,'services')) }}</span>{{ SECTIONS.get(k,k) }}</td><td><b>{{ e.amount|money }}</b></td></tr>{% endfor %}</table></div>{% endfor %}</div>{% endif %}
 {% include "tiles.html" %}
 <div class="grid" style="margin-bottom:16px">
-<div class="stat"><div class="l">مجموع المداخيل اليوم (كل الفروع)</div><div class="n">{{ grand|money }} {{ cur }}</div></div>
 {% for b in per_branch %}
 <div class="stat"><div class="l"><a href="{{ url_for('branch_view', bid=b.id) }}">{{ b.name }}</a></div><div class="n">{{ b.total|money }} {{ cur }}</div>
 <div class="mut">{{ b.cnt }} عملية · {{ b.pending }} مبلغ ينتظر التحصيل · {{ b.appts }} موعد اليوم</div></div>
@@ -416,13 +428,21 @@ TEMPLATES["reception.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 <div class="card"><h2>مبالغ من الأقسام تنتظر التحصيل ({{ pending|length }})</h2>
 <table><tr><th>#</th><th>الوقت</th>{% if cu.role=='admin' %}<th>الفرع</th>{% endif %}<th>القسم</th><th>الزبون</th><th>البيان</th><th>أرسله</th><th>المبلغ</th><th>التحصيل</th></tr>
 {% for c in pending %}<tr><td>{{ c.id|rid }}</td><td>{{ c.created_at[11:16] }}</td>{% if cu.role=='admin' %}<td>{{ c.branch }}</td>{% endif %}
-<td>{{ DEPTS[c.dept] }}</td><td>{{ c.client or '-' }}</td><td>{{ c.description }}</td><td>{{ c.by_name or '' }}</td><td><b>{{ c.amount|money }}</b></td>
+<td>{{ DEPTS[c.dept] }}</td><td>{{ c.client or '-' }}</td><td>{{ c.description }}</td><td>{{ c.by_name or '' }}</td>
+<td><b>{{ (c.amount - (c.discount or 0))|money }}</b>{% if c.discount %}<div><span class="tag" style="background:#e2f5e9;color:#145c32">تخفيض موافق عليه {{ c.discount|money }}</span></div><div class="mut" style="text-decoration:line-through">{{ c.amount|money }}</div>{% endif %}
+{% if c.req %}<div><span class="tag amber">⏳ {{ c.req }} — بانتظار المديرة</span></div>{% endif %}</td>
 <td><form method="post" action="{{ url_for('charge_pay', chid=c.id) }}" style="display:inline-flex;gap:4px;flex-wrap:wrap">
 {% if not locked %}<input name="discount" placeholder="تخفيض" style="width:70px" title="تخفيض (بإذن المديرة)">{% endif %}
-<input name="paid" value="{{ '%g'|format(c.amount) }}" style="width:85px" title="المبلغ المدفوع الآن — إذا كان أقل يبقى الباقي دينًا على الزبون">
+<input name="paid" value="{{ '%g'|format(c.amount - (c.discount or 0)) }}" style="width:85px" title="المبلغ المدفوع الآن — إذا كان أقل يبقى الباقي دينًا على الزبون">
 <select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
 <button class="btn sm">استلام المبلغ</button></form>
-<form method="post" action="{{ url_for('charge_cancel', chid=c.id) }}" style="display:inline" onsubmit="return confirm('إلغاء هذا المبلغ؟')"><button class="btn red sm">إلغاء</button></form></td></tr>
+{% if cu.role=='admin' %}<form method="post" action="{{ url_for('charge_cancel', chid=c.id) }}" style="display:inline" onsubmit="return confirm('إلغاء هذا المبلغ؟')"><button class="btn red sm">إلغاء</button></form>
+{% elif not c.req %}<details style="display:inline-block"><summary class="btn light sm" style="list-style:none">طلب تخفيض / إلغاء</summary>
+<div style="background:#fff;border:1px solid #e0d2b8;border-radius:10px;padding:8px;margin-top:4px">
+<form method="post" action="{{ url_for('approval_request') }}" style="display:flex;gap:4px;flex-wrap:wrap"><input type="hidden" name="kind" value="discount"><input type="hidden" name="ref_id" value="{{ c.id }}">
+<input name="amount" type="number" min="1" step="any" placeholder="مبلغ التخفيض" style="width:110px" required><input name="reason" placeholder="السبب" style="width:140px"><button class="btn sm">طلب تخفيض</button></form>
+<form method="post" action="{{ url_for('charge_cancel', chid=c.id) }}" style="display:flex;gap:4px;margin-top:6px"><input name="reason" placeholder="سبب الإلغاء" style="width:180px" required><button class="btn red sm">طلب إلغاء</button></form>
+<div class="mut" style="font-size:12px">يوصل للمديرة، والجواب يبان هنا.</div></div></details>{% endif %}</td></tr>
 {% else %}<tr><td colspan="9" class="mut">لا توجد مبالغ معلقة</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>{% if cu.role=='admin' %}عمليات اليوم — المجموع: {{ total|money }} {{ cur }}{% else %}الوصولات التي سلّمتها اليوم (لإعادة الطباعة){% endif %}</h2>
 <table><tr><th>الوصل</th><th>الوقت</th><th>الزبون</th><th>النوع</th><th>البيان</th><th>الدفع</th><th>المبلغ</th></tr>
@@ -534,6 +554,9 @@ TEMPLATES["receipt.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="mut" style="text-align:center">طريقة الدفع: {{ METHODS.get(p.method, p.method) }} — استلمه: {{ p.by_name or '' }}</div>
 <div class="row noprint" style="justify-content:center;margin-top:14px"><button class="btn" onclick="window.print()">طباعة</button>
 <a class="btn light" href="{{ url_for('reception') if can_collect else url_for('dashboard') }}">رجوع</a>
+{% if cu.role!='admin' and not p.cancelled %}<details class="noprint" style="margin-top:10px"><summary class="btn light sm" style="list-style:none">طلب إلغاء هذا الوصل من المديرة</summary>
+<form method="post" action="{{ url_for('approval_request') }}" class="row" style="margin-top:6px"><input type="hidden" name="kind" value="cancel_payment"><input type="hidden" name="ref_id" value="{{ p.id }}">
+<input name="reason" placeholder="سبب الإلغاء" required style="min-width:200px"><button class="btn red sm">إرسال الطلب</button></form></details>{% endif %}
 {% if cu.role=='admin' and not p.cancelled %}<form method="post" action="{{ url_for('payment_cancel', pid=p.id) }}" onsubmit="return confirm('إلغاء هذه الدفعة؟ سيُرجع المخزون إن كانت بيعًا')"><button class="btn red">إلغاء الدفعة</button></form>{% endif %}</div>
 </div>{% endblock %}"""
 
@@ -792,6 +815,12 @@ TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>التنبيه قبل انتهاء الصلاحية بـ (يوم)<input name="expiry_days" value="{{ s.expiry_days }}" style="width:80px"></label>
 <label>هاتف المدير (لرسالة التنبيه)<input name="manager_phone" value="{{ s.manager_phone }}" placeholder="05xxxxxxxx"></label></div>
 <p><label><input type="checkbox" name="stock_sms_enabled" value="1" {{ 'checked' if s.stock_sms_enabled=='1' }}> إرسال رسالة SMS للمدير كل صباح بالمنتجات التي قاربت على النفاد</label></p></div>
+<div class="card" id="dir"><h2>{{ ic('phone') }}رسائل للمديرة في هاتفها</h2>
+<p class="mut">تحتاج تفعيل بوابة SMS فوق، ورقم هاتف المديرة في خانة «هاتف المدير».</p>
+<p><label><input type="checkbox" name="daily_summary" value="1" {{ 'checked' if s.daily_summary=='1' }}> ملخص اليوم كل ليلة (مداخيل كل فرع، المصاريف، فرق الصندوق، الطلبات والتنبيهات)</label>
+<label style="display:inline-flex;margin-inline-start:12px">في الساعة<input type="time" name="daily_summary_time" value="{{ s.daily_summary_time or '21:00' }}" style="width:110px"></label></p>
+<p><label><input type="checkbox" name="approvals_sms" value="1" {{ 'checked' if s.approvals_sms=='1' }}> رسالة فورية كي يطلب عامل تخفيض أو إلغاء</label></p>
+<p><button class="btn light sm" formaction="{{ url_for('summary_test') }}" formmethod="post">إرسال ملخص اليوم الآن (تجربة)</button></p></div>
 {% if not NODE %}<div class="card"><h2>ربط حاسوب فرع (العمل بدون إنترنت)</h2>
 <p>مفتاح المزامنة: <code dir="ltr" style="background:#efe2cf;padding:3px 8px;border-radius:6px">{{ s.sync_key }}</code></p>
 <p class="mut">ضع هذا المفتاح في ملف node.json على حاسوب استقبال الفرع (التفاصيل في اقرأني.txt).</p></div>{% endif %}
@@ -1695,6 +1724,7 @@ TEMPLATES["tiles.html"] = r"""<div class="tiles noprint">
 <a class="tile" href="{{ url_for('clients') }}">{{ ic('clients') }}الزبائن</a>
 <a class="tile" href="{{ url_for('plans') }}">{{ ic('plans') }}خطط الحصص</a>
 {% if cu.role=='admin' %}
+<a class="tile" href="{{ url_for('approvals') }}">{{ ic('key') }}طلبات الموافقة</a>
 <a class="tile" href="{{ url_for('cash_daily') }}">{{ ic('safe') }}الصندوق اليومي</a>
 <a class="tile" href="{{ url_for('reports') }}">{{ ic('reports') }}التقارير والأرباح</a>
 <a class="tile" href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>
@@ -1735,3 +1765,16 @@ TEMPLATES["stock_use.html"] = r"""{% extends "base.html" %}{% block body %}
 {% for h in hist %}<tr><td>{{ h.created_at[:16] }}</td><td>{{ h.name }}</td><td>{{ '%g'|format(-h.qty) }}</td><td>{{ h.reason }}</td><td>{{ h.by_name or '' }}</td>{% if admin %}<td>{{ h.cost|money }}</td>{% endif %}</tr>
 {% else %}<tr><td colspan="6" class="mut">لا يوجد استهلاك في هذه الفترة</td></tr>{% endfor %}</table></div>
 {% endblock %}"""
+
+
+TEMPLATES["approvals.html"] = r"""{% extends "base.html" %}{% block body %}
+<h1>{{ page_icon() }}طلبات الموافقة</h1>
+<p class="mut" style="color:#f3e3c8">العامل ما يقدرش يدير تخفيض ولا يلغي مبلغ أو وصل وحدو: يبعث طلب، وانتي توافقي ولا ترفضي. القرار يوصل لحاسوبو في ثوانٍ.</p>
+<div class="card"><table><tr><th>الوقت</th><th>الفرع</th><th>الطلب</th><th>المبلغ</th><th>التفاصيل</th><th>السبب</th><th>من</th><th>القرار</th></tr>
+{% for r in rows %}<tr{% if r.status!='pending' %} style="opacity:.6"{% endif %}><td>{{ r.requested_at[5:16] }}</td><td>{{ r.branch }}</td>
+<td><b>{{ {'discount':'تخفيض','cancel_charge':'إلغاء مبلغ','cancel_payment':'إلغاء وصل'}[r.kind] }}</b></td><td><b>{{ r.amount|money }}</b></td>
+<td>{{ r.info }}</td><td>{{ r.reason or '' }}</td><td>{{ r.by_name or '' }}</td>
+<td>{% if r.status=='pending' %}<form method="post" style="display:flex;gap:6px"><input type="hidden" name="id" value="{{ r.id }}">
+<button class="btn sm" name="decision" value="approved">✓ موافقة</button><button class="btn red sm" name="decision" value="rejected">✗ رفض</button></form>
+{% elif r.status=='approved' %}<span class="tag" style="background:#e2f5e9;color:#145c32">موافق</span>{% else %}<span class="tag red">مرفوض</span>{% if r.note %} <span class="mut">{{ r.note }}</span>{% endif %}{% endif %}</td></tr>
+{% else %}<tr><td colspan="8" class="mut">لا توجد طلبات</td></tr>{% endfor %}</table></div>{% endblock %}"""

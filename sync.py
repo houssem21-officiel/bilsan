@@ -25,7 +25,7 @@ SYNC_TABLES = ["branches", "departments", "posts", "users", "services", "product
                "appointments", "plans", "charges", "payments", "sale_items", "stock_moves",
                "employees", "attendance", "grants", "visits", "visit_items", "courses", "course_trainees",
                "client_notes", "client_photos", "perms", "audit", "cash_days", "expenses",
-               "suppliers", "purchases", "purchase_items"]
+               "suppliers", "purchases", "purchase_items", "approvals"]
 # جداول أضيفت للمزامنة في النسخة 19.5 (المشتريات): تحتاج تحويل البيانات القديمة مرة واحدة
 V2_TABLES = ["suppliers", "purchases", "purchase_items"]
 # جداول عامة يرسلها المركزي كاملة للفرع
@@ -33,7 +33,7 @@ CATALOG = ["branches", "departments", "posts", "users", "services", "products", 
            "suppliers"]
 # جداول خاصة بفرع (فيها branch_id)
 BRANCH_OWNED = ["appointments", "plans", "charges", "payments", "stock_moves", "employees", "visits", "courses", "client_photos", "audit", "cash_days", "expenses",
-                "purchases"]
+                "purchases", "approvals"]
 # جداول يرسلها الفرع للمركزي فقط (مصاريف المديرة وسجل العمليات لا تنزل إلى حاسوب الفرع)
 PUSH_ONLY = {"audit", "expenses"}
 # جداول تابعة عبر جدول آخر
