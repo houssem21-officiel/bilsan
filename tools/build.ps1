@@ -12,6 +12,9 @@ pyinstaller --noconfirm --clean --noconsole --onedir --name Bilsan `
   --icon static\bilsan.ico --add-data "static;static" --add-data "VERSION;." --add-data "i18n_dict.json;." `
   --hidden-import waitress --collect-submodules waitress launcher.py
 if (!(Test-Path dist\Bilsan\Bilsan.exe)) { throw "PyInstaller failed" }
+$dict = Get-ChildItem -Recurse dist\Bilsan -Filter i18n_dict.json | Select-Object -First 1
+if (!$dict) { throw "i18n_dict.json missing" }
+Write-Host "translations: $($dict.FullName)"
 # ملف التحديث التلقائي (يوضع مع الحاسوب المركزي)
 New-Item -ItemType Directory -Force dist\update | Out-Null
 Compress-Archive -Path dist\Bilsan\* -DestinationPath "dist\update\Bilsan-update-$ver.zip" -Force
