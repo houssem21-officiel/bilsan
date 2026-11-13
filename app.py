@@ -131,6 +131,7 @@ CREATE TABLE IF NOT EXISTS purchases(id INTEGER PRIMARY KEY, supplier_id INTEGER
     status TEXT DEFAULT 'ordered', notes TEXT, created_by INTEGER, created_at TEXT, received_at TEXT);
 CREATE TABLE IF NOT EXISTS purchase_items(id INTEGER PRIMARY KEY, purchase_id INTEGER, product_id INTEGER,
     qty REAL, unit_cost REAL);
+CREATE TABLE IF NOT EXISTS service_materials(id INTEGER PRIMARY KEY, service_id INTEGER, product_id INTEGER, qty REAL DEFAULT 1);
 CREATE TABLE IF NOT EXISTS perms(id INTEGER PRIMARY KEY, branch_id INTEGER, role TEXT, perm TEXT, enabled INTEGER,
     UNIQUE(branch_id, role, perm));
 CREATE TABLE IF NOT EXISTS audit(id INTEGER PRIMARY KEY, branch_id INTEGER, user_id INTEGER, action TEXT,
@@ -500,6 +501,7 @@ PERMS = [
     ("stock_alerts", "تنبيهات المخزون", ("reception",)),
     ("products_edit", "إضافة المنتجات وتعديلها وتعديل المخزون", ("reception",)),
     ("sale_prices", "تعديل أسعار بيع المنتجات", ("reception",)),
+    ("cost_prices", "إدخال أسعار الشراء ورؤيتها (المنتجات والمخزون)", ("reception",)),
     ("purchases", "إدخال فاتورة شراء (استلام سلعة)", ("reception",)),
     ("stock_use", "تسجيل استهلاك المواد (مواد العمل)", ("reception", "laser", "beauty")),
     ("expenses", "إخراج مبلغ من الصندوق (مصروف)", ()),
@@ -1758,6 +1760,7 @@ def products():
     u = current_user()
     admin = u["role"] == "admin"
     can_price = admin or has_perm("sale_prices")
+    can_cost = admin or has_perm("cost_prices")
     branches = active_branches() if admin else [b for b in active_branches() if b["id"] == u["branch_id"]]
     if request.method == "POST":
         pid = request.form.get("id")
@@ -1767,7 +1770,8 @@ def products():
             flash("اسم المنتج مطلوب", "err")
             return redirect(url_for("products"))
         price = fnum(request.form.get("price")) if can_price else (old["price"] if old else 0)
-        cost = fnum(request.form.get("cost_price")) if admin else (old["cost_price"] if old else 0) or 0
+        cost = (fnum(request.form.get("cost_price")) if can_cost and request.form.get("cost_price", "") != ""
+                else (old["cost_price"] if old else 0)) or 0
         usage = request.form.get("usage") if request.form.get("usage") in PRODUCT_USAGE else "sale"
         if usage == "use" and not can_price:
             price = old["price"] if old else 0
@@ -1778,6 +1782,9 @@ def products():
             if old["price"] != price:
                 audit("تغيير سعر منتج", f"{name}: {old['price']:g} ← {price:g}")
                 note = f"السعر تبدّل: {old['price']:g} ← {price:g}"
+            if (old["cost_price"] or 0) != cost:
+                audit("تغيير سعر شراء", f"{name}: {(old['cost_price'] or 0):g} ← {cost:g}")
+                note = ((note + " — ") if note else "") + f"سعر الشراء تبدّل: {(old['cost_price'] or 0):g} ← {cost:g}"
             db.execute("UPDATE products SET name=?,barcode=?,category=?,price=?,expiry=?,active=?,cost_price=? WHERE id=?",
                        vals + (pid,))
             if note and not admin:
@@ -1826,7 +1833,7 @@ def products():
         WHERE p.needs_review=1 ORDER BY p.id DESC""").fetchall() if admin else []
     return render_template("products.html", rows=rows, branches=branches, show=show, stock=stock, edit=edit,
                            br=br, q=q, soon=soon, default_min=setting("default_min_qty"), review=review,
-                           can_price=can_price, admin=admin, usage=usage, counts=counts)
+                           can_price=can_price, can_cost=can_cost, admin=admin, usage=usage, counts=counts)
 
 
 @app.route("/api/products/quick", methods=["POST"])
@@ -1969,6 +1976,17 @@ def product_stock(pid):
     if current_user()["role"] != "admin" and bid != current_user()["branch_id"]:
         abort(403)  # الاستقبال يعدّل مخزون فرعه فقط
     q = fnum(request.form.get("qty"))
+    cst = request.form.get("cost", "").strip()
+    if cst and q > 0 and (current_user()["role"] == "admin" or has_perm("cost_prices")):
+        p = db.execute("SELECT name, cost_price FROM products WHERE id=?", (pid,)).fetchone()
+        new = fnum(cst)
+        if p and new >= 0 and new != (p["cost_price"] or 0):
+            db.execute("UPDATE products SET cost_price=? WHERE id=?", (new, pid))
+            audit("تغيير سعر شراء", f"{p['name']}: {(p['cost_price'] or 0):g} ← {new:g} (عند إدخال سلعة)", bid)
+            if current_user()["role"] != "admin":
+                db.execute("UPDATE products SET needs_review=1, review_note=?, added_by=? WHERE id=?",
+                           (f"سعر الشراء تبدّل: {(p['cost_price'] or 0):g} ← {new:g}", current_user()["id"], pid))
+            flash("تم تحديث سعر الشراء", "ok")
     if q:
         audit("تعديل مخزون", f"منتج {pid}: {q:+g} — {branch_name(bid)}", bid)
         move_stock(db, pid, bid, q,
@@ -2793,11 +2811,10 @@ def visit_view(vid):
         ORDER BY p.name""", (v["branch_id"],)).fetchall()
     vnotes = db.execute("""SELECT n.*, u.full_name AS by_name FROM client_notes n LEFT JOIN users u ON u.id=n.created_by
         WHERE n.client_id=? ORDER BY n.id DESC LIMIT 8""", (v["client_id"],)).fetchall() if has_perm("medical") else []
-    mats_list = db.execute("""SELECT p.id, p.name, COALESCE(s.qty,0) AS qty FROM products p LEFT JOIN stock s
-        ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1 AND p.usage IN ('use','both')
-        ORDER BY p.usage='both', p.name""", (v["branch_id"],)).fetchall()
+    mats_list = work_materials(db, v["branch_id"])
     return render_template("visit_view.html", v=v, items=items, total=total, services=services_for(v["branch_id"]),
                            vnotes=vnotes, eco=session_economics(db, v, items), mats_list=mats_list,
+                           mats_default=visit_default_mats(db, v, items),
                            prods=prods, can_treat=can_treat, can_edit=can_edit)
 
 
@@ -3486,15 +3503,20 @@ def purchase_view(pid):
         act = f.get("action")
         if act == "receive" and p["status"] == "ordered":
             can_price = u["role"] == "admin" or has_perm("sale_prices")
+            can_cost = u["role"] == "admin" or has_perm("cost_prices")
             changed = []
             for i in items:
                 q = fnum(f.get(f"rq_{i['id']}"), i["qty"])  # الكمية التي وصلت فعلًا (قد تكون أقل)
-                c = fnum(f.get(f"rc_{i['id']}"), i["unit_cost"])  # سعر الشراء: اختياري
+                c = fnum(f.get(f"rc_{i['id']}"), i["unit_cost"]) if can_cost else i["unit_cost"]  # سعر الشراء: اختياري
+                if not c:
+                    c = i["cost_price"] or 0  # ما كتبوش: نخلّيو سعر الشراء القديم
                 db.execute("UPDATE purchase_items SET qty=?, unit_cost=? WHERE id=?", (q, c, i["id"]))
                 if q > 0:
                     move_stock(db, i["product_id"], p["branch_id"], q, f"شراء — طلبية {rid_filter(pid)}", u["id"])
-                    if c > 0:
+                    if c > 0 and c != (i["cost_price"] or 0):
                         db.execute("UPDATE products SET cost_price=? WHERE id=?", (c, i["product_id"]))
+                        if u["role"] != "admin":
+                            changed.append(f"{i['name']} (شراء): {(i['cost_price'] or 0):g} ← {c:g}")
                 sp = f.get(f"sp_{i['id']}")
                 if can_price and sp not in (None, "") and fnum(sp) > 0 and fnum(sp) != (i["price"] or 0):
                     new = fnum(sp)
@@ -3504,7 +3526,7 @@ def purchase_view(pid):
                         db.execute("UPDATE products SET needs_review=1, review_note=?, added_by=? WHERE id=?",
                                    (f"السعر تبدّل عند الاستلام: {(i['price'] or 0):g} ← {new:g}", u["id"], i["product_id"]))
             if changed:
-                audit("تغيير سعر بيع عند الاستلام", f"طلبية {rid_filter(pid)}: " + "، ".join(changed), p["branch_id"])
+                audit("تغيير أسعار عند الاستلام", f"طلبية {rid_filter(pid)}: " + "، ".join(changed), p["branch_id"])
             db.execute("UPDATE purchases SET status='received', received_at=? WHERE id=?", (now_str(), pid))
             amount = fnum(f.get("paid_now")) if has_perm("expenses") else 0
             if amount > 0:
@@ -4074,13 +4096,64 @@ def services():
                        (max(1, int(fnum(request.form.get("pkg_sessions"), 1))), int(fnum(request.form.get("pkg_interval"), 0)),
                         fnum(request.form.get("pkg_total")),
                         "full" if request.form.get("pkg_pay") == "full" else "session", pkg_sid))
+            if request.form.get("mats_form"):
+                save_service_mats(db, pkg_sid, request.form.getlist("sm_id"), request.form.getlist("sm_qty"))
         db.commit()
         return redirect(url_for("services"))
     rows = db.execute("""SELECT s.*, b.name AS branch FROM services s LEFT JOIN branches b ON b.id=s.branch_id
         ORDER BY s.active DESC, s.dept, s.name""").fetchall()
     edit = db.execute("SELECT * FROM services WHERE id=?", (request.args.get("edit"),)).fetchone() \
         if request.args.get("edit") else None
-    return render_template("services.html", rows=rows, edit=edit)
+    smats = {}
+    for r in db.execute("""SELECT sm.service_id, sm.product_id, sm.qty, p.name, COALESCE(p.cost_price,0) AS unit
+            FROM service_materials sm JOIN products p ON p.id=sm.product_id ORDER BY sm.id"""):
+        smats.setdefault(r["service_id"], []).append(r)
+    return render_template("services.html", rows=rows, edit=edit, smats=smats, mat_products=work_materials(db))
+
+
+def work_materials(db, branch_id=None):
+    """مواد العمل (للاستعمال) مع الكمية الموجودة في الفرع."""
+    return db.execute("""SELECT p.id, p.name, COALESCE(p.cost_price,0) AS unit, COALESCE(s.qty,0) AS qty FROM products p
+        LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1 AND p.usage IN ('use','both')
+        ORDER BY p.usage='both', p.name""", (branch_id,)).fetchall()
+
+
+def save_service_mats(db, sid, ids, qtys):
+    """المواد المعتادة لخدمة: تتعمّر وحدها في كل حصة من هذه الخدمة."""
+    want = {}
+    for p, q in zip(ids, qtys):
+        q = fnum(q)
+        if p.lstrip("-").isdigit() and q > 0:
+            want[int(p)] = want.get(int(p), 0) + q
+    old = {r["product_id"]: r for r in db.execute("SELECT * FROM service_materials WHERE service_id=?", (sid,))}
+    for p, r in old.items():
+        if p not in want:
+            db.execute("DELETE FROM service_materials WHERE id=?", (r["id"],))
+        elif r["qty"] != want[p]:
+            db.execute("UPDATE service_materials SET qty=? WHERE id=?", (want[p], r["id"]))
+    for p, q in want.items():
+        if p not in old:
+            db.execute("INSERT INTO service_materials(service_id,product_id,qty) VALUES(?,?,?)", (sid, p, q))
+
+
+def visit_default_mats(db, v, items):
+    """المواد المعتادة لخدمات هذه الحصة (من صفحة الخدمات)، ناقص اللي تسجّل من قبل."""
+    sids = {i["service_id"] for i in items if i["service_id"]}
+    if v["appointment_id"]:
+        r = db.execute("SELECT service_id FROM appointments WHERE id=?", (v["appointment_id"],)).fetchone()
+        if r and r[0]:
+            sids.add(r[0])
+    if not sids:
+        return []
+    out = {}
+    for r in db.execute(f"""SELECT sm.product_id, sm.qty, p.name FROM service_materials sm JOIN products p ON p.id=sm.product_id
+            WHERE p.active=1 AND sm.service_id IN ({",".join("?" * len(sids))}) ORDER BY sm.id""", tuple(sids)):
+        if r["product_id"] in out:
+            out[r["product_id"]]["qty"] += r["qty"]
+        else:
+            out[r["product_id"]] = {"id": r["product_id"], "name": r["name"], "qty": r["qty"]}
+    done = {r[0] for r in db.execute("SELECT product_id FROM stock_moves WHERE visit_id=? AND kind='use'", (v["id"],))}
+    return [m for m in out.values() if m["id"] not in done]
 
 
 # ---------------------------------------------------------------- المستخدمون
