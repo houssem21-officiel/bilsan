@@ -304,6 +304,7 @@ def init_db():
     add_col("expenses", "role", "TEXT")
     add_col("appointments", "confirm_sent_at", "TEXT")
     add_col("appointments", "morning_sent_at", "TEXT")
+    add_col("sms_log", "client_id", "INTEGER")
     add_col("services", "aftercare", "TEXT")
     add_col("users", "lang", "TEXT")
     add_col("stock_moves", "cancelled", "INTEGER DEFAULT 0")
@@ -1525,7 +1526,7 @@ def request_approval(db, kind, ref_id, branch_id, amount, reason, info):
         VALUES(?,?,?,?,?,'pending',?,?,?)""", (branch_id, kind, ref_id, amount, (reason or "").strip()[:300],
                                                 u["id"], now_str(), (info or "")[:300]))
     audit("طلب موافقة", f"{APPROVAL_KINDS[kind]} {amount:g} — {info}", branch_id)
-    if setting("approvals_sms") == "1" and setting("sms_enabled") == "1" and setting("manager_phone"):
+    if AUTO_SMS and setting("approvals_sms") == "1" and setting("sms_enabled") == "1" and setting("manager_phone"):
         msg = f"{setting('center_name')}: طلب {APPROVAL_KINDS[kind]} {amount:g} من {u['full_name'] or u['username']}" \
               + (f" - {reason.strip()}" if (reason or "").strip() else "")
 
@@ -5097,6 +5098,8 @@ def settings():
                 v = "1" if request.form.get("deduct_absence") else "0"
             elif k == "last_stock_sms":
                 continue
+            elif k in ("sms_depts", "sms_hours_before", "sms_morning_hour", "daily_summary_time") and k not in request.form:
+                continue  # لم تعد في الصفحة (الإرسال يدوي)
             elif k == "sms_depts":
                 v = ",".join(request.form.getlist("sms_depts"))
             elif k == "sms_pass" and not request.form.get("sms_pass"):
@@ -5336,6 +5339,9 @@ def sms_fill(tpl, **kw):
         return tpl
 
 
+AUTO_SMS = False  # كل الرسائل يدوية بطلب المديرة
+
+
 def sms_extra_jobs(con):
     s = {r["key"]: r["value"] for r in con.execute("SELECT * FROM settings")}
     if s.get("sms_enabled") != "1":
@@ -5403,66 +5409,122 @@ def sms_extra_jobs(con):
         time.sleep(2)
 
 
+SMS_FILTERS = {"": "كل الزبائن", "tomorrow": "موعدهم غدًا", "today": "موعدهم اليوم",
+               "birthday": "عيد ميلادهم اليوم", "missed": "لم يحضروا موعدهم (آخر 30 يومًا)",
+               "debt": "عليهم ديون"}
+
+
 @app.route("/sms/campaign", methods=["GET", "POST"])
 @login_required("admin")
 def sms_campaign():
+    """إرسال يدوي: المديرة تختار النص وتختار الزبائن واحدًا واحدًا."""
     db = get_db()
     f = request.values
-    q = "SELECT DISTINCT c.id, c.name, c.phone FROM clients c WHERE c.phone IS NOT NULL AND c.phone<>''"
+    today = center_today()
+    q = """SELECT c.id, c.name, c.phone, b.name AS branch, NULL AS start_at, NULL AS aid
+        FROM clients c LEFT JOIN branches b ON b.id=c.branch_id WHERE c.phone IS NOT NULL AND c.phone<>''"""
     args = []
-    if f.get("branch"):
-        q += " AND c.branch_id=?"
-        args.append(f["branch"])
+    kind = f.get("kind", "")
+    if kind in ("tomorrow", "today"):
+        d = (today + timedelta(days=1 if kind == "tomorrow" else 0)).isoformat()
+        q = """SELECT c.id, c.name, c.phone, b.name AS branch, a.start_at, a.id AS aid FROM appointments a
+            JOIN clients c ON c.id=a.client_id JOIN branches b ON b.id=a.branch_id
+            WHERE a.status='scheduled' AND substr(a.start_at,1,10)=? AND c.phone<>''"""
+        args.append(d)
+        if f.get("branch"):
+            q += " AND a.branch_id=?"
+            args.append(f["branch"])
+        if f.get("dept") in DEPTS:
+            q += " AND a.dept=?"
+            args.append(f["dept"])
+    else:
+        if kind == "birthday":
+            q += " AND substr(c.birth_date,6,5)=?"
+            args.append(today.isoformat()[5:])
+        elif kind == "missed":
+            q += " AND c.id IN (SELECT client_id FROM appointments WHERE (missed=1 OR status='missed') AND substr(start_at,1,10)>=?)"
+            args.append((today - timedelta(days=30)).isoformat())
+        elif kind == "debt":
+            q += " AND c.id IN (SELECT client_id FROM charges WHERE status='debt')"
+        if f.get("branch"):
+            q += " AND c.branch_id=?"
+            args.append(f["branch"])
+        if f.get("dept") in DEPTS:
+            q += " AND c.id IN (SELECT client_id FROM payments WHERE cancelled=0 AND dept=?)"
+            args.append(f["dept"])
     if f.get("gender") in ("ذكر", "أنثى"):
         q += " AND c.gender=?"
         args.append(f["gender"])
-    if f.get("since"):
-        q += " AND c.id IN (SELECT client_id FROM payments WHERE cancelled=0 AND substr(created_at,1,10)>=?)"
-        args.append(f["since"])
-    if f.get("dept") in DEPTS:
-        q += " AND c.id IN (SELECT client_id FROM payments WHERE cancelled=0 AND dept=?)"
-        args.append(f["dept"])
-    targets = db.execute(q + " ORDER BY c.name", args).fetchall()
-    msg = f.get("message", "").strip()
+    s = (f.get("q") or "").strip()
+    if s:
+        q += " AND (c.name LIKE ? OR c.phone LIKE ?)"
+        args += [f"%{s}%", f"%{s}%"]
+    rows = db.execute(q + (" ORDER BY a.start_at" if kind in ("tomorrow", "today") else " ORDER BY c.name") + " LIMIT 1000", args).fetchall()
+    msg = (f.get("message") or "").strip()
+    center = setting("center_name")
+
+    def fill(r):
+        kw = dict(name=r["name"], center=center, branch=r["branch"] or "", date="", time="")
+        if r["start_at"]:
+            dt = datetime.strptime(r["start_at"][:16], "%Y-%m-%d %H:%M")
+            kw.update(date=dt.strftime("%d/%m/%Y"), time=dt.strftime("%H:%M"))
+        return sms_fill(msg, **kw)
+
     if request.method == "POST" and f.get("action") == "send":
+        picked = set(request.form.getlist("pick"))
+        extra = [p.strip() for p in re.split(r"[,\s،;]+", f.get("extra", "")) if p.strip()]
+        chosen = [r for r in rows if f"{r['id']}:{r['aid'] or ''}" in picked]
         if not msg:
-            flash("اكتب نص الرسالة", "err")
-        elif not targets:
-            flash("لا يوجد زبائن بهذه الشروط", "err")
+            flash("اكتبي نص الرسالة", "err")
+        elif not chosen and not extra:
+            flash("لم تختاري أي زبون. أشّري على الزبائن في الجدول أو اكتبي أرقامًا", "err")
+        elif setting("sms_enabled") != "1":
+            flash("بوابة الإرسال غير مفعّلة. فعّليها من الإعدادات أولًا", "err")
         else:
-            for c in targets:
+            now = now_str()
+            for r in chosen:
+                db.execute("INSERT INTO sms_log(appointment_id,client_id,phone,message,status,created_at) VALUES(?,?,?,?,'queued',?)",
+                           (r["aid"], r["id"], r["phone"], fill(r), now))
+            for p in extra:
                 db.execute("INSERT INTO sms_log(phone,message,status,created_at) VALUES(?,?,'queued',?)",
-                           (c["phone"], sms_fill(msg, name=c["name"], center=setting("center_name")), now_str()))
+                           (p, sms_fill(msg, name="", center=center, branch="", date="", time=""), now))
             db.commit()
-            flash(f"أُضيفت {len(targets)} رسالة إلى قائمة الإرسال (حوالي 15 رسالة كل دقيقة)", "ok")
+            n = len(chosen) + len(extra)
+            audit("إرسال رسائل SMS", f"{n} رسالة: {msg[:80]}")
+            flash(f"وُضعت {n} رسالة في قائمة الإرسال، وتخرج من الهاتف تباعًا (حوالي 15 رسالة في الدقيقة). يمكنك إيقافها من صفحة رسائل SMS.", "ok")
             return redirect(url_for("sms_page"))
-    return render_template("sms_campaign.html", targets=targets, f=f, msg=msg,
-                           sample=sms_fill(msg, name=targets[0]["name"], center=setting("center_name")) if msg and targets else "")
+    tpls = {"reminder": setting("sms_template"), "morning": setting("sms_morning_template"),
+            "confirm": setting("sms_confirm_template"), "birthday": setting("sms_birthday_template")}
+    return render_template("sms_campaign.html", rows=rows, f=f, msg=msg, kind=kind, tpls=tpls, SMS_FILTERS=SMS_FILTERS,
+                           sample=fill(rows[0]) if msg and rows else "")
+
+
+def sms_send_queue(con):
+    """يرسل الرسائل التي اختارتها المديرة بنفسها (لا شيء يُرسل تلقائيًا): 15 رسالة كل دقيقة."""
+    if con.execute("SELECT value FROM settings WHERE key='sms_enabled'").fetchone()["value"] != "1":
+        return
+    for q in con.execute("SELECT * FROM sms_log WHERE status='queued' ORDER BY id LIMIT 15").fetchall():
+        if con.execute("SELECT status FROM sms_log WHERE id=?", (q["id"],)).fetchone()["status"] != "queued":
+            continue  # أوقفتها المديرة
+        ok, resp = send_sms(con, q["phone"], q["message"])
+        con.execute("UPDATE sms_log SET status=?, response=?, created_at=? WHERE id=?",
+                    ("sent" if ok else "failed", resp, now_str(), q["id"]))
+        if ok and q["appointment_id"]:
+            con.execute("UPDATE appointments SET sms_sent_at=? WHERE id=?", (now_str(), q["appointment_id"]))
+        con.commit()
+        time.sleep(2)
 
 
 def reminder_loop():
-    """يفحص كل دقيقة المواعيد القريبة ويرسل التذكير تلقائيًا."""
+    """الإرسال يدوي بالكامل: هذه الحلقة ترسل فقط الرسائل التي وضعتها المديرة في قائمة الإرسال."""
     while True:
         try:
-            with app.app_context():
-                stock_sms_check()
-                daily_summary_check()
-        except Exception as e:
-            print("stock sms error:", e)
-        try:
             con = connect()
-            if con.execute("SELECT value FROM settings WHERE key='sms_enabled'").fetchone()["value"] == "1":
-                for a in due_reminders(con):
-                    # لا نعيد المحاولة تلقائيًا لنفس الموعد أكثر من 3 مرات
-                    fails = con.execute("SELECT COUNT(*) n FROM sms_log WHERE appointment_id=? AND status='failed'",
-                                        (a["id"],)).fetchone()["n"]
-                    if fails < 3:
-                        send_reminder(con, a)
-            sms_extra_jobs(con)
+            sms_send_queue(con)
             con.close()
         except Exception as e:
-            print("reminder error:", e)
-        time.sleep(60)
+            print("sms error:", e)
+        time.sleep(30)
 
 
 @app.route("/sms", methods=["GET", "POST"])
@@ -5470,23 +5532,25 @@ def reminder_loop():
 def sms_page():
     db = get_db()
     if request.method == "POST":
-        if request.form.get("action") == "test":
+        act = request.form.get("action")
+        if act == "test":
             ok, resp = send_sms(db, request.form.get("phone"), "رسالة تجريبية من " + setting("center_name"))
             flash(("تم الإرسال: " if ok else "فشل الإرسال: ") + resp[:200], "ok" if ok else "err")
-        elif request.form.get("action") == "send":
-            a = db.execute("""SELECT a.*, c.name AS client, c.phone, b.name AS branch FROM appointments a
-                JOIN clients c ON c.id=a.client_id JOIN branches b ON b.id=a.branch_id WHERE a.id=?""",
-                           (request.form.get("aid"),)).fetchone()
-            if a:
-                ok = send_reminder(db, a)
-                flash("تم إرسال التذكير" if ok else "فشل الإرسال، راجع السجل", "ok" if ok else "err")
+        elif act == "stop":
+            n = db.execute("UPDATE sms_log SET status='stopped' WHERE status='queued'").rowcount
+            db.commit()
+            flash(f"أُوقفت {n} رسالة ولن تُرسل", "ok")
+        elif act == "retry":
+            db.execute("UPDATE sms_log SET status='queued' WHERE id=? AND status IN ('failed','stopped')", (request.form.get("lid"),))
+            db.commit()
+            flash("أُعيدت الرسالة إلى قائمة الإرسال", "ok")
         return redirect(url_for("sms_page"))
-    upcoming = due_reminders(db)
-    log = db.execute("""SELECT l.*, c.name AS client FROM sms_log l LEFT JOIN appointments a ON a.id=l.appointment_id
-        LEFT JOIN clients c ON c.id=a.client_id ORDER BY l.id DESC LIMIT 100""").fetchall()
+    log = db.execute("""SELECT l.*, COALESCE(c.name, c2.name) AS client FROM sms_log l
+        LEFT JOIN clients c ON c.id=l.client_id
+        LEFT JOIN appointments a ON a.id=l.appointment_id LEFT JOIN clients c2 ON c2.id=a.client_id
+        ORDER BY l.id DESC LIMIT 200""").fetchall()
     queued = db.execute("SELECT COUNT(*) n FROM sms_log WHERE status='queued'").fetchone()["n"]
-    return render_template("sms.html", upcoming=upcoming, log=log, enabled=setting("sms_enabled") == "1", queued=queued)
-
+    return render_template("sms.html", log=log, enabled=setting("sms_enabled") == "1", queued=queued)
 
 
 # ---------------------------------------------------------------- الحواسيب

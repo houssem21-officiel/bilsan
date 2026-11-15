@@ -1,4 +1,12 @@
 {
+"1. الرسالة": [
+"1. Le message",
+"1. The message"
+],
+"2. اختاري الزبائن": [
+"2. Choisissez les clients",
+"2. Choose the clients"
+],
 "آثار حب الشباب": [
 "Séquelles d’acné",
 "Acne scars"
@@ -146,6 +154,10 @@
 "أرقام أخرى": [
 "Autres chiffres",
 "Other figures"
+],
+"أرقام أخرى (اختياري، افصلي بينها بفاصلة)": [
+"Autres numéros (facultatif, séparés par des virgules)",
+"Other numbers (optional, comma-separated)"
 ],
 "أرمل": [
 "Veuf/Veuve",
@@ -479,6 +491,10 @@
 "Annulées ce jour",
 "Cancelled on this day"
 ],
+"أُوقفت": [
+"Arrêté",
+"Stopped"
+],
 "إبر": [
 "Aiguilles",
 "Needles"
@@ -631,6 +647,10 @@
 "Envoyer à l’accueil",
 "Send to reception"
 ],
+"إرسال للمحددين": [
+"Envoyer aux sélectionnés",
+"Send to selected"
+],
 "إرسال مبلغ إلى الاستقبال": [
 "Envoyer un montant à l’accueil",
 "Send an amount to reception"
@@ -691,6 +711,10 @@
 "Ajouter une nouvelle branche",
 "Add a new branch"
 ],
+"إعادة": [
+"Renvoyer",
+"Resend"
+],
 "إعادة المحاولة الآن": [
 "Réessayer maintenant",
 "Retry now"
@@ -718,6 +742,10 @@
 "إلغاء": [
 "Annuler",
 "Cancel"
+],
+"إلغاء التحديد": [
+"Tout désélectionner",
+"Clear selection"
 ],
 "إلغاء الدفعة": [
 "Annuler le paiement",
@@ -914,6 +942,10 @@
 "إيقاف حاسوب": [
 "Arrêter un ordinateur",
 "Stop a computer"
+],
+"إيقافها كلها": [
+"Tout arrêter",
+"Stop them all"
 ],
 "ا": [
 "a",
@@ -1570,6 +1602,10 @@
 "البرنامج جمع المواد اللي وصلت حد التنبيه": [
 "Le programme a rassemblé les produits ayant atteint le seuil d’alerte",
 "The program gathered the items that reached the alert threshold"
+],
+"البرنامج لا يرسل أي رسالة وحده": [
+"Le programme n’envoie aucun message tout seul",
+"The program sends no message on its own"
 ],
 "البرنامج يحدد تاريخ الحصة الجاية وحدو": [
 "Le programme fixe tout seul la date de la séance suivante",
@@ -2675,6 +2711,10 @@
 "Sélection",
 "Selected"
 ],
+"المحددون": [
+"Sélectionnés",
+"Selected"
+],
 "المحصّل": [
 "Encaissé",
 "Collected"
@@ -3239,6 +3279,10 @@
 "Rechercher",
 "Search"
 ],
+"بحث بالاسم أو الهاتف": [
+"Recherche par nom ou téléphone",
+"Search by name or phone"
+],
 "بحجم ساعي قدره": [
 "d’un volume horaire de",
 "with a duration of"
@@ -3419,6 +3463,10 @@
 "Passerelle d’envoi",
 "Sending gateway"
 ],
+"بوابة الإرسال غير مفعّلة": [
+"La passerelle d’envoi n’est pas activée",
+"The sending gateway is not enabled"
+],
 "بواسطة": [
 "Par",
 "By"
@@ -3478,6 +3526,10 @@
 "تأكيد البيع": [
 "Confirmer la vente",
 "Confirm sale"
+],
+"تأكيد الحجز": [
+"Confirmation de réservation",
+"Booking confirmation"
 ],
 "تأكيد المبلغ المعدود": [
 "Confirmer le montant compté",
@@ -3663,6 +3715,10 @@
 "Mise à jour automatique",
 "Automatic update"
 ],
+"تحديد الكل": [
+"Tout sélectionner",
+"Select all"
+],
 "تحديد غير المسجَّلين": [
 "Sélectionner les non enregistrés",
 "Select unregistered"
@@ -3743,6 +3799,10 @@
 "Rappel des rendez-vous par SMS",
 "Appointment reminders by SMS"
 ],
+"تذكير بموعد": [
+"Rappel de rendez-vous",
+"Appointment reminder"
+],
 "تذكير ثاني صباح نهار الموعد": [
 "Deuxième rappel le matin du rendez-vous",
 "Second reminder on the morning of the appointment"
@@ -3750,6 +3810,18 @@
 "تذكير ثانٍ صباح يوم الموعد": [
 "Deuxième rappel le matin du rendez-vous",
 "Second reminder on the morning of the appointment"
+],
+"تذكير صباح يوم الموعد": [
+"Rappel le matin du rendez-vous",
+"Reminder on the morning of the appointment"
+],
+"تذكير مواعيد الغد": [
+"Rappel des rendez-vous de demain",
+"Remind tomorrow’s appointments"
+],
+"تذكير مواعيد اليوم": [
+"Rappel des rendez-vous d’aujourd’hui",
+"Remind today’s appointments"
 ],
 "تذكيرات مستحقة الآن": [
 "Rappels à envoyer maintenant",
@@ -4106,6 +4178,10 @@
 "تفعيل الإرسال التلقائي": [
 "Activer l’envoi automatique",
 "Enable automatic sending"
+],
+"تفعيل بوابة الإرسال": [
+"Activer la passerelle d’envoi",
+"Enable the sending gateway"
 ],
 "تقدر تبدّلو": [
 "Vous pouvez le changer",
@@ -4571,9 +4647,17 @@
 "Déduit du stock et compté sur la séance",
 "Deducted from stock and counted on the session"
 ],
+"تهنئة أعياد ميلاد اليوم": [
+"Anniversaires du jour",
+"Today’s birthdays"
+],
 "تهنئة الزبائن بعيد ميلادهم": [
 "Souhaiter leur anniversaire aux clients",
 "Wish clients a happy birthday"
+],
+"تهنئة بعيد الميلاد": [
+"Vœux d’anniversaire",
+"Birthday wishes"
 ],
 "تهيّج": [
 "Irritation",
@@ -5394,6 +5478,10 @@
 "رسائل": [
 "Messages",
 "Messages"
+],
+"رسائل SMS (يدوية)": [
+"SMS (manuels)",
+"SMS (manual)"
 ],
 "رسائل أخرى": [
 "Autres messages",
@@ -6295,6 +6383,10 @@
 "sur l’ordinateur d’accueil de la branche",
 "on the branch reception computer"
 ],
+"عليهم ديون": [
+"Avec dettes",
+"With debts"
+],
 "عمال الفرع اليوم": [
 "Employés de la branche aujourd’hui",
 "Branch staff today"
@@ -6386,6 +6478,10 @@
 "عيد ميلاد سعيد وسنة مليئة بالصحة والعافية": [
 "Joyeux anniversaire et une année pleine de santé et de bien-être",
 "Happy birthday and a year full of health and well-being"
+],
+"عيد ميلادهم اليوم": [
+"Anniversaire aujourd’hui",
+"Birthday today"
 ],
 "عُدّ النقود الموجودة في الصندوق الآن واكتب المبلغ": [
 "Comptez l’argent présent dans la caisse maintenant et saisissez le montant",
@@ -6875,6 +6971,10 @@
 "Toutes les prestations",
 "All services"
 ],
+"كل الزبائن": [
+"Tous les clients",
+"All clients"
+],
 "كل الصفحات تتحدث عندما تفعّل المديرة مهمة أو توقفها": [
 "Toutes les pages se mettent à jour quand la directrice active ou désactive une tâche",
 "All pages update when the director turns a task on or off"
@@ -6958,6 +7058,10 @@
 "كل دفعة تدخل الصندوق بوصل": [
 "Chaque paiement entre en caisse avec un reçu",
 "Every payment enters the cash box with a receipt"
+],
+"كل رسالة تخرج لأنك اخترتِها": [
+"chaque message part parce que vous l’avez choisi",
+"each message goes out because you chose it"
 ],
 "كل سطر بند": [
 "Chaque ligne est un article",
@@ -7287,6 +7391,10 @@
 "Aucun conseil écrit pour cette prestation",
 "No advice written for this service"
 ],
+"لا تُرسل أي رسالة تلقائيًا": [
+"Aucun message n’est envoyé automatiquement",
+"No message is sent automatically"
+],
 "لا تُعدّ هنا": [
 "Non compté ici",
 "Not counted here"
@@ -7550,6 +7658,10 @@
 "لم يحضروا": [
 "Pas venus",
 "Didn’t come"
+],
+"لم يحضروا موعدهم (آخر 30 يومًا)": [
+"Absents au rendez-vous (30 derniers jours)",
+"Missed appointment (last 30 days)"
 ],
 "لم يعد ممكنًا": [
 "N’est plus possible",
@@ -8200,8 +8312,8 @@
 "Blood thinner"
 ],
 "من": [
-"de",
-"from"
+"Parmi",
+"From"
 ],
 "من أيام سابقة باقي": [
 "Il reste des jours précédents",
@@ -8447,6 +8559,14 @@
 "Votre prochain rendez-vous",
 "Your next appointment"
 ],
+"موعدهم اليوم": [
+"Rendez-vous aujourd’hui",
+"Appointment today"
+],
+"موعدهم غدًا": [
+"Rendez-vous demain",
+"Appointment tomorrow"
+],
 "موقوف": [
 "Suspendu",
 "Suspended"
@@ -8563,6 +8683,10 @@
 "Texte du rappel du matin",
 "Morning reminder text"
 ],
+"نص جاهز": [
+"Texte prêt",
+"Ready text"
+],
 "نصائح بعد الجلسة": [
 "Conseils après la séance",
 "Aftercare advice"
@@ -8574,6 +8698,10 @@
 "نصف يوم": [
 "Demi-journée",
 "Half day"
+],
+"نصوص جاهزة (تختارينها عند الإرسال)": [
+"Textes prêts (à choisir lors de l’envoi)",
+"Ready texts (chosen when sending)"
 ],
 "نضارة": [
 "Éclat",
@@ -8630,6 +8758,10 @@
 "هاتف المدير": [
 "Téléphone du directeur",
 "Manager’s phone"
+],
+"هاتف المديرة": [
+"Téléphone de la directrice",
+"Director’s phone"
 ],
 "هاذ الشهر": [
 "Ce mois",
@@ -9426,5 +9558,9 @@
 "يُنصح بمراجعة النص مع مختص قانوني": [
 "Il est conseillé de faire relire le texte par un juriste",
 "It is advisable to have the text reviewed by a legal professional"
+],
+"— اكتبي رسالتك —": [
+"— écrivez votre message —",
+"— write your message —"
 ]
 }

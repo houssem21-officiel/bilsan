@@ -886,39 +886,26 @@ TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card"><h2>عام</h2><div class="row">
 <label>اسم المركز<input name="center_name" value="{{ s.center_name }}" style="width:300px"></label>
 <label>العملة<input name="currency" value="{{ s.currency }}" style="width:80px"></label></div></div>
-<div class="card"><h2>تذكير المواعيد برسائل SMS</h2>
-<p><label><input type="checkbox" name="sms_enabled" value="1" {{ 'checked' if s.sms_enabled=='1' }}> تفعيل الإرسال التلقائي</label></p>
-<div class="row">
-<label>إرسال التذكير قبل الموعد بـ (ساعة)<input name="sms_hours_before" value="{{ s.sms_hours_before }}" style="width:80px"></label>
-<label>الأقسام المعنية<span>{% for k,v in DEPTS.items() %}<label style="display:inline;color:inherit"><input type="checkbox" name="sms_depts" value="{{ k }}" {{ 'checked' if k in s.sms_depts.split(',') }}> {{ v }}</label> &nbsp;{% endfor %}</span></label></div>
-<p><label>نص الرسالة<textarea name="sms_template" rows="3">{{ s.sms_template }}</textarea></label></p>
-<p class="mut">المتغيرات المتاحة: {name} اسم الزبون، {center} اسم المركز، {branch} الفرع، {date} التاريخ، {time} الساعة.</p>
-<h2>رسائل أخرى</h2>
-<p><label><input type="checkbox" name="sms_morning" value="1" {{ 'checked' if s.sms_morning=='1' }}> تذكير ثانٍ صباح يوم الموعد</label>
-<label style="display:inline-flex;margin-inline-start:12px">ابتداءً من الساعة<input name="sms_morning_hour" value="{{ s.sms_morning_hour }}" style="width:50px"></label></p>
-<p><label>نص تذكير الصباح<textarea name="sms_morning_template" rows="2">{{ s.sms_morning_template }}</textarea></label></p>
-<p class="mut">وهكذا تصل الزبونة رسالتان: واحدة قبل الموعد (حسب الساعات المكتوبة فوق، مثلا 24 = قبل يوم) وأخرى صباح اليوم نفسه.</p>
-<p><label><input type="checkbox" name="sms_confirm" value="1" {{ 'checked' if s.sms_confirm=='1' }}> رسالة تأكيد للزبون عند تسجيل موعده</label></p>
-<p><label>نص التأكيد<textarea name="sms_confirm_template" rows="2">{{ s.sms_confirm_template }}</textarea></label></p>
-<p><label><input type="checkbox" name="sms_birthday" value="1" {{ 'checked' if s.sms_birthday=='1' }}> تهنئة الزبائن بعيد ميلادهم (صباحًا)</label></p>
-<p><label>نص التهنئة<textarea name="sms_birthday_template" rows="2">{{ s.sms_birthday_template }}</textarea></label></p>
+<div class="card"><h2>رسائل SMS (يدوية)</h2>
+<p class="mut">البرنامج لا يرسل أي رسالة وحده. أنتِ تختارين النص والزبائن من صفحة «رسائل SMS» ← «إرسال رسالة».</p>
 <h2>بوابة الإرسال</h2>
-<p class="mut">الطريقة الأسهل: هاتف أندرويد فيه شريحة (موبيليس / جازي / أوريدو) مع تطبيق «SMS Gateway for Android». ضع هنا الرابط واسم المستخدم وكلمة المرور التي يعطيك إياها التطبيق.</p>
+<p><label><input type="checkbox" name="sms_enabled" value="1" {{ 'checked' if s.sms_enabled=='1' }}> تفعيل بوابة الإرسال</label></p>
+<p class="mut">هاتف أندرويد فيه شريحة مع تطبيق «SMS Gateway for Android» (Cloud server). ضعي هنا اسم المستخدم وكلمة المرور من التطبيق.</p>
 <div class="row">
 <label>رابط البوابة<input name="sms_url" value="{{ s.sms_url }}" style="width:380px" dir="ltr"></label>
 <label>اسم المستخدم<input name="sms_user" value="{{ s.sms_user }}" dir="ltr"></label>
-<label>كلمة المرور<input name="sms_pass" type="password" placeholder="{{ '••••• (محفوظة)' if s.sms_pass else '' }}" dir="ltr"></label></div></div>
+<label>كلمة المرور<input name="sms_pass" type="password" placeholder="{{ '••••• (محفوظة)' if s.sms_pass else '' }}" dir="ltr"></label></div>
+<h2>نصوص جاهزة (تختارينها عند الإرسال)</h2>
+<p><label>تذكير بموعد<textarea name="sms_template" rows="2">{{ s.sms_template }}</textarea></label></p>
+<p><label>تذكير صباح يوم الموعد<textarea name="sms_morning_template" rows="2">{{ s.sms_morning_template }}</textarea></label></p>
+<p><label>تأكيد الحجز<textarea name="sms_confirm_template" rows="2">{{ s.sms_confirm_template }}</textarea></label></p>
+<p><label>تهنئة بعيد الميلاد<textarea name="sms_birthday_template" rows="2">{{ s.sms_birthday_template }}</textarea></label></p>
+<p class="mut">المتغيرات: {name} اسم الزبون، {center} اسم المركز، {branch} الفرع، {date} تاريخ الموعد، {time} ساعة الموعد.</p></div>
 <div class="card"><h2>تنبيهات المخزون</h2><div class="row">
 <label>حد التنبيه الافتراضي للمنتجات الجديدة<input name="default_min_qty" value="{{ s.default_min_qty }}" style="width:80px"></label>
 <label>التنبيه قبل انتهاء الصلاحية بـ (يوم)<input name="expiry_days" value="{{ s.expiry_days }}" style="width:80px"></label>
-<label>هاتف المدير (لرسالة التنبيه)<input name="manager_phone" value="{{ s.manager_phone }}" placeholder="05xxxxxxxx"></label></div>
-<p><label><input type="checkbox" name="stock_sms_enabled" value="1" {{ 'checked' if s.stock_sms_enabled=='1' }}> إرسال رسالة SMS للمدير كل صباح بالمنتجات التي قاربت على النفاد</label></p></div>
-<div class="card" id="dir"><h2>{{ ic('phone') }}رسائل للمديرة في هاتفها</h2>
-<p class="mut">تحتاج تفعيل بوابة SMS فوق، ورقم هاتف المديرة في خانة «هاتف المدير».</p>
-<p><label><input type="checkbox" name="daily_summary" value="1" {{ 'checked' if s.daily_summary=='1' }}> ملخص اليوم كل ليلة (مداخيل كل فرع، المصاريف، فرق الصندوق، الطلبات والتنبيهات)</label>
-<label style="display:inline-flex;margin-inline-start:12px">في الساعة<input type="time" name="daily_summary_time" value="{{ s.daily_summary_time or '21:00' }}" style="width:110px"></label></p>
-<p><label><input type="checkbox" name="approvals_sms" value="1" {{ 'checked' if s.approvals_sms=='1' }}> رسالة فورية عندما يطلب عامل تخفيضًا أو إلغاءً</label></p>
-<p><button class="btn light sm" formaction="{{ url_for('summary_test') }}" formmethod="post">إرسال ملخص اليوم الآن (تجربة)</button></p></div>
+<label>هاتف المديرة<input name="manager_phone" value="{{ s.manager_phone }}" placeholder="05xxxxxxxx"></label></div>
+</div>
 {% if not NODE %}<div class="card"><h2>ربط حاسوب فرع (العمل بدون إنترنت)</h2>
 <p>مفتاح المزامنة: <code dir="ltr" style="background:#efe2cf;padding:3px 8px;border-radius:6px">{{ s.sync_key }}</code></p>
 <p class="mut">ضع هذا المفتاح في ملف node.json على حاسوب استقبال الفرع (التفاصيل في اقرأني.txt).</p></div>{% endif %}
@@ -959,18 +946,21 @@ TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
 
 TEMPLATES["sms.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}رسائل SMS</h1>
-<div class="row" style="margin-bottom:12px"><a class="btn gold" href="{{ url_for('sms_campaign') }}">رسالة جماعية للزبائن</a>{% if queued %}<span class="tag amber">{{ queued }} رسالة في انتظار الإرسال</span>{% endif %}</div>
-{% if not enabled %}<div class="flash err">الإرسال التلقائي غير مفعل. فعّله من <a href="{{ url_for('settings') }}">الإعدادات</a>.</div>{% endif %}
+<p class="mut">لا تُرسل أي رسالة تلقائيًا. كل رسالة تخرج لأنك اخترتِها.</p>
+<div class="row" style="margin-bottom:12px"><a class="btn gold" href="{{ url_for('sms_campaign') }}">✉ إرسال رسالة</a>
+<a class="btn light" href="{{ url_for('sms_campaign', kind='tomorrow') }}">تذكير مواعيد الغد</a>
+<a class="btn light" href="{{ url_for('sms_campaign', kind='today') }}">تذكير مواعيد اليوم</a>
+<a class="btn light" href="{{ url_for('sms_campaign', kind='birthday') }}">تهنئة أعياد ميلاد اليوم</a></div>
+{% if not enabled %}<div class="flash err">بوابة الإرسال غير مفعّلة. فعّليها من <a href="{{ url_for('settings') }}">الإعدادات</a>.</div>{% endif %}
+{% if queued %}<div class="card" style="border-color:#c99a5b"><form method="post" class="row" onsubmit="return confirm('إيقاف كل الرسائل التي لم تُرسل بعد؟')">
+<input type="hidden" name="action" value="stop"><b>{{ queued }} رسالة في انتظار الإرسال (تخرج تباعًا من الهاتف)</b><button class="btn red sm">إيقافها كلها</button></form></div>{% endif %}
 <div class="card"><h2>رسالة تجريبية</h2><form method="post" class="row"><input type="hidden" name="action" value="test">
 <label>رقم الهاتف<input name="phone" placeholder="05xxxxxxxx" required></label><button class="btn">إرسال</button></form></div>
-<div class="card"><h2>تذكيرات مستحقة الآن ({{ upcoming|length }})</h2>
-<table><tr><th>الموعد</th><th>الفرع</th><th>القسم</th><th>الزبون</th><th>الهاتف</th><th></th></tr>
-{% for a in upcoming %}<tr><td>{{ a.start_at }}</td><td>{{ a.branch }}</td><td>{{ DEPTS[a.dept] }}</td><td>{{ a.client }}</td><td>{{ a.phone }}</td>
-<td><form method="post"><input type="hidden" name="action" value="send"><input type="hidden" name="aid" value="{{ a.id }}"><button class="btn sm">إرسال الآن</button></form></td></tr>
-{% else %}<tr><td colspan="6" class="mut">لا توجد تذكيرات مستحقة</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>سجل الرسائل</h2><table><tr><th>الوقت</th><th>الزبون</th><th>الهاتف</th><th>الرسالة</th><th>الحالة</th></tr>
-{% for l in log %}<tr><td>{{ l.created_at[:16] }}</td><td>{{ l.client or '' }}</td><td>{{ l.phone }}</td><td>{{ l.message }}</td>
-<td>{% if l.status=='sent' %}<span class="tag">أُرسلت</span>{% elif l.status=='queued' %}<span class="tag amber">في الانتظار</span>{% else %}<span class="tag red" title="{{ l.response }}">فشل</span>{% endif %}</td></tr>
+{% for l in log %}<tr><td>{{ l.created_at[:16] }}</td><td>{{ l.client or '' }}</td><td dir="ltr">{{ l.phone }}</td><td>{{ l.message }}</td>
+<td>{% if l.status=='sent' %}<span class="tag">أُرسلت</span>{% elif l.status=='queued' %}<span class="tag amber">في الانتظار</span>
+{% else %}{% if l.status=='stopped' %}<span class="tag">أُوقفت</span>{% else %}<span class="tag red" title="{{ l.response }}">فشل</span><div class="mut" style="font-size:13px">{{ (l.response or '')[:120] }}</div>{% endif %}
+<form method="post" style="display:inline"><input type="hidden" name="action" value="retry"><input type="hidden" name="lid" value="{{ l.id }}"><button class="btn light sm">إعادة</button></form>{% endif %}</td></tr>
 {% else %}<tr><td colspan="5" class="mut">لا شيء بعد</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["staff.html"] = r"""{% extends "base.html" %}{% block body %}
@@ -1634,18 +1624,38 @@ background:{{ '#e3efe8' if a.status=='done' else '#fbeedd' if a.status=='schedul
 <p class="mut">المدة حسب الخدمة (تُحدد في «الخدمات والأسعار»). البرنامج يمنع حجز موعدين متداخلين في نفس الغرفة.</p>{% endblock %}"""
 
 TEMPLATES["sms_campaign.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ page_icon() }}رسالة جماعية للزبائن</h1>
-<div class="card"><form method="post">
-<div class="row"><label>الفرع<select name="branch"><option value="">كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if f.get('branch')==b.id|string }}>{{ b.name }}</option>{% endfor %}</select></label>
+<h1>{{ page_icon() }}إرسال رسالة</h1>
+<form method="post" id="smsf">
+<div class="card"><h2>1. الرسالة</h2>
+<div class="row"><label>نص جاهز<select id="tpl" onchange="if(this.value){document.getElementById('msg').value=TPL[this.value];cnt()}">
+<option value="">— اكتبي رسالتك —</option><option value="reminder">تذكير بموعد</option><option value="morning">تذكير صباح الموعد</option>
+<option value="confirm">تأكيد الحجز</option><option value="birthday">تهنئة بعيد الميلاد</option></select></label></div>
+<p><label>نص الرسالة<textarea id="msg" name="message" rows="3" oninput="cnt()" placeholder="مثلاً: {name}، تخفيض 20% على جلسات الليزر هذا الأسبوع في {center}">{{ msg }}</textarea></label></p>
+<p class="mut">{name} اسم الزبون، {center} المركز، {branch} الفرع، {date} و{time} تاريخ الموعد وساعته (عند اختيار «موعدهم غدًا/اليوم»). <b id="len"></b></p></div>
+<div class="card"><h2>2. اختاري الزبائن</h2>
+<div class="row"><label>من<select name="kind">{% for k,v in SMS_FILTERS.items() %}<option value="{{ k }}" {{ 'selected' if kind==k }}>{{ v }}</option>{% endfor %}</select></label>
+<label>الفرع<select name="branch"><option value="">كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if f.get('branch')==b.id|string }}>{{ b.name }}</option>{% endfor %}</select></label>
+<label>القسم<select name="dept"><option value="">الكل</option>{% for k,v in DEPTS.items() %}<option value="{{ k }}" {{ 'selected' if f.get('dept')==k }}>{{ v }}</option>{% endfor %}</select></label>
 <label>الجنس<select name="gender"><option value="">الكل</option>{% for g in ('ذكر','أنثى') %}<option {{ 'selected' if f.get('gender')==g }}>{{ g }}</option>{% endfor %}</select></label>
-<label>زاروا المركز منذ<input type="date" name="since" value="{{ f.get('since','') }}"></label>
-<label>تعاملوا مع قسم<select name="dept"><option value="">الكل</option>{% for k,v in DEPTS.items() %}<option value="{{ k }}" {{ 'selected' if f.get('dept')==k }}>{{ v }}</option>{% endfor %}</select></label></div>
-<p><label>نص الرسالة<textarea name="message" rows="3" placeholder="مثلاً: {name}، بمناسبة الصيف تخفيض 20% على جلسات الليزر في {center}...">{{ msg }}</textarea></label></p>
-<p class="mut">{name} اسم الزبون، {center} اسم المركز. الرسالة الطويلة (أكثر من 70 حرفًا عربيًا) تُحسب أكثر من رسالة.</p>
-<div class="row"><button class="btn light" name="action" value="preview">معاينة وعدّ الزبائن</button>
-<button class="btn gold" name="action" value="send" onclick="return confirm('إرسال الرسالة إلى {{ targets|length }} زبون؟')">إرسال</button></div></form></div>
-<div class="card"><h2>سيستقبلها {{ targets|length }} زبون</h2>{% if sample %}<p>مثال: <i>{{ sample }}</i></p>{% endif %}
-<div class="mut">{% for c in targets[:60] %}{{ c.name }}{{ '، ' if not loop.last }}{% endfor %}{% if targets|length > 60 %} ...{% endif %}</div></div>{% endblock %}"""
+<label>بحث بالاسم أو الهاتف<input name="q" value="{{ f.get('q','') }}"></label>
+<button class="btn light" name="action" value="filter">عرض</button></div>
+<div class="row" style="margin:10px 0"><button type="button" class="btn light sm" onclick="pk(true)">تحديد الكل</button>
+<button type="button" class="btn light sm" onclick="pk(false)">إلغاء التحديد</button><b id="nsel"></b></div>
+<table><tr><th style="width:40px"></th><th>الزبون</th><th>الهاتف</th><th>الفرع</th>{% if kind in ('tomorrow','today') %}<th>الموعد</th>{% endif %}</tr>
+{% for r in rows %}<tr><td><input type="checkbox" name="pick" value="{{ r.id }}:{{ r.aid or '' }}" onchange="ns()" {{ 'checked' if (r.id|string ~ ':' ~ (r.aid or '')) in request.form.getlist('pick') }}></td>
+<td>{{ r.name }}</td><td dir="ltr">{{ r.phone }}</td><td>{{ r.branch or '' }}</td>{% if kind in ('tomorrow','today') %}<td>{{ r.start_at[11:16] }}</td>{% endif %}</tr>
+{% else %}<tr><td colspan="5" class="mut">لا يوجد زبائن بهذه الشروط</td></tr>{% endfor %}</table>
+<p><label>أرقام أخرى (اختياري، افصلي بينها بفاصلة)<input name="extra" value="{{ f.get('extra','') }}" style="width:100%" dir="ltr" placeholder="0661..., 0770..."></label></p></div>
+<div class="card">{% if sample %}<p>مثال: <i>{{ sample }}</i></p>{% endif %}
+<button class="btn gold" name="action" value="send" onclick="return confirm('إرسال الرسالة إلى '+sel()+' شخص؟')">إرسال للمحددين</button></div></form>
+<script>var TPL={{ tpls|tojson }};
+function boxes(){return document.querySelectorAll('input[name=pick]')}
+function sel(){var n=0;boxes().forEach(function(b){if(b.checked)n++});var e=document.querySelector('input[name=extra]').value.split(/[,\s،;]+/).filter(function(x){return x}).length;return n+e}
+function ns(){document.getElementById('nsel').textContent='المحددون: '+sel()}
+function pk(v){boxes().forEach(function(b){b.checked=v});ns()}
+function cnt(){var t=document.getElementById('msg').value,ar=/[\u0600-\u06FF]/.test(t),per=ar?70:160,n=Math.max(1,Math.ceil(t.length/per));
+document.getElementById('len').textContent=t.length+' حرفًا = '+n+' رسالة لكل زبون'}
+document.querySelector('input[name=extra]').addEventListener('input',ns);ns();cnt();</script>{% endblock %}"""
 
 TEMPLATES["suppliers.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}الموردون</h1>
