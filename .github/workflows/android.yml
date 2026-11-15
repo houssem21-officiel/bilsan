@@ -4,6 +4,8 @@ on:
     branches: [main]
     paths: ['android/**', '.github/workflows/android.yml']
   workflow_dispatch:
+permissions:
+  contents: write
 jobs:
   apk:
     runs-on: ubuntu-latest
@@ -23,3 +25,11 @@ jobs:
           cp android/app/build/outputs/apk/release/app-release.apk Bilsan-Director.apk
       - uses: actions/upload-artifact@v4
         with: { name: Bilsan-Director, path: Bilsan-Director.apk }
+      - name: Publish APK branch
+        run: |
+          mkdir out && cp Bilsan-Director.apk out/ && cd out
+          echo "1.${GITHUB_RUN_NUMBER}" > version.txt
+          git init -q -b apk
+          git config user.name "bilsan-build"; git config user.email "build@users.noreply.github.com"
+          git add -A; git commit -q -m "apk ${GITHUB_RUN_NUMBER}"
+          git push -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" apk
