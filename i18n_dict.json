@@ -2691,6 +2691,14 @@
 "Revenus",
 "Income"
 ],
+"المداخيل المقبوضة باقية في الصندوق والتقارير": [
+"Les revenus encaissés restent dans la caisse et les rapports",
+"Collected income remains in the cash box and reports"
+],
+"المداخيل المقبوضة تبقى": [
+"Les revenus encaissés restent",
+"Collected income stays"
+],
 "المداخيل اليومية": [
 "Revenus journaliers",
 "Daily income"
@@ -4023,6 +4031,10 @@
 "Impossible d’atteindre l’ordinateur central",
 "Cannot reach the central computer"
 ],
+"تعذّرت النسخة الاحتياطية قبل الحذف": [
+"La sauvegarde avant suppression a échoué",
+"The backup before deleting failed"
+],
 "تعذّرت النسخة الاحتياطية قبل المسح": [
 "La sauvegarde avant effacement a échoué",
 "The backup before wiping failed"
@@ -4411,6 +4423,10 @@
 "Prime supprimée",
 "Bonus deleted"
 ],
+"تم حذف جميع الزبائن": [
+"Tous les clients ont été supprimés",
+"All clients were deleted"
+],
 "تم حفظ": [
 "Enregistré",
 "Saved"
@@ -4623,6 +4639,10 @@
 "Le plan est enregistré au prix normal",
 "The plan is saved at the normal price"
 ],
+"تُصنع نسخة احتياطية تلقائيًا قبل الحذف": [
+"Une sauvegarde est faite automatiquement avant la suppression",
+"A backup is made automatically before deleting"
+],
 "تُصنع نسخة احتياطية تلقائيًا قبل المسح": [
 "Une sauvegarde est faite automatiquement avant l’effacement",
 "A backup is made automatically before wiping"
@@ -4820,8 +4840,8 @@
 "Enter the amount here; it appears at reception to collect from the client"
 ],
 "حذف": [
-"Supprimer",
-"Delete"
+"supprimer",
+"delete"
 ],
 "حذف الحصة": [
 "Supprimer la séance",
@@ -4834,6 +4854,14 @@
 "حذف بند من زيارة": [
 "Supprimer une ligne d’une visite",
 "Delete an item from a visit"
+],
+"حذف جميع الزبائن": [
+"Supprimer tous les clients",
+"Delete all clients"
+],
+"حذف جميع الزبائن نهائيًا من كل الحواسيب": [
+"Supprimer définitivement tous les clients de tous les ordinateurs",
+"Permanently delete all clients from all computers"
 ],
 "حذف حصة": [
 "Supprimer une séance",
@@ -5070,6 +5098,10 @@
 "حُرّر بـ": [
 "Établi à",
 "Issued at"
+],
+"حُفظت نسخة احتياطية قبل الحذف": [
+"Une sauvegarde a été faite avant la suppression",
+"A backup was saved before deleting"
 ],
 "حُفظت نسخة احتياطية قبل المسح في صفحة": [
 "Une sauvegarde d’avant l’effacement est dans la page",
@@ -6595,6 +6627,10 @@
 "Clé USB ou dossier",
 "USB stick or folder"
 ],
+"فلم يُحذف شيء": [
+"donc rien n’a été supprimé",
+"so nothing was deleted"
+],
 "فلم يُمسح شيء": [
 "donc rien n’a été effacé",
 "so nothing was erased"
@@ -6626,6 +6662,10 @@
 "في الساعة": [
 "à l’heure",
 "at the time"
+],
+"في الصندوق والتقارير لكن دون اسم الزبون": [
+"dans la caisse et les rapports, sans nom de client",
+"in the cash box and reports, without the client name"
 ],
 "في العلاج": [
 "En soin",
@@ -7519,6 +7559,10 @@
 "Non défini",
 "Not set"
 ],
+"لم يُحذف شيء": [
+"rien n’a été supprimé",
+"nothing was deleted"
+],
 "لم يُسجَّل": [
 "Non enregistré",
 "Not recorded"
@@ -8038,6 +8082,10 @@
 "مع عبارة": [
 "avec la mention",
 "with the note"
+],
+"مع ملفاتهم الطبية وصورهم وبطاقات البشرة ومواعيدهم وخطط الحصص والزيارات والمبالغ غير المدفوعة": [
+"avec leurs dossiers médicaux, photos, fiches peau, rendez-vous, plans de séances, visites et montants impayés",
+"with their medical files, photos, skin cards, appointments, session plans, visits and unpaid amounts"
 ],
 "معاينة وعدّ الزبائن": [
 "Consultation et comptage des clients",
@@ -9162,6 +9210,10 @@
 "يحدد البرنامج تاريخ الحصة التالية تلقائيًا": [
 "Le programme fixe tout seul la date de la séance suivante",
 "The program sets the next session date by itself"
+],
+"يحذف كل الزبائن من كل الفروع وكل الحواسيب": [
+"Supprime tous les clients de toutes les branches et de tous les ordinateurs",
+"Deletes all clients from all branches and computers"
 ],
 "يحصّل": [
 "Encaisse",

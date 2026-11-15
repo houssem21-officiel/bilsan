@@ -4466,6 +4466,42 @@ def factory_reset():
     flash("تم مسح كل البيانات، والبرنامج يبدأ من الصفر. حُفظت نسخة احتياطية قبل المسح في صفحة «النسخ الاحتياطي».", "ok")
     return redirect(url_for("dashboard"))
 
+
+@app.route("/clients/delete-all", methods=["POST"])
+@login_required("admin")
+def clients_delete_all():
+    """حذف جميع الزبائن (من حاسوب المديرة فقط، بكلمة مرورها).
+    تُحذف ملفاتهم ومواعيدهم وخططهم وزياراتهم والمبالغ غير المدفوعة،
+    وتبقى المداخيل المقبوضة في الصندوق والتقارير لكن بدون اسم زبون."""
+    if sync.NODE:
+        abort(403)
+    db = get_db()
+    u = current_user()
+    if not check_password_hash(u["pw_hash"], request.form.get("password", "")):
+        flash("كلمة المرور غير صحيحة، لم يُحذف شيء", "err")
+        return redirect(url_for("clients"))
+    if request.form.get("confirm", "").strip() != "حذف":
+        flash("اكتبي كلمة «حذف» للتأكيد، لم يُحذف شيء", "err")
+        return redirect(url_for("clients"))
+    ok, msg = backup.run_backup(connect, DB_PATH, "قبل حذف الزبائن")
+    if not ok:
+        flash("تعذّرت النسخة الاحتياطية قبل الحذف، فلم يُحذف شيء: " + msg, "err")
+        return redirect(url_for("clients"))
+    n = db.execute("SELECT COUNT(*) FROM clients").fetchone()[0]
+    for t in ("client_notes", "client_photos", "skin_cards", "appointments", "plans", "course_trainees"):
+        db.execute(f"DELETE FROM {t}")
+    db.execute("UPDATE stock_moves SET visit_id=NULL WHERE visit_id IS NOT NULL")
+    db.execute("DELETE FROM visit_items")
+    db.execute("DELETE FROM visits")
+    db.execute("DELETE FROM charges WHERE status IN ('pending','debt','cancelled')")
+    db.execute("UPDATE charges SET client_id=NULL, visit_id=NULL WHERE client_id IS NOT NULL OR visit_id IS NOT NULL")
+    db.execute("UPDATE payments SET client_id=NULL WHERE client_id IS NOT NULL")
+    db.execute("DELETE FROM clients")
+    audit("حذف جميع الزبائن", f"{n} زبون — نسخة قبل الحذف: {msg}")
+    db.commit()
+    flash(f"تم حذف جميع الزبائن ({n}). المداخيل المقبوضة باقية في الصندوق والتقارير. حُفظت نسخة احتياطية قبل الحذف.", "ok")
+    return redirect(url_for("clients"))
+
 @app.route("/backup/download/<name>")
 @login_required("admin")
 def backup_download(name):

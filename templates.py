@@ -382,6 +382,13 @@ TEMPLATES["clients.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 <div class="card"><form class="row"><label>بحث<input name="q" value="{{ s }}" placeholder="الاسم أو الهاتف"></label><button class="btn">بحث</button>
 <a class="btn light" href="#" onclick="document.getElementById('newc').style.display='block';return false">+ زبون جديد</a></form></div>
 {{ new_client_box('') }}
+{% if cu.role=='admin' and not NODE %}<details class="card noprint" style="border:2px solid #f3c1bc"><summary style="cursor:pointer;color:var(--red);font-weight:bold">🗑 حذف جميع الزبائن</summary>
+<p>يحذف كل الزبائن من كل الفروع وكل الحواسيب، مع ملفاتهم الطبية وصورهم وبطاقات البشرة ومواعيدهم وخطط الحصص والزيارات والمبالغ غير المدفوعة.
+<b>المداخيل المقبوضة تبقى</b> في الصندوق والتقارير لكن دون اسم الزبون. <b>تُصنع نسخة احتياطية تلقائيًا قبل الحذف.</b></p>
+<form method="post" action="{{ url_for('clients_delete_all') }}" class="row" onsubmit="return confirm('حذف جميع الزبائن نهائيًا من كل الحواسيب؟')">
+<label>كلمة مرور المديرة<input type="password" name="password" required autocomplete="new-password"></label>
+<label>اكتبي كلمة «حذف» للتأكيد<input name="confirm" required style="width:140px"></label>
+<button class="btn red">حذف جميع الزبائن</button></form></details>{% endif %}
 <div class="card"><table><tr><th>#</th><th>الاسم</th><th>الهاتف</th><th>الفرع</th><th>تاريخ التسجيل</th></tr>
 {% for c in rows %}<tr><td>{{ c.id|rid }}</td><td><a href="{{ url_for('client_view', cid=c.id) }}">{{ avatar(c.name) }}{{ c.name }}</a></td><td>{{ c.phone }}</td><td>{{ c.branch or '' }}</td><td>{{ (c.created_at or '')[:10] }}</td></tr>
 {% else %}<tr><td colspan="5" class="mut">لا يوجد زبائن</td></tr>{% endfor %}</table></div>{% endblock %}"""
