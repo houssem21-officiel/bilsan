@@ -135,6 +135,8 @@ CREATE TABLE IF NOT EXISTS purchases(id INTEGER PRIMARY KEY, supplier_id INTEGER
     status TEXT DEFAULT 'ordered', notes TEXT, created_by INTEGER, created_at TEXT, received_at TEXT);
 CREATE TABLE IF NOT EXISTS purchase_items(id INTEGER PRIMARY KEY, purchase_id INTEGER, product_id INTEGER,
     qty REAL, unit_cost REAL);
+CREATE TABLE IF NOT EXISTS cancelled_ops(id INTEGER PRIMARY KEY, kind TEXT, ref_id INTEGER, branch_id INTEGER, day TEXT,
+    summary TEXT, amount REAL DEFAULT 0, reason TEXT, requested_by INTEGER, done_by INTEGER, created_at TEXT, data TEXT);
 CREATE TABLE IF NOT EXISTS skin_cards(id INTEGER PRIMARY KEY, client_id INTEGER, skin_type TEXT, phototype TEXT,
     concerns TEXT, contra TEXT, sensitivities TEXT, routine TEXT, notes TEXT, updated_by INTEGER, updated_at TEXT);
 CREATE TABLE IF NOT EXISTS service_materials(id INTEGER PRIMARY KEY, service_id INTEGER, product_id INTEGER, qty REAL DEFAULT 1);
@@ -304,6 +306,7 @@ def init_db():
     add_col("appointments", "morning_sent_at", "TEXT")
     add_col("services", "aftercare", "TEXT")
     add_col("users", "lang", "TEXT")
+    add_col("stock_moves", "cancelled", "INTEGER DEFAULT 0")
     add_col("appointments", "missed", "INTEGER DEFAULT 0")
     add_col("charges", "debt_of", "INTEGER")
     add_col("products", "cost_price", "REAL DEFAULT 0")
@@ -516,6 +519,7 @@ PERMS = [
     ("sale_prices", "تعديل أسعار بيع المنتجات", ("reception",)),
     ("cost_prices", "إدخال أسعار الشراء ورؤيتها (المنتجات والمخزون)", ("reception",)),
     ("purchases", "إدخال فاتورة شراء (استلام سلعة)", ("reception",)),
+    ("cancel_ops", "طلب إلغاء العمليات (المديرة توافق)", ("reception",)),
     ("stock_use", "تسجيل استهلاك المواد (مواد العمل)", ("reception", "laser", "beauty")),
     ("expenses", "إخراج مبلغ من الصندوق (مصروف)", ()),
     ("medical", "الملف الطبي وصور قبل/بعد", ("laser", "beauty")),
@@ -820,7 +824,8 @@ def dashboard():
                                rooms=room_accounts(today, today, None, db.execute(
                                    """SELECT p.*, b.name AS branch FROM payments p JOIN branches b ON b.id=p.branch_id
                                       WHERE p.cancelled=0 AND substr(p.created_at,1,10)=?""", (today,)).fetchall()),
-                               waiting=db.execute("SELECT COUNT(*) FROM visits WHERE status IN ('waiting','treating')").fetchone()[0])
+                               waiting=db.execute("SELECT COUNT(*) FROM visits WHERE status IN ('waiting','treating') AND substr(created_at,1,10)>=?",
+                                              (center_today().isoformat(),)).fetchone()[0])
     b = u["branch_id"]
     dept = u["role"] if u["role"] in ("laser", "beauty") else None
     q = """SELECT a.*, c.name AS client, c.phone, s.name AS service, s.price AS sprice, b.name AS branch,
@@ -1317,8 +1322,12 @@ def reception():
     if br:
         q += " AND ch.branch_id=?"
         args.append(br)
-    pending = db.execute(q + " ORDER BY ch.id", args).fetchall()
     today = center_today().isoformat()
+    allp = db.execute(q + " ORDER BY ch.id", args).fetchall()
+    # كل نهار وحدو: مبالغ الأيام الفايتة ما تبانش مع اليوم (تبان في جدول وحدها كي تطلبها)
+    show_old = bool(request.args.get("old"))
+    pending = [c for c in allp if (c["created_at"] or "")[:10] >= today or show_old]
+    old_pending = sum(1 for c in allp if (c["created_at"] or "")[:10] < today)
     q2 = """SELECT p.*, c.name AS client FROM payments p LEFT JOIN clients c ON c.id=p.client_id
             WHERE substr(p.created_at,1,10)=?"""
     a2 = [today]
@@ -1340,9 +1349,11 @@ def reception():
     if current_user()["role"] in ("laser", "beauty"):
         qv += " AND v.target=?"  # لا تظهر زبائن المديرة في غرفة التجميل/الليزر
         av.append(current_user()["role"])
-    open_visits = db.execute(qv + " ORDER BY v.id", av).fetchall()
+    allv = db.execute(qv + " ORDER BY v.id", av).fetchall()
+    open_visits = [v for v in allv if v["created_at"][:10] >= today or show_old]
+    old_visits = sum(1 for v in allv if v["created_at"][:10] < today)
     return render_template("reception.html", pending=pending, todays=todays, total=total, br=br,
-                           open_visits=open_visits)
+                           open_visits=open_visits, old_pending=old_pending, old_visits=old_visits, show_old=show_old)
 
 
 def pay_charge(db, ch, method, u, amount=None, discount=0.0):
@@ -1501,7 +1512,9 @@ def payment_new():
 
 # ---------------------------------------------------------------- موافقة المديرة
 APPROVAL_KINDS = {"discount": "تخفيض", "cancel_charge": "إلغاء مبلغ", "cancel_payment": "إلغاء وصل",
-                  "plan_price": "سعر باقة"}
+                  "plan_price": "سعر باقة", "cxl_payment": "إلغاء وصل", "cxl_visit": "إلغاء زيارة",
+                  "cxl_charge": "إلغاء مبلغ", "cxl_expense": "إلغاء مصروف", "cxl_stock": "إلغاء حركة مخزون",
+                  "cxl_day": "إلغاء كل عمليات اليوم"}
 
 
 def request_approval(db, kind, ref_id, branch_id, amount, reason, info):
@@ -1582,6 +1595,11 @@ def approvals():
                     ok = cancel_payment_now(db, a_["ref_id"])
                 elif a_["kind"] == "plan_price":
                     ok = set_plan_price(db, a_["ref_id"], a_["amount"])
+                elif a_["kind"] == "cxl_day":
+                    day = (a_["info"] or "")[:10]
+                    ok = bool(day) and cancel_day(db, a_["ref_id"], day, a_["reason"], a_["requested_by"]) >= 0
+                elif a_["kind"].startswith("cxl_"):
+                    ok = cancel_op(db, a_["kind"][4:], a_["ref_id"], a_["reason"], a_["requested_by"])
             if not ok:
                 flash("تعذّر التنفيذ: العملية تبدّلت (تخلّصت أو تلغات من قبل)", "err")
                 dec, note = "rejected", "لم يعد ممكنًا"
@@ -1858,7 +1876,7 @@ def room_accounts(d1, d2, br, valid):
     # مواد العمل المستهلكة
     q = """SELECT b.name AS branch, m.dept, SUM(-m.qty * COALESCE(p.cost_price,0)) AS cost, COUNT(*) AS n
            FROM stock_moves m JOIN products p ON p.id=m.product_id JOIN branches b ON b.id=m.branch_id
-           WHERE m.kind='use' AND substr(m.created_at,1,10) BETWEEN ? AND ?"""
+           WHERE m.kind='use' AND COALESCE(m.cancelled,0)=0 AND substr(m.created_at,1,10) BETWEEN ? AND ?"""
     args = [d1, d2]
     if br:
         q += " AND m.branch_id=?"
@@ -2118,11 +2136,11 @@ def stock_use():
     d2 = request.args.get("to") or center_today().isoformat()
     hist = db.execute("""SELECT m.*, p.name, u.full_name AS by_name, -m.qty*COALESCE(p.cost_price,0) AS cost
         FROM stock_moves m JOIN products p ON p.id=m.product_id LEFT JOIN users u ON u.id=m.user_id
-        WHERE m.kind='use' AND m.branch_id=? AND substr(m.created_at,1,10) BETWEEN ? AND ?
+        WHERE m.kind='use' AND COALESCE(m.cancelled,0)=0 AND m.branch_id=? AND substr(m.created_at,1,10) BETWEEN ? AND ?
         ORDER BY m.id DESC LIMIT 200""", (br, d1, d2)).fetchall()
     summary = db.execute("""SELECT m.dept, p.name, SUM(-m.qty) AS qty, SUM(-m.qty*COALESCE(p.cost_price,0)) AS cost
         FROM stock_moves m JOIN products p ON p.id=m.product_id
-        WHERE m.kind='use' AND m.branch_id=? AND substr(m.created_at,1,10) BETWEEN ? AND ?
+        WHERE m.kind='use' AND COALESCE(m.cancelled,0)=0 AND m.branch_id=? AND substr(m.created_at,1,10) BETWEEN ? AND ?
         GROUP BY m.dept, p.name ORDER BY m.dept, cost DESC""", (br, d1, d2)).fetchall()
     rooms = {k: v for k, v in USE_ROOMS.items()
              if k in ("hijama", "reception") or (k == "director" and str(br) == str(setting("director_branch")))
@@ -2163,7 +2181,8 @@ def product_stock(pid):
     if q:
         audit("تعديل مخزون", f"منتج {pid}: {q:+g} — {branch_name(bid)}", bid)
         move_stock(db, pid, bid, q,
-                   request.form.get("reason") or ("إدخال سلعة" if q > 0 else "إخراج / تلف"), current_user()["id"])
+                   request.form.get("reason") or ("إدخال سلعة" if q > 0 else "إخراج / تلف"), current_user()["id"],
+                   kind="adjust")
         flash("تم تحديث المخزون", "ok")
     if request.form.get("min_qty", "") != "":
         set_min(db, pid, bid, fnum(request.form.get("min_qty")))
@@ -2709,8 +2728,8 @@ def queue_count():
     tgt, br = queue_target()
     if not tgt:
         return 0
-    q = "SELECT COUNT(*) n FROM visits WHERE (target=? OR ?='all') AND status IN ('waiting','treating')"
-    args = [tgt, tgt]
+    q = "SELECT COUNT(*) n FROM visits WHERE (target=? OR ?='all') AND status IN ('waiting','treating') AND substr(created_at,1,10)>=?"
+    args = [tgt, tgt, center_today().isoformat()]
     if br:
         q += " AND branch_id=?"
         args.append(br)
@@ -2862,7 +2881,12 @@ def visit_queue_rows():
         q += " AND v.branch_id=?"
         args.append(br)
     rows = db.execute(q + " ORDER BY v.id", args).fetchall()
-    return render_template("visit_queue_rows.html", rows=rows, all_rooms=tgt == "all")
+    today = center_today().isoformat()
+    old = [r for r in rows if r["created_at"][:10] < today]
+    if not request.args.get("old"):
+        rows = [r for r in rows if r["created_at"][:10] >= today]  # كل نهار وحدو
+    return render_template("visit_queue_rows.html", rows=rows, all_rooms=tgt == "all", n_old=len(old),
+                           show_old=bool(request.args.get("old")))
 
 
 @app.route("/visits")
@@ -3544,7 +3568,7 @@ def month_digest(br, m):
 
     def mats(a, b):
         q = """SELECT COALESCE(SUM(-m.qty*COALESCE(p.cost_price,0)),0) FROM stock_moves m JOIN products p ON p.id=m.product_id
-               WHERE m.kind='use' AND substr(m.created_at,1,10) BETWEEN ? AND ?"""
+               WHERE m.kind='use' AND COALESCE(m.cancelled,0)=0 AND substr(m.created_at,1,10) BETWEEN ? AND ?"""
         return db.execute(q + (" AND m.branch_id=?" if br else ""), [a, b] + ([br] if br else [])).fetchone()[0]
 
     def visits_n(a, b):
@@ -3661,6 +3685,247 @@ def purchase_auto():
     return render_template("purchase_auto.html", rows=rows, br=br,
                            sups=db.execute("SELECT * FROM suppliers WHERE active=1 ORDER BY name").fetchall(),
                            branches=active_branches() if u["role"] == "admin" else [])
+
+
+# ---------------------------------------------------------------- إلغاء العمليات
+# العملية الملغاة تبقى محفوظة (في «العمليات الملغاة») بصّح ما تدخلش لا في الصندوق ولا في التقارير ولا في المخزون.
+OP_KINDS = {"payment": "وصل", "visit": "زيارة", "charge": "مبلغ في الانتظار", "expense": "مصروف", "stock": "حركة مخزون"}
+
+
+def day_operations(db, br, day):
+    """كل عمليات النهار في الفرع (اللي ممكن تتلغى)."""
+    ops = []
+    for r in db.execute("""SELECT p.*, c.name AS client, u.full_name AS by_name FROM payments p LEFT JOIN clients c ON c.id=p.client_id
+            LEFT JOIN users u ON u.id=p.received_by WHERE p.cancelled=0 AND p.branch_id=? AND substr(p.created_at,1,10)=?""", (br, day)):
+        ops.append(dict(kind="payment", id=r["id"], at=r["created_at"], amount=r["amount"], client=r["client"], by=r["by_name"],
+                        label=f"وصل {rid_filter(r['id'])} — {r['description'] or ''}"))
+    for r in db.execute("""SELECT v.*, c.name AS client, u.full_name AS by_name,
+            (SELECT COALESCE(SUM(qty*unit_price),0) FROM visit_items i WHERE i.visit_id=v.id) AS total
+            FROM visits v JOIN clients c ON c.id=v.client_id LEFT JOIN users u ON u.id=v.created_by
+            WHERE v.status<>'cancelled' AND v.branch_id=? AND substr(v.created_at,1,10)=?""", (br, day)):
+        ops.append(dict(kind="visit", id=r["id"], at=r["created_at"], amount=r["total"], client=r["client"], by=r["by_name"],
+                        label=f"زيارة — {VISIT_TARGETS.get(r['target'], '')} — {VISIT_STATUS.get(r['status'], '')}"))
+    for r in db.execute("""SELECT ch.*, c.name AS client, u.full_name AS by_name FROM charges ch LEFT JOIN clients c ON c.id=ch.client_id
+            LEFT JOIN users u ON u.id=ch.created_by WHERE ch.status IN ('pending','debt') AND ch.branch_id=?
+            AND substr(ch.created_at,1,10)=?""", (br, day)):
+        ops.append(dict(kind="charge", id=r["id"], at=r["created_at"], amount=r["amount"], client=r["client"], by=r["by_name"],
+                        label=("دين — " if r["status"] == "debt" else "مبلغ في الانتظار — ") + (r["description"] or "")))
+    for r in db.execute("""SELECT e.*, u.full_name AS by_name FROM expenses e LEFT JOIN users u ON u.id=e.created_by
+            WHERE e.branch_id=? AND e.day=?""", (br, day)):
+        ops.append(dict(kind="expense", id=r["id"], at=r["created_at"] or day, amount=r["amount"], client=None, by=r["by_name"],
+                        label=f"مصروف — {r['category'] or ''} {r['description'] or ''}"))
+    for r in db.execute("""SELECT m.*, p.name AS product, u.full_name AS by_name FROM stock_moves m JOIN products p ON p.id=m.product_id
+            LEFT JOIN users u ON u.id=m.user_id WHERE m.kind='adjust' AND COALESCE(m.cancelled,0)=0 AND m.branch_id=?
+            AND substr(m.created_at,1,10)=?""", (br, day)):
+        ops.append(dict(kind="stock", id=r["id"], at=r["created_at"], amount=None, client=None, by=r["by_name"],
+                        label=f"مخزون — {r['product']}: {r['qty']:+g} ({r['reason'] or ''})"))
+    ops.sort(key=lambda o: o["at"] or "")
+    return ops
+
+
+def _archive(db, kind, ref_id, branch_id, day, summary, amount, reason, requested_by, data):
+    db.execute("""INSERT INTO cancelled_ops(kind,ref_id,branch_id,day,summary,amount,reason,requested_by,done_by,created_at,data)
+        VALUES(?,?,?,?,?,?,?,?,?,?,?)""", (kind, ref_id, branch_id, day, summary[:300], amount or 0, (reason or "")[:300],
+                                           requested_by, current_user()["id"] if current_user() else None, now_str(),
+                                           json.dumps(data, ensure_ascii=False, default=str)[:20000]))
+    audit("إلغاء عملية", f"{OP_KINDS.get(kind, kind)}: {summary}" + (f" — السبب: {reason}" if reason else ""), branch_id)
+
+
+def cancel_op(db, kind, ref_id, reason="", requested_by=None):
+    """يلغي عملية وحدة: تبقى محفوظة في «العمليات الملغاة» وتخرج من كل الحسابات."""
+    if kind == "payment":
+        p = db.execute("SELECT * FROM payments WHERE id=? AND cancelled=0", (ref_id,)).fetchone()
+        if not p:
+            return False
+        chs = [r["id"] for r in db.execute("SELECT id FROM charges WHERE payment_id=?", (ref_id,))]
+        vids = {r[0] for r in db.execute("SELECT visit_id FROM charges WHERE payment_id=? AND visit_id IS NOT NULL", (ref_id,))}
+        items = [dict(r) for r in db.execute("SELECT * FROM sale_items WHERE payment_id=?", (ref_id,))]
+        cancel_payment_now(db, ref_id)
+        if chs:
+            db.execute(f"UPDATE charges SET status='cancelled' WHERE id IN ({','.join('?' * len(chs))})", chs)
+        for v in vids:
+            db.execute("UPDATE visits SET status='cancelled' WHERE id=?", (v,))
+        _archive(db, kind, ref_id, p["branch_id"], p["created_at"][:10], f"وصل {rid_filter(ref_id)} — {p['description'] or ''}",
+                 p["amount"], reason, requested_by, {"payment": dict(p), "items": items, "charges": chs})
+        return True
+    if kind == "visit":
+        v = db.execute("SELECT * FROM visits WHERE id=? AND status<>'cancelled'", (ref_id,)).fetchone()
+        if not v:
+            return False
+        for (pid,) in db.execute("""SELECT DISTINCT payment_id FROM charges WHERE visit_id=? AND payment_id IS NOT NULL
+                AND status='paid'""", (ref_id,)).fetchall():
+            cancel_op(db, "payment", pid, reason or "مع إلغاء الزيارة", requested_by)
+        db.execute("UPDATE charges SET status='cancelled' WHERE visit_id=? AND status IN ('pending','debt')", (ref_id,))
+        for m in db.execute("SELECT * FROM stock_moves WHERE visit_id=? AND COALESCE(cancelled,0)=0 AND kind='use'", (ref_id,)).fetchall():
+            move_stock(db, m["product_id"], m["branch_id"], -m["qty"], f"إلغاء الزيارة {rid_filter(ref_id)}", kind="cancel")
+            db.execute("UPDATE stock_moves SET cancelled=1 WHERE id=?", (m["id"],))
+        db.execute("UPDATE visits SET status='cancelled' WHERE id=?", (ref_id,))
+        c = db.execute("SELECT name FROM clients WHERE id=?", (v["client_id"],)).fetchone()
+        tot = db.execute("SELECT COALESCE(SUM(qty*unit_price),0) FROM visit_items WHERE visit_id=?", (ref_id,)).fetchone()[0]
+        _archive(db, kind, ref_id, v["branch_id"], v["created_at"][:10], f"زيارة {rid_filter(ref_id)} — {c[0] if c else ''}",
+                 tot, reason, requested_by, {"visit": dict(v)})
+        return True
+    if kind == "charge":
+        ch = db.execute("SELECT * FROM charges WHERE id=? AND status IN ('pending','debt')", (ref_id,)).fetchone()
+        if not ch:
+            return False
+        db.execute("UPDATE charges SET status='cancelled' WHERE id=?", (ref_id,))
+        _archive(db, kind, ref_id, ch["branch_id"], (ch["created_at"] or now_str())[:10], ch["description"] or "مبلغ",
+                 ch["amount"], reason, requested_by, {"charge": dict(ch)})
+        return True
+    if kind == "expense":
+        e = db.execute("SELECT * FROM expenses WHERE id=?", (ref_id,)).fetchone()
+        if not e:
+            return False
+        _archive(db, kind, ref_id, e["branch_id"], e["day"], f"مصروف — {e['category'] or ''} {e['description'] or ''}",
+                 e["amount"], reason, requested_by, {"expense": dict(e)})
+        db.execute("DELETE FROM expenses WHERE id=?", (ref_id,))
+        return True
+    if kind == "stock":
+        m = db.execute("SELECT m.*, p.name FROM stock_moves m JOIN products p ON p.id=m.product_id WHERE m.id=? AND COALESCE(m.cancelled,0)=0",
+                       (ref_id,)).fetchone()
+        if not m:
+            return False
+        move_stock(db, m["product_id"], m["branch_id"], -m["qty"], f"إلغاء تصحيح مخزون {m['id']}", kind="cancel")
+        db.execute("UPDATE stock_moves SET cancelled=1 WHERE id=?", (ref_id,))
+        _archive(db, kind, ref_id, m["branch_id"], m["created_at"][:10], f"مخزون — {m['name']}: {m['qty']:+g}", 0, reason,
+                 requested_by, {"move": dict(m)})
+        return True
+    return False
+
+
+def cancel_day(db, br, day, reason="", requested_by=None):
+    n = 0
+    order = {"payment": 0, "visit": 1, "charge": 2, "expense": 3, "stock": 4}
+    for o in sorted(day_operations(db, br, day), key=lambda o: order[o["kind"]]):
+        if cancel_op(db, o["kind"], o["id"], reason or f"إلغاء كل عمليات {day}", requested_by):
+            n += 1
+    audit("إلغاء كل عمليات اليوم", f"{branch_name(br)} — {day}: {n} عملية", br)
+    return n
+
+
+@app.route("/operations", methods=["GET", "POST"])
+@perm_required("cancel_ops")
+def operations():
+    """إلغاء العمليات: المديرة تلغي مباشرة، والعامل يبعث طلب للمديرة."""
+    db = get_db()
+    u = current_user()
+    admin = u["role"] == "admin"
+    br = (int(request.values.get("branch")) if admin and (request.values.get("branch") or "").lstrip("-").isdigit()
+          else (scope_branch() or work_branch()) if admin else u["branch_id"])
+    today = center_today().isoformat()
+    day = request.values.get("day") or today
+    if not admin and day not in (today, (center_today() - timedelta(days=1)).isoformat()):
+        day = today  # العامل يلغي غير عمليات اليوم والبارح (للأقدم: المديرة)
+    if request.method == "POST":
+        reason = request.form.get("reason", "").strip()
+        kind, oid = request.form.get("kind"), request.form.get("id", "")
+        if not reason:
+            flash("اكتب سبب الإلغاء", "err")
+            return redirect(url_for("operations", day=day, branch=br))
+        if kind == "day":
+            if admin:
+                n = cancel_day(db, br, day, reason, u["id"])
+                flash(f"تم إلغاء {n} عملية تاع نهار {day}. راهي محفوظة في «العمليات الملغاة».", "ok")
+            else:
+                request_approval(db, "cxl_day", br, br, 0, reason, f"{day} — {branch_name(br)}")
+                flash("تبعث الطلب للمديرة", "ok")
+        elif kind in OP_KINDS and oid.lstrip("-").isdigit():
+            oid = int(oid)
+            if admin:
+                ok = cancel_op(db, kind, oid, reason, u["id"])
+                flash("تم الإلغاء. العملية محفوظة في «العمليات الملغاة» وما تدخلش في الحسابات." if ok
+                      else "العملية تلغات من قبل ولا تبدّلت", "ok" if ok else "err")
+            else:
+                op = next((o for o in day_operations(db, br, day) if o["kind"] == kind and o["id"] == oid), None)
+                if op:
+                    request_approval(db, "cxl_" + kind, oid, br, op["amount"] or 0, reason,
+                                     f"{op['label']}" + (f" — {op['client']}" if op["client"] else ""))
+                    flash("تبعث طلب الإلغاء للمديرة", "ok")
+        db.commit()
+        return redirect(url_for("operations", day=day, branch=br))
+    ops = day_operations(db, br, day)
+    pend = {(r["kind"][4:], r["ref_id"]) for r in db.execute(
+        "SELECT kind, ref_id FROM approvals WHERE status='pending' AND kind LIKE 'cxl_%'")}
+    done = db.execute("""SELECT o.*, u.full_name AS by_name, r.full_name AS req_name FROM cancelled_ops o
+        LEFT JOIN users u ON u.id=o.done_by LEFT JOIN users r ON r.id=o.requested_by WHERE o.branch_id=? AND o.day=? ORDER BY o.id DESC""",
+                      (br, day)).fetchall()
+    return render_template("operations.html", ops=ops, pend=pend, done=done, day=day, br=br, admin=admin,
+                           branches=active_branches() if admin else [], today=today)
+
+
+@app.route("/operations/cancelled")
+@login_required("admin")
+def cancelled_ops():
+    """أرشيف العمليات الملغاة (محفوظة، ما تدخلش في الحسابات)."""
+    db = get_db()
+    br = scope_branch()
+    mm, d1, d2 = month_bounds(request.args.get("month"))
+    q = """SELECT o.*, u.full_name AS by_name, r.full_name AS req_name, b.name AS branch FROM cancelled_ops o
+        LEFT JOIN users u ON u.id=o.done_by LEFT JOIN users r ON r.id=o.requested_by JOIN branches b ON b.id=o.branch_id
+        WHERE o.day BETWEEN ? AND ?"""
+    args = [d1, d2]
+    if br:
+        q += " AND o.branch_id=?"
+        args.append(br)
+    rows = db.execute(q + " ORDER BY o.id DESC", args).fetchall()
+    return render_template("cancelled_ops.html", rows=rows, mm=mm, br=br)
+
+
+# ---------------------------------------------------------------- إدارة المخزون (الجرد والتصحيح)
+STOCK_REASONS = ["غلطة في العدّ", "مواد استُعملت وما تسجّلتش", "تلف", "انتهاء الصلاحية", "ضياع", "سلعة دخلت وما تسجّلتش", "أخرى"]
+
+
+@app.route("/stock/manage", methods=["GET", "POST"])
+@perm_required("products_edit")
+def stock_manage():
+    """تكتب الكمية الحقيقية اللي لقيتها، والبرنامج يحسب الفرق ويسجّلو بالسبب."""
+    db = get_db()
+    u = current_user()
+    admin = u["role"] == "admin"
+    br = (int(request.values.get("branch")) if admin and (request.values.get("branch") or "").lstrip("-").isdigit()
+          else (scope_branch() or work_branch()) if admin else u["branch_id"])
+    if request.method == "POST":
+        f = request.form
+        reason = f.get("reason") if f.get("reason") in STOCK_REASONS else None
+        note = f.get("note", "").strip()
+        if not reason:
+            flash("اختار سبب التصحيح", "err")
+            return redirect(url_for("stock_manage", branch=br))
+        n = 0
+        for k, val in f.items():
+            if not k.startswith("real_") or val.strip() == "":
+                continue
+            pid = k[5:]
+            if not pid.lstrip("-").isdigit():
+                continue
+            pid = int(pid)
+            cur = db.execute("SELECT COALESCE(qty,0) FROM stock WHERE product_id=? AND branch_id=?", (pid, br)).fetchone()
+            cur = cur[0] if cur else 0
+            diff = round(fnum(val) - cur, 3)
+            if diff:
+                move_stock(db, pid, br, diff, f"تصحيح: {reason}" + (f" — {note}" if note else ""), u["id"], kind="adjust")
+                n += 1
+        if n:
+            audit("تصحيح مخزون", f"{n} منتج — {reason} — {branch_name(br)}", br)
+            db.commit()
+            flash(f"تم تصحيح {n} منتج", "ok")
+        else:
+            flash("ما كاين حتى فرق: الكميات كيما راهي", "ok")
+        return redirect(url_for("stock_manage", branch=br))
+    q = request.args.get("q", "").strip()
+    rows = db.execute("""SELECT p.id, p.name, p.category, p.usage, COALESCE(p.cost_price,0) AS cost, COALESCE(s.qty,0) AS qty
+        FROM products p LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1
+        AND (?='' OR p.name LIKE ?) ORDER BY p.usage, p.category, p.name""", (br, q, f"%{q}%")).fetchall()
+    since = (center_today() - timedelta(days=60)).isoformat()
+    log = db.execute("""SELECT m.*, p.name, COALESCE(p.cost_price,0) AS cost, u.full_name AS by_name FROM stock_moves m
+        JOIN products p ON p.id=m.product_id LEFT JOIN users u ON u.id=m.user_id
+        WHERE m.kind='adjust' AND m.branch_id=? AND substr(m.created_at,1,10)>=? ORDER BY m.id DESC LIMIT 200""",
+                     (br, since)).fetchall()
+    loss = sum(-m["qty"] * m["cost"] for m in log if m["qty"] < 0 and not m["cancelled"])
+    return render_template("stock_manage.html", rows=rows, log=log, loss=loss, br=br, q=q, reasons=STOCK_REASONS,
+                           branches=active_branches() if admin else [], printing=bool(request.args.get("print")),
+                           can_cost=admin or has_perm("cost_prices"))
 
 
 # ---------------------------------------------------------------- الملف الطبي ووثيقة الموافقة
@@ -5277,6 +5542,7 @@ PAGE_ICONS = {
     "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream", "approvals": "key", "sessions_profit": "reports", "stock_use": "cream",
     "services_profit": "services", "month_report": "reports", "purchase_auto": "truck",
     "appt_reschedule": "calendar", "appts_missed": "calendar",
+    "operations": "audit", "cancelled_ops": "audit", "stock_manage": "products",
 }
 
 
@@ -5437,7 +5703,7 @@ def _after_write(resp):
 # كل الصفحات تتحدث وحدها عند وصول معلومة جديدة، إلا الصفحات التي فيها عمل غير محفوظ أو للطباعة
 NOT_LIVE = {"login", "pos", "purchase_new", "plan_new", "payment_new", "charge_new", "visit_new", "consent",
             "receipt", "certificate", "payslip", "payslips_all", "settings", "settings_images",
-            "sms_campaign", "backup_page", "update_now", "setup_pair", "devices", "permissions", "purchase_auto", "appt_reschedule",
+            "sms_campaign", "backup_page", "update_now", "setup_pair", "devices", "permissions", "purchase_auto", "appt_reschedule", "operations", "stock_manage",
             "services", "month_report"}
 
 
@@ -5462,7 +5728,7 @@ def api_stamp():
             r = get_db().execute("SELECT COUNT(*) || ':' || COALESCE(SUM(enabled),0) FROM perms").fetchone()
         u = current_user()
         p = f"{r[0]}:{u['active']}"
-    return {"s": sync.STAMP[0], "p": p}
+    return {"s": sync.STAMP[0], "p": p, "d": center_today().isoformat()}
 
 
 @app.before_request

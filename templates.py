@@ -136,6 +136,9 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 <a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>
 <a href="{{ url_for('stock_use') }}">{{ ic('cream') }}استهلاك مواد العمل</a>
 <a href="{{ url_for('month_report') }}">{{ ic('reports') }}تقرير الشهر (ورقة وحدة)</a>
+<a href="{{ url_for('operations') }}">{{ ic('audit') }}إلغاء العمليات</a>
+<a href="{{ url_for('cancelled_ops') }}">{{ ic('audit') }}العمليات الملغاة</a>
+<a href="{{ url_for('stock_manage') }}">{{ ic('products') }}إدارة المخزون (الجرد)</a>
 <a href="{{ url_for('services_profit') }}">{{ ic('services') }}فائدة كل خدمة</a>
 <a href="{{ url_for('sessions_profit') }}">{{ ic('reports') }}فائدة كل حصة</a>
 <a href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات والموردون</a>
@@ -191,11 +194,12 @@ function reload(){try{sessionStorage.setItem('bil_y',window.scrollY)}catch(e){}l
 /* انتظار دائم: الخادم يرد فور ما تتسجل معلومة جديدة */
 /* كل تبويب عندو رقم: الانتظار القديم تاعو يتحرّر كي يفتح صفحة جديدة (الضغط السريع ما يبلوكيش البرنامج) */
 var tab=null;try{tab=sessionStorage.getItem('bil_tab');if(!tab){tab=Math.random().toString(36).slice(2);sessionStorage.setItem('bil_tab',tab)}}catch(e){}
-var ctl=null,gone=false;window.addEventListener('pagehide',function(){gone=true;try{ctl&&ctl.abort()}catch(e){}});
+var ctl=null,gone=false,day=null; /* نهار جديد (الحاسوب تشعل الصباح): الصفحة تروح وحدها لليوم الجديد */window.addEventListener('pagehide',function(){gone=true;try{ctl&&ctl.abort()}catch(e){}});
 function poll(){if(gone)return;try{ctl=new AbortController()}catch(e){ctl=null}
  fetch('/api/stamp?wait='+(s===null?'':'1')+'&s='+(s===null?'':s)+(tab?'&t='+tab:''),{cache:'no-store',signal:ctl?ctl.signal:undefined}).then(function(r){return r.json()}).then(function(d){
  if(p!==null&&d.p!==p&&d.p&&!busy()){reload();return}
  if(live&&s!==null&&d.s!==s&&!busy()){reload();return}
+ if(d.d){if(day&&d.d!==day&&!busy()){location.href=location.pathname;return}day=d.d}
  if(d.x){tab=Math.random().toString(36).slice(2);try{sessionStorage.setItem('bil_tab',tab)}catch(e){}}
  s=d.s;if(d.p)p=d.p;setTimeout(poll,d.busy?3000:d.x?1000:200)}).catch(function(){if(!gone)setTimeout(poll,3000)})}
 setTimeout(poll,800);  /* نستناو شوية: إذا العامل راهو يتنقّل بسرعة ما نحجزوش الخادم */
@@ -445,6 +449,8 @@ TEMPLATES["reception.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 {% if perm('direct_payment') %}<a class="btn" href="{{ url_for('payment_new', branch=br) }}">دفعة مباشرة</a>{% endif %}
 {% if perm('appointments') %}<a class="btn light" href="{{ url_for('appointments') }}">موعد جديد</a>{% endif %}
 {% if perm('cash_close') and cu.role!='admin' %}<a class="btn light" href="{{ url_for('cash_close') }}">إغلاق صندوق اليوم</a>{% endif %}</div>
+{% if (old_pending or old_visits) and not show_old %}<div class="flash noprint" style="background:#f6efe3;border:1px solid #e0d2bb;color:#5b4a35">📅 هاذي عمليات اليوم برك. من أيام سابقة باقي: {% if old_pending %}{{ old_pending }} مبلغ ما تخلّصش{% endif %}{% if old_pending and old_visits %} و{% endif %}{% if old_visits %}{{ old_visits }} زيارة ما كملتش{% endif %} — <a href="?old=1">عرضها</a></div>{% endif %}
+{% if show_old %}<div class="flash noprint" style="background:#f6efe3;border:1px solid #e0d2bb;color:#5b4a35">راك تشوف حتى الأيام السابقة — <a href="{{ url_for('reception') }}">الرجوع لليوم برك</a></div>{% endif %}
 {% if open_visits %}<div class="card"><h2>زبائن داخل العلاج الآن ({{ open_visits|length }})</h2><table><tr><th>#</th><th>الوصول</th><th>الزبون</th><th>عند</th><th>الحالة</th></tr>
 {% for v in open_visits %}<tr><td><a href="{{ url_for('visit_view', vid=v.id) }}">{{ v.id|rid }}</a></td><td>{{ v.created_at[11:16] }}</td><td>{{ v.client }}</td><td>{{ VISIT_TARGETS.get(v.target,'') }}</td><td><span class="tag amber">{{ VISIT_STATUS[v.status] }}</span></td></tr>{% endfor %}</table></div>{% endif %}
 <div class="card"><h2>مبالغ من الأقسام تنتظر التحصيل ({{ pending|length }})</h2>
@@ -1245,12 +1251,13 @@ TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 
 TEMPLATES["visit_queue.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}{{ 'كل الأقسام الآن' if tgt=='all' else 'قائمة الانتظار' }}{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+{% if request.args.get('old') %}<p class="noprint"><a class="btn light sm" href="{{ url_for('visit_queue') }}">الرجوع لليوم برك</a></p>{% endif %}
 {% if not tgt %}<div class="card">لا توجد قائمة انتظار لهذا المستخدم.</div>{% else %}
 <div class="card"><div class="mut noprint" style="margin-bottom:8px">تتحدث القائمة تلقائيًا كل 5 ثوانٍ.</div>
 <div id="qrows">…</div></div>
 <script>
 var last=-1;
-function load(){fetch('{{ url_for("visit_queue_rows") }}',{cache:'no-store'}).then(r=>r.text()).then(function(h){
+function load(){fetch('{{ url_for("visit_queue_rows", old=request.args.get("old")) }}',{cache:'no-store'}).then(r=>r.text()).then(function(h){
  var box=document.getElementById('qrows');box.innerHTML=h;var n=box.querySelectorAll('tr.v').length;
  if(last>=0&&n>last){document.title='('+n+') زبون جديد';try{new AudioContext().resume()}catch(e){}}
  last=n}).catch(function(){})}
@@ -1264,7 +1271,8 @@ TEMPLATES["visit_queue_rows.html"] = r"""<table><tr><th>#</th><th>الوصول</
 <td>{% if v.chronic %}<span class="tag red">{{ v.chronic }}</span>{% endif %}{% if v.allergies %} <span class="tag red">حساسية: {{ v.allergies }}</span>{% endif %}</td>
 <td><span class="tag {{ 'amber' if v.status=='waiting' else '' }}">{{ VISIT_STATUS[v.status] }}</span></td>
 <td><a class="btn sm" href="{{ url_for('visit_view', vid=v.id) }}">فتح الملف</a></td></tr>
-{% else %}<tr><td colspan="9" class="mut">لا يوجد زبائن في الانتظار</td></tr>{% endfor %}</table>"""
+{% else %}<tr><td colspan="9" class="mut">لا يوجد زبائن في الانتظار</td></tr>{% endfor %}</table>
+{% if n_old and not show_old %}<p class="mut noprint" style="margin-top:8px">📅 كاين {{ n_old }} زيارة من أيام سابقة ما كملتش — <a href="{{ url_for('visit_queue', old=1) }}">عرضها</a></p>{% endif %}"""
 
 TEMPLATES["visits.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}الزيارات</h1>
@@ -1848,6 +1856,9 @@ TEMPLATES["tiles.html"] = r"""<div class="tiles noprint">
 {% if cu.role in ('laser','beauty','reception') %}<a class="tile" href="{{ url_for('visit_queue') }}">{{ ic('face' if cu.role=='beauty' else 'laser' if cu.role=='laser' else 'hijama') }}{{ 'زبوناتي الآن' if cu.role!='reception' else 'قسم العلاج الآن' }}</a>
 <a class="tile" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }}الحصص اللي فاتت</a>{% endif %}
 {% if perm('stock_use') and cu.role in ('laser','beauty') %}<a class="tile" href="{{ url_for('stock_use') }}">{{ ic('cream') }}المواد المستعملة</a>{% endif %}
+{% if perm('purchases') %}<a class="tile" href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات</a>{% endif %}
+{% if perm('products_edit') %}<a class="tile" href="{{ url_for('stock_manage') }}">{{ ic('products') }}إدارة المخزون</a>{% endif %}
+{% if perm('cancel_ops') %}<a class="tile" href="{{ url_for('operations') }}">{{ ic('audit') }}إلغاء العمليات</a>{% endif %}
 {% if perm('attendance') %}<a class="tile" href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}
 {% if perm('courses') %}<a class="tile" href="{{ url_for('courses') }}">{{ ic('course') }}الدورات</a>{% endif %}
 {% if perm('cash_close') %}<a class="tile" href="{{ url_for('cash_close') }}">{{ ic('lock') }}إغلاق الصندوق</a>{% endif %}
@@ -2042,3 +2053,56 @@ h2{font-size:17px;background:#f6efe3;padding:6px 10px;border-radius:8px}li{margi
 {% if nxt %}<p style="border:1px dashed #c99a5b;border-radius:8px;padding:8px 12px">📅 موعدك الجاي: <b>{{ nxt.start_at[:10] }}</b> على الساعة <b>{{ nxt.start_at[11:16] }}</b></p>{% endif %}
 <p class="mut">لأي سؤال ولا إذا حسّيتي بحاجة غير عادية، اتصلي بالمركز.</p>
 <button onclick="window.print()">طباعة</button><script>setTimeout(function(){window.print()},400)</script></body></html>"""
+
+
+TEMPLATES["operations.html"] = r"""{% extends "base.html" %}{% block body %}
+<h1>{{ page_icon() }}إلغاء العمليات — {{ branch_name(br) }}</h1>
+{% if branches %}<div class="row noprint" style="margin-bottom:10px">{% for b in branches %}<a class="btn {{ '' if b.id==br else 'light' }}" href="{{ url_for('operations', branch=b.id, day=day) }}">{{ b.name }}</a>{% endfor %}</div>{% endif %}
+<div class="card"><form class="row"><input type="hidden" name="branch" value="{{ br }}"><label>النهار<input type="date" name="day" value="{{ day }}"{% if not admin %}{% endif %}></label><button class="btn light">عرض</button></form>
+<p class="mut">العملية الملغاة <b>تبقى محفوظة</b> في «العمليات الملغاة»، بصّح ما تدخلش لا في الصندوق ولا في تقرير الشهر ولا في المخزون (السلعة ترجع للمخزون).
+{% if not admin %}الإلغاء يروح طلب للمديرة، وكي توافق يتنفّذ وحدو.{% endif %}</p></div>
+<div class="card"><h2>عمليات نهار {{ day }} ({{ ops|length }})</h2>
+<table><tr><th>الوقت</th><th>العملية</th><th>الزبون</th><th>المبلغ</th><th>بواسطة</th><th class="noprint">إلغاء</th></tr>
+{% for o in ops %}<tr><td>{{ (o.at or '')[11:16] }}</td><td>{{ o.label }}</td><td>{{ o.client or '' }}</td><td>{{ o.amount|money if o.amount is not none else '' }}</td><td class="mut">{{ o.by or '' }}</td>
+<td class="noprint">{% if (o.kind, o.id) in pend %}<span class="tag amber">في انتظار المديرة</span>{% else %}
+<form method="post" class="row" style="gap:4px" onsubmit="return confirm('إلغاء هاذ العملية؟')"><input type="hidden" name="kind" value="{{ o.kind }}"><input type="hidden" name="id" value="{{ o.id }}"><input type="hidden" name="day" value="{{ day }}"><input type="hidden" name="branch" value="{{ br }}">
+<input name="reason" placeholder="السبب" required style="width:140px"><button class="btn red sm">{{ 'إلغاء' if admin else 'طلب إلغاء' }}</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="mut">ما كاين حتى عملية في هاذ النهار</td></tr>{% endfor %}</table>
+{% if ops %}<form method="post" class="row noprint" style="margin-top:14px;border-top:1px dashed #e0d2bb;padding-top:12px" onsubmit="return confirm('إلغاء كل عمليات نهار {{ day }}؟ (تبقى محفوظة في «العمليات الملغاة»)')">
+<input type="hidden" name="kind" value="day"><input type="hidden" name="day" value="{{ day }}"><input type="hidden" name="branch" value="{{ br }}">
+<b style="color:#b3261e">⚠ إلغاء كل عمليات هاذ النهار ({{ ops|length }}):</b><input name="reason" placeholder="السبب (مثلا: نهار تجربة)" required style="width:220px">
+<button class="btn red">{{ 'إلغاء الكل' if admin else 'طلب إلغاء الكل' }}</button></form>{% endif %}</div>
+{% if done %}<div class="card"><h2>تلغات في هاذ النهار ({{ done|length }})</h2><table><tr><th>العملية</th><th>المبلغ</th><th>السبب</th><th>طلبها</th><th>نفّذها</th><th>وقت الإلغاء</th></tr>
+{% for d in done %}<tr style="color:#7a6a58"><td><s>{{ d.summary }}</s></td><td>{{ d.amount|money }}</td><td>{{ d.reason }}</td><td>{{ d.req_name or '' }}</td><td>{{ d.by_name or '' }}</td><td>{{ d.created_at[:16] }}</td></tr>{% endfor %}</table></div>{% endif %}
+{% endblock %}"""
+
+TEMPLATES["cancelled_ops.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
+<h1>{{ page_icon() }}العمليات الملغاة</h1>
+<div class="card noprint"><form class="row"><label>الشهر<input type="month" name="month" value="{{ mm }}"></label>{{ branch_filter(br) }}<button class="btn light">عرض</button><button type="button" class="btn gold" onclick="window.print()">طباعة</button></form>
+<p class="mut">هاذو عمليات تلغات: محفوظة هنا برك، وما تدخلش لا في الصندوق ولا في التقارير.</p></div>
+<div class="card"><table><tr><th>نهار العملية</th>{% if not br %}<th>الفرع</th>{% endif %}<th>النوع</th><th>العملية</th><th>المبلغ</th><th>السبب</th><th>طلبها</th><th>نفّذها</th><th>وقت الإلغاء</th></tr>
+{% for d in rows %}<tr><td>{{ d.day }}</td>{% if not br %}<td>{{ d.branch }}</td>{% endif %}<td>{{ {'payment':'وصل','visit':'زيارة','charge':'مبلغ في الانتظار','expense':'مصروف','stock':'حركة مخزون'}.get(d.kind, d.kind) }}</td>
+<td>{{ d.summary }}</td><td>{{ d.amount|money }}</td><td>{{ d.reason }}</td><td>{{ d.req_name or '' }}</td><td>{{ d.by_name or '' }}</td><td class="mut">{{ d.created_at[:16] }}</td></tr>
+{% else %}<tr><td colspan="9" class="mut">ما كاين حتى عملية ملغاة في هاذ الشهر</td></tr>{% endfor %}</table></div>{% endblock %}"""
+
+TEMPLATES["stock_manage.html"] = r"""{% extends "base.html" %}{% block body %}
+<h1>{{ page_icon() }}إدارة المخزون — {{ branch_name(br) }}</h1>
+{% if branches and not printing %}<div class="row noprint" style="margin-bottom:10px">{% for b in branches %}<a class="btn {{ '' if b.id==br else 'light' }}" href="{{ url_for('stock_manage', branch=b.id) }}">{{ b.name }}</a>{% endfor %}</div>{% endif %}
+{% if printing %}<p>ورقة الجرد — {{ now_hm()[:10] }} — اكتبوا الكمية اللي لقيتوها فعلًا.</p>
+<table><tr><th>المنتج</th><th>الفئة</th><th>في البرنامج</th><th style="width:140px">الكمية الحقيقية</th></tr>
+{% for r in rows %}<tr><td>{{ r.name }}</td><td>{{ r.category or '' }}</td><td>{{ '%g'|format(r.qty) }}</td><td></td></tr>{% endfor %}</table>
+<script>setTimeout(function(){window.print()},400)</script>{% else %}
+<div class="card noprint"><p class="mut">إذا الكمية في البرنامج ماشي كيما الحقيقة (غلطة، مواد استُعملت وما تسجّلتش، تلف...): اكتب <b>الكمية الحقيقية اللي لقيتها</b>، والبرنامج يحسب الفرق وحدو ويسجّلو بالسبب.
+خلّي الخانة فارغة للمنتجات اللي صحاح.</p>
+<form class="row"><input type="hidden" name="branch" value="{{ br }}"><input name="q" value="{{ q }}" placeholder="ابحث على منتج"><button class="btn light">بحث</button>
+<a class="btn gold" href="{{ url_for('stock_manage', branch=br, print=1) }}" target="_blank">{{ ic('print') }} طباعة ورقة الجرد</a></form></div>
+<form method="post" class="card"><input type="hidden" name="branch" value="{{ br }}">
+<table><tr><th>المنتج</th><th>النوع</th><th>في البرنامج</th><th>الكمية الحقيقية</th><th>الفرق</th></tr>
+{% for r in rows %}<tr><td>{{ item_ic(r.name,'product') }}{{ r.name }}</td><td class="mut">{{ PRODUCT_USAGE.get(r.usage, '') }}</td><td><b>{{ '%g'|format(r.qty) }}</b></td>
+<td><input name="real_{{ r.id }}" type="number" step="any" style="width:90px" data-cur="{{ r.qty }}" oninput="var d=this.value===''?'':(+this.value-+this.dataset.cur);var c=this.closest('tr').querySelector('.df');c.textContent=d===''?'':(d>0?'+':'')+Math.round(d*1000)/1000;c.style.color=d<0?'#b3261e':'#145c32'"></td><td class="df"></td></tr>{% endfor %}</table>
+<div class="row" style="margin-top:12px"><label>السبب<select name="reason" required><option value="">— اختار —</option>{% for x in reasons %}<option>{{ x }}</option>{% endfor %}</select></label>
+<label style="flex:1">ملاحظة<input name="note" placeholder="مثلا: جرد آخر الشهر"></label><button class="btn">حفظ التصحيح</button></div></form>
+<div class="card"><h2>التصحيحات (آخر 60 يوم)</h2>{% if can_cost and loss %}<p>قيمة النقص بسعر الشراء: <b style="color:#b3261e">{{ loss|money }}</b></p>{% endif %}
+<table><tr><th>الوقت</th><th>المنتج</th><th>الفرق</th><th>السبب</th><th>بواسطة</th></tr>
+{% for m in log %}<tr{% if m.cancelled %} style="color:#999"{% endif %}><td>{{ m.created_at[:16] }}</td><td>{{ m.name }}</td><td><b style="color:{{ '#b3261e' if m.qty<0 else '#145c32' }}">{{ '%+g'|format(m.qty) }}</b></td><td>{{ m.reason }}{% if m.cancelled %} <span class="tag">ملغاة</span>{% endif %}</td><td class="mut">{{ m.by_name or '' }}</td></tr>
+{% else %}<tr><td colspan="5" class="mut">ما كاين حتى تصحيح</td></tr>{% endfor %}</table></div>{% endif %}{% endblock %}"""

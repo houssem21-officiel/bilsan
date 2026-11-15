@@ -455,6 +455,10 @@
 "Sortir un montant de la caisse du jour",
 "Take money out of today’s cash box"
 ],
+"إدارة المخزون": [
+"Gestion du stock",
+"Stock management"
+],
 "إدخال أسعار الشراء ورؤيتها": [
 "Saisir et voir les prix d’achat",
 "Enter and view purchase prices"
@@ -470,6 +474,10 @@
 "إدخال واستلام المشتريات": [
 "Saisie et réception des achats",
 "Enter and receive purchases"
+],
+"إذا الكمية في البرنامج ماشي كيما الحقيقة": [
+"Si la quantité dans le programme ne correspond pas à la réalité",
+"If the quantity in the program doesn’t match reality"
 ],
 "إذا بدّلتي التاريخ يتحسبو من جديد كي تحفظي": [
 "Si vous changez la date, elles seront recalculées à l’enregistrement",
@@ -655,13 +663,49 @@
 "Annuler la commande",
 "Cancel the order"
 ],
+"إلغاء العمليات": [
+"Annulation des opérations",
+"Cancel operations"
+],
+"إلغاء الكل": [
+"Tout annuler",
+"Cancel all"
+],
 "إلغاء الوصل": [
 "Annuler le reçu",
 "Cancel the receipt"
 ],
+"إلغاء تصحيح مخزون": [
+"Annulation d’une correction de stock",
+"Stock correction cancelled"
+],
+"إلغاء حركة مخزون": [
+"Annuler un mouvement de stock",
+"Cancel a stock movement"
+],
 "إلغاء زيارة": [
 "Annuler une visite",
 "Cancel a visit"
+],
+"إلغاء عملية": [
+"Annulation d’opération",
+"Operation cancelled"
+],
+"إلغاء كل عمليات": [
+"Annuler toutes les opérations",
+"Cancel all operations"
+],
+"إلغاء كل عمليات اليوم": [
+"Annuler toutes les opérations du jour",
+"Cancel all of the day’s operations"
+],
+"إلغاء كل عمليات نهار": [
+"Annuler toutes les opérations du",
+"Cancel all operations of"
+],
+"إلغاء كل عمليات هاذ النهار": [
+"Annuler toutes les opérations de ce jour",
+"Cancel all operations of this day"
 ],
 "إلغاء مبلغ": [
 "Annuler un montant",
@@ -670,6 +714,14 @@
 "إلغاء مبلغ معلّق": [
 "Annuler un montant en attente",
 "Cancel a pending amount"
+],
+"إلغاء مصروف": [
+"Annuler une dépense",
+"Cancel an expense"
+],
+"إلغاء هاذ العملية": [
+"Annuler cette opération",
+"Cancel this operation"
 ],
 "إلغاء هاذ الموعد نهائيًا": [
 "Annuler ce rendez-vous définitivement",
@@ -787,6 +839,10 @@
 "Rechercher par nom ou téléphone",
 "Search by name or phone"
 ],
+"ابحث على منتج": [
+"Rechercher un produit",
+"Search a product"
+],
 "ابحث عن منتج أو امسح الباركود": [
 "Rechercher un produit ou scanner le code-barres",
 "Search a product or scan the barcode"
@@ -815,9 +871,17 @@
 "Rougeur forte",
 "Strong redness"
 ],
+"اختار": [
+"Choisir",
+"Choose"
+],
 "اختار المواد اللي استعملتها": [
 "Choisissez les produits que vous avez utilisés",
 "Choose the materials you used"
+],
+"اختار سبب التصحيح": [
+"Choisissez le motif de la correction",
+"Choose the correction reason"
 ],
 "اختار مادة": [
 "Choisir un produit",
@@ -1079,6 +1143,10 @@
 "Demandez à la directrice",
 "Ask the director"
 ],
+"اكتب": [
+"Écrivez",
+"Write"
+],
 "اكتب أمام كل منتج الكمية الموجودة في كل فرع وحد التنبيه": [
 "Indiquez pour chaque produit la quantité dans chaque branche et le seuil d’alerte",
 "For each product enter the quantity in each branch and the alert threshold"
@@ -1119,6 +1187,10 @@
 "Saisissez le montant dans le prix",
 "Enter the amount in the price"
 ],
+"اكتب سبب الإلغاء": [
+"Écrivez le motif de l’annulation",
+"Write the cancellation reason"
+],
 "اكتب سعر البيع": [
 "Saisissez le prix de vente",
 "Enter the sale price"
@@ -1134,6 +1206,10 @@
 "اكتب هاتف المديرة أولًا ثم احفظ": [
 "Saisissez d’abord le téléphone de la directrice puis enregistrez",
 "Enter the director’s phone first, then save"
+],
+"اكتبوا الكمية اللي لقيتوها فعلًا": [
+"Écrivez la quantité réellement trouvée",
+"Write the quantity actually found"
 ],
 "الآن": [
 "Maintenant",
@@ -1230,6 +1306,10 @@
 "الإغلاق": [
 "Fermeture",
 "Closing"
+],
+"الإلغاء يروح طلب للمديرة": [
+"L’annulation devient une demande à la directrice",
+"The cancellation becomes a request to the director"
 ],
 "الإمضاء": [
 "Signature",
@@ -1415,6 +1495,10 @@
 "Tarification",
 "Pricing"
 ],
+"التصحيحات": [
+"Corrections",
+"Corrections"
+],
 "التعديل يخص هذه الشهادة فقط": [
 "La modification ne concerne que ce certificat",
 "The change applies to this certificate only"
@@ -1490,6 +1574,10 @@
 "الجبهة": [
 "Front",
 "Forehead"
+],
+"الجرد": [
+"L’inventaire",
+"Inventory"
 ],
 "الجل": [
 "Gel",
@@ -1759,6 +1847,10 @@
 "Revenir au texte par défaut",
 "Restore the default text"
 ],
+"الرجوع لليوم برك": [
+"Retour à aujourd’hui seulement",
+"Back to today only"
+],
 "الرسالة": [
 "Message",
 "Message"
@@ -1878,6 +1970,10 @@
 "السلة فارغة": [
 "Le panier est vide",
 "The cart is empty"
+],
+"السلعة ترجع للمخزون": [
+"la marchandise revient au stock",
+"the goods return to stock"
 ],
 "السماح للعمال": [
 "Autoriser les employés",
@@ -2075,13 +2171,29 @@
 "Les opérations enregistrées ici sont envoyées normalement",
 "Operations recorded here are sent normally"
 ],
+"العمليات الملغاة": [
+"Opérations annulées",
+"Cancelled operations"
+],
 "العملية": [
 "Opération",
 "Operation"
 ],
+"العملية الملغاة": [
+"L’opération annulée",
+"The cancelled operation"
+],
 "العملية تبدّلت": [
 "L’opération a changé",
 "The operation changed"
+],
+"العملية تلغات من قبل ولا تبدّلت": [
+"L’opération a déjà été annulée ou a changé",
+"The operation was already cancelled or changed"
+],
+"العملية محفوظة في": [
+"L’opération est conservée dans",
+"The operation is kept in"
 ],
 "العنوان": [
 "Adresse",
@@ -2187,6 +2299,10 @@
 "Les quantités sont ajoutées au stock",
 "Quantities are added to stock"
 ],
+"الكميات كيما راهي": [
+"les quantités sont correctes",
+"the quantities are correct"
+],
 "الكمية": [
 "Quantité",
 "Quantity"
@@ -2202,6 +2318,14 @@
 "الكمية الحالية": [
 "Quantité actuelle",
 "Current quantity"
+],
+"الكمية الحقيقية": [
+"Quantité réelle",
+"Real quantity"
+],
+"الكمية الحقيقية اللي لقيتها": [
+"La quantité réelle que vous avez trouvée",
+"The real quantity you found"
 ],
 "الكمية اللي وصلت": [
 "Quantité arrivée",
@@ -2391,6 +2515,10 @@
 "La directrice peut l’écrire dans la page",
 "The director can write it on the page"
 ],
+"المديرة توافق": [
+"la directrice approuve",
+"the director approves"
+],
 "المديرة ولا الاستقبال يبدّلو نوع المواد في صفحة المنتجات": [
 "La directrice ou l’accueil changent le type de produit dans la page Produits",
 "The director or reception change the material type on the Products page"
@@ -2418,6 +2546,10 @@
 "المشاكل": [
 "Problèmes",
 "Concerns"
+],
+"المشتريات": [
+"Achats",
+"Purchases"
 ],
 "المشتريات والموردون": [
 "Achats et fournisseurs",
@@ -2659,6 +2791,10 @@
 "Espèces encaissées",
 "Cash collected"
 ],
+"النهار": [
+"Jour",
+"Day"
+],
 "النوع": [
 "Type",
 "Type"
@@ -2738,6 +2874,10 @@
 "انتظر قليلًا": [
 "Patientez un peu",
 "Wait a moment"
+],
+"انتهاء الصلاحية": [
+"Expiration",
+"Expiry"
 ],
 "انتهت الدورة": [
 "La formation est terminée",
@@ -2899,6 +3039,10 @@
 "mais corrigez-la dans",
 "but fix it in"
 ],
+"بصّح ما تدخلش لا في الصندوق ولا في تقرير الشهر ولا في المخزون": [
+"mais elle n’entre ni dans la caisse, ni dans le rapport du mois, ni dans le stock",
+"but it doesn’t count in the cash box, the monthly report or the stock"
+],
 "بطاقة": [
 "Carte",
 "Card"
@@ -2994,6 +3138,10 @@
 "بوابة الإرسال": [
 "Passerelle d’envoi",
 "Sending gateway"
+],
+"بواسطة": [
+"Par",
+"By"
 ],
 "بيضاء": [
 "Claire",
@@ -3095,9 +3243,25 @@
 "Date de début de travail",
 "Start date"
 ],
+"تبعث الطلب للمديرة": [
+"La demande a été envoyée à la directrice",
+"The request was sent to the director"
+],
+"تبعث طلب الإلغاء للمديرة": [
+"La demande d’annulation a été envoyée à la directrice",
+"The cancellation request was sent to the director"
+],
 "تبقى في ملفها للجلسات الجاية": [
 "Elle reste dans son dossier pour les prochaines séances",
 "It stays in her file for the next sessions"
+],
+"تبقى محفوظة": [
+"reste conservée",
+"stays saved"
+],
+"تبقى محفوظة في": [
+"reste conservée dans",
+"stays saved in"
 ],
 "تبييض": [
 "Éclaircissement",
@@ -3395,6 +3559,14 @@
 "Taches pigmentaires",
 "Pigmentation"
 ],
+"تصحيح": [
+"Correction",
+"Correction"
+],
+"تصحيح مخزون": [
+"Correction de stock",
+"Stock correction"
+],
 "تصدير": [
 "Exporter",
 "Export"
@@ -3623,6 +3795,10 @@
 "Formation",
 "Training"
 ],
+"تلغات في هاذ النهار": [
+"Annulées ce jour",
+"Cancelled on this day"
+],
 "تلف": [
 "Avarie",
 "Damaged"
@@ -3670,6 +3846,10 @@
 "تم إغلاق صندوق اليوم": [
 "La caisse du jour a été fermée",
 "Today’s cash box was closed"
+],
+"تم إلغاء": [
+"Annulé",
+"Cancelled"
 ],
 "تم إلغاء الدفعة": [
 "Le paiement a été annulé",
@@ -3730,6 +3910,10 @@
 "تم الإرسال": [
 "Envoyé",
 "Sent"
+],
+"تم الإلغاء": [
+"Annulation effectuée",
+"Cancellation done"
 ],
 "تم البيع وأصبح المخزون سالبًا": [
 "Vendu, le stock est devenu négatif",
@@ -3830,6 +4014,10 @@
 "تم تشغيل": [
 "Démarré",
 "Started"
+],
+"تم تصحيح": [
+"Corrigé",
+"Corrected"
 ],
 "تم تعديل الفرع": [
 "Branche modifiée",
@@ -4115,6 +4303,10 @@
 "Planning hebdomadaire des salles",
 "Weekly room schedule"
 ],
+"جرد آخر الشهر": [
+"Inventaire de fin de mois",
+"End-of-month inventory"
+],
 "جروح في المنطقة": [
 "Plaies dans la zone",
 "Wounds in the area"
@@ -4255,6 +4447,10 @@
 "caractères arabes",
 "Arabic characters"
 ],
+"حركة مخزون": [
+"Mouvement de stock",
+"Stock movement"
+],
 "حساب": [
 "Compte",
 "Account"
@@ -4386,6 +4582,10 @@
 "حفظ البطاقة": [
 "Enregistrer la fiche",
 "Save the card"
+],
+"حفظ التصحيح": [
+"Enregistrer la correction",
+"Save the correction"
 ],
 "حفظ التعديلات": [
 "Enregistrer les modifications",
@@ -4519,6 +4719,10 @@
 "Plans de séances",
 "Session plans"
 ],
+"خلّي الخانة فارغة للمنتجات اللي صحاح": [
+"Laissez vide pour les produits corrects",
+"Leave empty for correct products"
+],
 "خُصم": [
 "Déduit",
 "Deducted"
@@ -4650,6 +4854,14 @@
 "راجع السجل": [
 "Consultez le journal",
 "Check the log"
+],
+"راك تشوف حتى الأيام السابقة": [
+"Vous voyez aussi les jours précédents",
+"You are also viewing previous days"
+],
+"راهي محفوظة في": [
+"Elle est conservée dans",
+"It is kept in"
 ],
 "ربط": [
 "Lier",
@@ -4859,6 +5071,14 @@
 "Nouvelle visite",
 "New visit"
 ],
+"زيارة ما كملتش": [
+"visite non terminée",
+"unfinished visit"
+],
+"زيارة من أيام سابقة ما كملتش": [
+"visite des jours précédents non terminée",
+"unfinished visit from previous days"
+],
 "زيت": [
 "Huile",
 "Oil"
@@ -5030,6 +5250,10 @@
 "سكري": [
 "Diabète",
 "Diabetes"
+],
+"سلعة دخلت وما تسجّلتش": [
+"Marchandise entrée non enregistrée",
+"Goods received but not recorded"
 ],
 "سم النحل": [
 "Venin d’abeille",
@@ -5235,6 +5459,10 @@
 "Inclus dans le forfait",
 "Included in the package"
 ],
+"ضياع": [
+"Perte",
+"Loss"
+],
 "طاقة": [
 "Énergie",
 "Energy"
@@ -5279,6 +5507,10 @@
 "Imprimer le formulaire de consentement",
 "Print the consent form"
 ],
+"طباعة ورقة الجرد": [
+"Imprimer la feuille d’inventaire",
+"Print the inventory sheet"
+],
 "طرق الدفع": [
 "Modes de paiement",
 "Payment methods"
@@ -5306,6 +5538,14 @@
 "طلب إلغاء": [
 "Demande d’annulation",
 "Cancellation request"
+],
+"طلب إلغاء العمليات": [
+"Demander l’annulation d’opérations",
+"Request to cancel operations"
+],
+"طلب إلغاء الكل": [
+"Demander de tout annuler",
+"Request to cancel all"
 ],
 "طلب إلغاء هذا الوصل من المديرة": [
 "Demander à la directrice l’annulation de ce reçu",
@@ -5354,6 +5594,10 @@
 "طلبه": [
 "Sa demande",
 "Their request"
+],
+"طلبها": [
+"Demandée par",
+"Requested by"
 ],
 "طلبيات الشراء": [
 "Commandes d’achat",
@@ -5447,6 +5691,10 @@
 "Afficher et imprimer la liste",
 "Show and print the list"
 ],
+"عرضها": [
+"Afficher",
+"Show"
+],
 "عزباء": [
 "Célibataire",
 "Single"
@@ -5523,9 +5771,17 @@
 "Opérations du jour",
 "Today’s operations"
 ],
+"عمليات نهار": [
+"Opérations du",
+"Operations of"
+],
 "عملية": [
 "opération",
 "operation"
+],
+"عملية تاع نهار": [
+"opérations du jour",
+"operations of day"
 ],
 "عملية تنتظر الإرسال": [
 "opération en attente d’envoi",
@@ -5622,6 +5878,14 @@
 "غرفة ليزر": [
 "Salle laser",
 "Laser room"
+],
+"غلطة": [
+"Erreur",
+"Mistake"
+],
+"غلطة في العدّ": [
+"Erreur de comptage",
+"Counting error"
 ],
 "غياب": [
 "Absence",
@@ -5807,6 +6071,10 @@
 "En attente",
 "Waiting"
 ],
+"في البرنامج": [
+"Dans le programme",
+"In the program"
+],
 "في الساعة": [
 "à l’heure",
 "at the time"
@@ -5818,6 +6086,10 @@
 "في انتظار أول اتصال بالحاسوب المركزي لجلب المستخدمين والقوائم": [
 "En attente de la première connexion à l’ordinateur central pour récupérer les utilisateurs et les listes",
 "Waiting for the first connection to the central computer to fetch users and lists"
+],
+"في انتظار المديرة": [
+"En attente de la directrice",
+"Waiting for the director"
 ],
 "في انتظاركم": [
 "Nous vous attendons",
@@ -5931,6 +6203,10 @@
 "Valeur du stock",
 "Stock value"
 ],
+"قيمة النقص بسعر الشراء": [
+"Valeur du manque au prix d’achat",
+"Shortage value at purchase price"
+],
 "كؤوس إضافية": [
 "Ventouses supplémentaires",
 "Extra cups"
@@ -5946,6 +6222,10 @@
 "كانت": [
 "Était",
 "Was"
+],
+"كاين": [
+"Il y a",
+"There are"
 ],
 "كبسول": [
 "Gélule",
@@ -6603,6 +6883,10 @@
 "Sorti de la caisse",
 "Taken from the cash box"
 ],
+"ما كاين حتى تصحيح": [
+"Aucune correction",
+"No corrections"
+],
 "ما كاين حتى حصة فاتت بلا موعد جديد": [
 "Aucune séance manquée sans nouveau rendez-vous",
 "No missed session without a new appointment"
@@ -6610,6 +6894,18 @@
 "ما كاين حتى حصة في هاذ الفترة": [
 "Aucune séance sur cette période",
 "No session in this period"
+],
+"ما كاين حتى عملية في هاذ النهار": [
+"Aucune opération ce jour",
+"No operations this day"
+],
+"ما كاين حتى عملية ملغاة في هاذ الشهر": [
+"Aucune opération annulée ce mois",
+"No cancelled operations this month"
+],
+"ما كاين حتى فرق": [
+"Aucune différence",
+"No difference"
 ],
 "ما كاين حتى مادة لازم تتشرى دروك": [
 "Aucun produit à acheter pour le moment",
@@ -6695,9 +6991,21 @@
 "Planifié",
 "Scheduled"
 ],
+"مبلغ": [
+"Montant",
+"Amount"
+],
 "مبلغ التخفيض": [
 "Montant de la remise",
 "Discount amount"
+],
+"مبلغ في الانتظار": [
+"Montant en attente",
+"Pending amount"
+],
+"مبلغ ما تخلّصش": [
+"montant non payé",
+"unpaid amount"
 ],
 "مبلغ من أيام سابقة مازال ما تخلّصش": [
 "Montant de jours précédents pas encore payé",
@@ -6798,6 +7106,10 @@
 "محفوظة": [
 "Enregistrées",
 "Saved"
+],
+"محفوظة هنا برك": [
+"conservées ici seulement",
+"kept here only"
 ],
 "مختلطة": [
 "Mixte",
@@ -6927,6 +7239,10 @@
 "Déjà commandé",
 "Already ordered"
 ],
+"مع إلغاء الزيارة": [
+"Avec l’annulation de la visite",
+"With the visit cancellation"
+],
 "مع الغيابات والمنح": [
 "Avec absences et primes",
 "With absences and bonuses"
@@ -7051,6 +7367,10 @@
 "de",
 "from"
 ],
+"من أيام سابقة باقي": [
+"Il reste des jours précédents",
+"Left from previous days"
+],
 "من استلم المال": [
 "Qui a reçu l’argent",
 "Who received the money"
@@ -7154,6 +7474,10 @@
 "منها نقدًا": [
 "dont en espèces",
 "of which cash"
+],
+"مواد استُعملت وما تسجّلتش": [
+"Produits utilisés non enregistrés",
+"Materials used but not recorded"
 ],
 "مواد العمل": [
 "Produits de travail",
@@ -7379,6 +7703,10 @@
 "Épuisé",
 "Out of stock"
 ],
+"نفّذها": [
+"Exécutée par",
+"Done by"
+],
 "نقدًا": [
 "En espèces",
 "Cash"
@@ -7390,6 +7718,18 @@
 "نقل": [
 "Transport",
 "Transport"
+],
+"نهار العملية": [
+"Jour de l’opération",
+"Operation day"
+],
+"نهار تجربة": [
+"Jour de test",
+"Test day"
+],
+"نهار جديد": [
+"Nouveau jour",
+"New day"
 ],
 "نهاية العقد": [
 "Fin de contrat",
@@ -7410,6 +7750,14 @@
 "هاذ الشهر": [
 "Ce mois",
 "This month"
+],
+"هاذو عمليات تلغات": [
+"Ce sont des opérations annulées",
+"These are cancelled operations"
+],
+"هاذي عمليات اليوم برك": [
+"Ce sont les opérations d’aujourd’hui seulement",
+"These are today’s operations only"
 ],
 "هالات سوداء": [
 "Cernes",
@@ -7547,6 +7895,10 @@
 "et les alternatives possibles",
 "and the possible alternatives"
 ],
+"والبرنامج يحسب الفرق وحدو ويسجّلو بالسبب": [
+"et le programme calcule l’écart tout seul et l’enregistre avec le motif",
+"and the program calculates the difference and records it with the reason"
+],
 "والبرنامج يقترح أقرب وقت فارغ": [
 "et le programme propose l’heure libre la plus proche",
 "and the program suggests the nearest free time"
@@ -7655,6 +8007,10 @@
 "et sorti de la caisse du jour",
 "and taken from today’s cash box"
 ],
+"ورقة الجرد": [
+"Feuille d’inventaire",
+"Inventory sheet"
+],
 "ورقة الحضور": [
 "Feuille de présence",
 "Attendance sheet"
@@ -7715,6 +8071,10 @@
 "et modifiez",
 "and edit"
 ],
+"وقت الإلغاء": [
+"Heure d’annulation",
+"Cancellation time"
+],
 "وقد يتطلب الأمر عدة جلسات": [
 "et plusieurs séances peuvent être nécessaires",
 "and several sessions may be required"
@@ -7727,6 +8087,10 @@
 "et quand chaque séance est terminée",
 "and when each session is finished"
 ],
+"وكي توافق يتنفّذ وحدو": [
+"et quand elle accepte, c’est exécuté tout seul",
+"and when she approves, it is done automatically"
+],
 "ولا": [
 "ou",
 "or"
@@ -7738,6 +8102,14 @@
 "ولا يرى إلا عمليات فرعه": [
 "et il ne voit que les opérations de sa branche",
 "and only sees their branch’s operations"
+],
+"وما تدخلش في الحسابات": [
+"et n’entre pas dans les comptes",
+"and isn’t counted"
+],
+"وما تدخلش لا في الصندوق ولا في التقارير": [
+"et n’entrent ni dans la caisse ni dans les rapports",
+"and count neither in the cash box nor in the reports"
 ],
 "ومازال ما خداتش موعد جديد": [
 "et elle n’a pas encore pris de nouveau rendez-vous",
