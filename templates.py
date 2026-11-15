@@ -7,150 +7,175 @@ TEMPLATES["base.html"] = r"""<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ center }}</title>
 <style>
-:root{--g9:#173f36;--g8:#1f4d43;--g7:#2a6153;--g5:#3f7c6c;--g2:#d9c7ad;--g1:#f3eadc;
---gold:#e4ab74;--goldl:#f0c9a0;--cream:#fbf7f0;--txt:#1f2a26;--mut:#6b6f66;--red:#b3261e;--amber:#9a6200;--line:#e2d3bd}
+:root{--g9:#173f36;--g8:#1f4d43;--g7:#24564a;--g5:#3f7c6c;--g2:#d9c7ad;--g1:#f5efe5;
+--gold:#d9a46c;--goldl:#f0c9a0;--cream:#ffffff;--bg:#f4f0e8;--txt:#1f2a26;--mut:#6b6f66;--red:#b3261e;--amber:#9a6200;--line:#e8dfd1;--side:268px}
 *{box-sizing:border-box}
-html{min-height:100%;background:#12322b}
-body{margin:0;font-family:Tahoma,"Segoe UI",Arial,sans-serif;color:var(--txt);font-size:15px;min-height:100vh;display:flow-root;
-background:url({{ url_for('static', filename='pattern.png') }}) repeat,
-radial-gradient(ellipse at 50% 45%,#33655a 0%,#28554b 40%,#1b4038 75%,#12322b 100%) fixed}
-header{background:rgba(12,38,32,.82);color:var(--gold);padding:8px 18px;display:flex;align-items:center;gap:16px;flex-wrap:wrap;border-bottom:1px solid rgba(228,171,116,.45)}
-header .logo{font-size:20px;font-weight:bold;display:flex;align-items:center;gap:10px;color:var(--gold)}
-header .logo img{height:52px}
-header .who{margin-inline-start:auto;font-size:13px;color:var(--goldl)}
-header .who a{color:var(--goldl)}
-nav{background:rgba(12,38,32,.55);display:flex;flex-wrap:wrap;padding:0 10px;border-bottom:1px solid rgba(228,171,116,.25)}
-nav a{color:var(--goldl);text-decoration:none;padding:10px 13px;font-size:14px}
-nav a:hover{background:rgba(228,171,116,.15);color:#fff}
-nav a.on{background:var(--gold);color:var(--g9)}
-main{max-width:1200px;margin:18px auto;padding:0 14px}
-main>h1{color:var(--gold)}
-.card{background:var(--cream);border:1px solid rgba(228,171,116,.55);border-radius:12px;padding:16px;margin-bottom:16px}
-h1{font-size:21px;color:var(--g9);margin:0 0 14px}
-h2{font-size:17px;color:var(--g8);margin:0 0 12px}
+html{min-height:100%;background:var(--bg)}
+body{margin:0;font-family:Tahoma,"Segoe UI",Arial,sans-serif;color:var(--txt);font-size:15px;min-height:100vh;background:var(--bg)}
+body.out{background:url({{ url_for('static', filename='pattern.png') }}) repeat,radial-gradient(ellipse at 50% 45%,#33655a 0%,#28554b 40%,#1b4038 75%,#12322b 100%) fixed}
+/* ---- الشريط الجانبي ---- */
+.side{position:fixed;inset-block:0;inset-inline-start:0;width:var(--side);background:linear-gradient(180deg,#1f4a40 0%,#173d34 55%,#12322b 100%);
+ color:#e9e1d2;display:flex;flex-direction:column;z-index:30;box-shadow:0 0 18px rgba(0,0,0,.18)}
+.side .brand{display:flex;align-items:center;gap:12px;padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
+.side .brand img{width:50px;height:50px;border-radius:12px;background:rgba(255,255,255,.06);padding:3px;border:1px solid rgba(217,164,108,.45)}
+.side .brand b{display:block;color:var(--goldl);font-size:19px}
+.side .brand span{font-size:12px;color:#b9c9c2}
+.side .scope{padding:10px 14px 0}
+.side .scope select{width:100%;background:rgba(255,255,255,.07);color:#f1e7d6;border:1px solid rgba(217,164,108,.4);font-size:13px}
+.side .scope option{color:#000}
+.side nav{flex:1;overflow-y:auto;padding:10px 10px 14px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent}
+.side nav a{display:flex;align-items:center;gap:10px;color:#e6dfd2;text-decoration:none;padding:10px 12px;margin:2px 0;border-radius:10px;font-size:14.5px;border:1px solid transparent}
+.side nav a:hover{background:rgba(255,255,255,.06)}
+.side nav a.on{background:rgba(255,255,255,.09);border-color:rgba(217,164,108,.55);box-shadow:inset 3px 0 0 var(--gold);color:#fff}
+.side nav a .ic{color:#cfe0d9;width:1.2em;height:1.2em}
+.side nav a.on .ic{color:var(--goldl)}
+.side nav .sec{font-size:12px;color:#93aaa1;padding:14px 12px 4px}
+.side nav .badge{margin-inline-start:auto}
+.side .me{border-top:1px solid rgba(255,255,255,.08);padding:12px 14px;display:flex;align-items:center;gap:10px}
+.side .me .nm{flex:1;min-width:0}.side .me .nm b{display:block;color:#fff;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side .me .nm span{font-size:12px;color:#a9bdb5}
+.side .me a.out{background:rgba(255,255,255,.1);color:#f1e7d6;text-decoration:none;padding:6px 12px;border-radius:9px;font-size:13px}
+.side .me a.out:hover{background:rgba(255,255,255,.18)}
+.side .tools{display:flex;gap:6px;align-items:center;padding:0 14px 12px;font-size:12px}
+.side .tools a{color:#cfe0d9;text-decoration:none}
+.langs{display:inline-flex;gap:4px;align-items:center}.langs a{padding:1px 7px;border-radius:6px;border:1px solid rgba(217,164,108,.5);text-decoration:none;font-size:12px;color:inherit}.langs a.on{background:var(--gold);color:#173f36!important;font-weight:bold}
+/* ---- الشريط العلوي ---- */
+.wrap{margin-inline-start:var(--side);min-height:100vh;display:flex;flex-direction:column}
+.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:12px 26px;min-height:64px}
+.top .ttl{font-size:20px;font-weight:bold;color:var(--txt)}
+.top .pill{background:#f6e9d6;color:#7a5323;border:1px solid #ecd3b0;border-radius:20px;padding:3px 12px;font-size:12.5px;font-weight:bold}
+.top .dt{margin-inline-start:auto;text-align:end;line-height:1.35}
+.top .dt b{display:block;font-size:14px}.top .dt span{font-size:12px;color:var(--mut)}
+.top .burger{display:none;background:none;border:0;font-size:24px;cursor:pointer;color:var(--g8)}
+.top .sync{font-size:12px;color:var(--mut)}
+main{padding:22px 26px 40px;max-width:1500px;width:100%}
+@media screen{main>h1:first-of-type{display:none}}
+/* ---- العناصر ---- */
+.card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(60,40,10,.04)}
+h1{font-size:21px;color:var(--txt);margin:0 0 14px}
+h2{font-size:17px;color:var(--txt);margin:0 0 12px}
 a{color:var(--g7)}
 table{width:100%;border-collapse:collapse;font-size:14px}
-th{background:#efe2cf;color:var(--g9);text-align:start;padding:8px;border-bottom:1px solid var(--line)}
-td{padding:7px 8px;border-bottom:1px solid #ece2d3;vertical-align:middle}
+th{background:#f7f2ea;color:var(--g9);text-align:start;padding:9px 8px;border-bottom:1px solid var(--line);font-weight:bold}
+td{padding:8px;border-bottom:1px solid #f0e9de;vertical-align:middle}
 tr.cx td{color:#999;text-decoration:line-through}
-input,select,textarea{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:8px;background:#fff;min-width:0}
+input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;min-width:0}
 textarea{width:100%}
-input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);border-color:var(--gold)}
-.btn{display:inline-block;background:var(--g7);color:#fff;border:0;border-radius:8px;padding:8px 14px;
-cursor:pointer;text-decoration:none;font:inherit;font-size:14px}
+input:focus,select:focus,textarea:focus{outline:2px solid #e9c9a2;border-color:var(--gold)}
+.btn{display:inline-block;background:var(--g8);color:#fff;border:0;border-radius:10px;padding:9px 16px;
+cursor:pointer;text-decoration:none;font:inherit;font-size:14px;font-weight:bold}
 .btn:hover{background:var(--g9)}
-.btn.sm{padding:4px 9px;font-size:13px}
-.btn.light{background:var(--g1);color:var(--g9);border:1px solid var(--line)}
-.btn.gold{background:var(--gold);color:var(--g9)}
+.btn.sm{padding:5px 10px;font-size:13px;font-weight:normal}
+.btn.light{background:#fff;color:var(--txt);border:1px solid var(--line);font-weight:normal}
+.btn.light:hover{background:var(--g1)}
+.btn.gold{background:#e9b98a;color:#3d2a14;border:1px solid #dba571}
+.btn.gold:hover{background:#e2ab77}
 .btn.red{background:var(--red)}
-main>.row .btn{background:var(--gold);color:var(--g9)}
-main>.row .btn.light{background:rgba(251,247,240,.9)}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
 .row label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
-.stat{background:var(--cream);border:1px solid rgba(228,171,116,.55);border-top:4px solid var(--gold);border-radius:12px;padding:14px}
-.stat .n{font-size:24px;font-weight:bold;color:var(--g8)}
+.stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(60,40,10,.04);position:relative}
+.stat .n{font-size:26px;font-weight:bold;color:var(--txt);margin-top:4px}
 .stat .l{color:var(--mut);font-size:13px}
-.flash{padding:10px 14px;border-radius:8px;margin-bottom:12px}
-.flash.ok{background:#e6f2ea;color:var(--g9);border:1px solid #b9d8c3}
+.flash{padding:11px 15px;border-radius:12px;margin-bottom:14px}
+.flash.ok{background:#e9f3ec;color:var(--g9);border:1px solid #c5ddcc}
 .flash.err{background:#fdecea;color:var(--red);border:1px solid #f3c1bc}
 .flash a{color:inherit}
-.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:12px;background:#e3efe8;color:var(--g9)}
-.langs{display:inline-flex;gap:4px;align-items:center}.langs a{padding:1px 7px;border-radius:6px;border:1px solid rgba(228,171,116,.5);text-decoration:none;font-size:12px}.langs a.on{background:var(--gold);color:#173f36!important;font-weight:bold}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.chip{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:4px;padding:4px 10px;border:1px solid #e0d2bb;border-radius:20px;background:#fffaf2;cursor:pointer;font-size:13px}
+.toasts{position:fixed;bottom:18px;inset-inline-end:18px;display:flex;flex-direction:column;gap:8px;z-index:50}
+.toast{background:#1f4d43;color:#fff;padding:12px 18px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.18);min-width:200px;font-size:14px;transition:opacity .4s,transform .4s}
+.toast.hide{opacity:0;transform:translateY(10px)}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;background:#e3efe8;color:var(--g9)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.chip{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:4px;padding:5px 11px;border:1px solid #e0d2bb;border-radius:20px;background:#fffaf2;cursor:pointer;font-size:13px}
 .chip:has(input:checked){background:#f3e3c8;border-color:#c99a5b;font-weight:bold}
 .tag.amber{background:#fbeedd;color:var(--amber)}.tag.red{background:#fdecea;color:var(--red)}
 .tag.gray{background:#eee;color:#555}
 .mut{color:var(--mut);font-size:13px}
 .right{text-align:left}
 .picker{position:relative}.picker .list{position:absolute;z-index:5;background:#fff;border:1px solid var(--line);
-border-radius:8px;width:100%;max-height:240px;overflow:auto;display:none}
-.picker .list div{padding:7px 10px;cursor:pointer}.picker .list div:hover{background:var(--g1)}
+border-radius:10px;width:100%;max-height:240px;overflow:auto;display:none;box-shadow:0 6px 18px rgba(0,0,0,.08)}
+.picker .list div{padding:8px 10px;cursor:pointer}.picker .list div:hover{background:var(--g1)}
 .brandlogo{display:block;margin:0 auto}
-.dd{position:relative}.dd summary{list-style:none;cursor:pointer;color:var(--goldl);padding:10px 13px;font-size:14px}
-.dd summary::-webkit-details-marker{display:none}.dd[open] summary{background:rgba(228,171,116,.15)}
-.ddm{position:absolute;z-index:20;background:#173f36;border:1px solid rgba(228,171,116,.5);border-radius:8px;min-width:220px;padding:6px 0;box-shadow:0 8px 20px rgba(0,0,0,.3)}
-.ddm a{display:block;padding:8px 14px}
 .ic{width:1.15em;height:1.15em;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;vertical-align:-.22em;flex:none}
-nav a .ic,.dd summary .ic,.ddm a .ic{color:var(--gold);margin-inline-end:6px}
-nav a.on .ic{color:inherit}
-.ddm a{display:flex!important;align-items:center;justify-content:flex-start}
-h1 .ic.pg{box-sizing:border-box;width:1.7em;height:1.7em;padding:.3em;margin-inline-end:.45em;border-radius:14px;vertical-align:middle;
- color:#0f4c45;background:linear-gradient(135deg,#f7e2bd,#e4ab74);box-shadow:0 3px 10px rgba(228,171,116,.45),inset 0 1px 0 rgba(255,255,255,.6);stroke-width:1.9}
+h1 .ic.pg{box-sizing:border-box;width:1.7em;height:1.7em;padding:.3em;margin-inline-end:.45em;border-radius:12px;vertical-align:middle;color:#7a5323;background:#f6e9d6;stroke-width:1.9}
 h2 .ic{color:var(--gold);margin-inline-end:6px}
 .itm{display:inline-flex;width:30px;height:30px;border-radius:9px;align-items:center;justify-content:center;margin-inline-end:8px;vertical-align:middle;
- color:#0f4c45;background:linear-gradient(135deg,#eef6f3,#cfe6df);box-shadow:inset 0 0 0 1px rgba(15,76,69,.12)}
+ color:#7a5323;background:#f6ecdd;box-shadow:inset 0 0 0 1px rgba(122,83,35,.1)}
 .itm .ic{box-sizing:content-box;width:18px;height:18px;vertical-align:0}
 .av{display:inline-flex;width:32px;height:32px;border-radius:50%;align-items:center;justify-content:center;margin-inline-end:8px;vertical-align:middle;
  font-weight:bold;font-size:15px;background:hsl(var(--h) 45% 88%);color:hsl(var(--h) 55% 26%);box-shadow:inset 0 0 0 2px hsl(var(--h) 45% 78%)}
-.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;margin-bottom:16px}
-.tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 8px;border-radius:14px;text-decoration:none;
- background:var(--card,#fbf6ec);color:#0f4c45;font-weight:bold;box-shadow:0 4px 14px rgba(0,0,0,.12);transition:transform .15s,box-shadow .15s}
-.tile:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.2)}
-.tile .ic{box-sizing:border-box;width:56px;height:56px;padding:13px;border-radius:50%;color:#0f4c45;background:linear-gradient(135deg,#f7e2bd,#e4ab74);stroke-width:1.6}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px}
+.tile{display:flex;flex-direction:column;align-items:center;gap:10px;padding:18px 8px;border-radius:14px;text-decoration:none;
+ background:#fff;border:1px solid var(--line);color:var(--txt);font-weight:bold;box-shadow:0 1px 3px rgba(60,40,10,.04);transition:transform .15s,box-shadow .15s,border-color .15s}
+.tile:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(60,40,10,.1);border-color:#e3c49c}
+.tile .ic{box-sizing:border-box;width:52px;height:52px;padding:13px;border-radius:14px;color:#7a5323;background:#f6ecdd;stroke-width:1.6}
 .badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:#c0392b;color:#fff;font-size:12px;text-align:center}
-.viewing{background:var(--gold);color:var(--g9);padding:6px 14px;border-radius:8px;margin-bottom:12px;display:flex;gap:10px;align-items:center}
-@media print{header,nav,.noprint{display:none!important}body,html{background:#fff!important}.card{border:0}}
-</style></head><body>
+.viewing{background:#f6e9d6;color:#5b3f1c;border:1px solid #ecd3b0;padding:8px 14px;border-radius:12px;margin-bottom:14px;display:flex;gap:10px;align-items:center}
+.nodebar{font-size:12.5px;color:var(--mut);margin-bottom:12px}
+.nodebar a{color:var(--g7)}
+.shade{display:none}
+@media (max-width:900px){.side{transform:translateX(105%);transition:transform .25s}[dir=ltr] .side{transform:translateX(-105%)}
+ body.menu .side{transform:none}.wrap{margin-inline-start:0}.top .burger{display:block}main{padding:16px 14px 40px}.top{padding:10px 14px}
+ body.menu .shade{display:block;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:25}}
+@media print{.side,.top,.toasts,.noprint{display:none!important}.wrap{margin:0!important}body,html{background:#fff!important}.card{border:0;box-shadow:none}main{padding:0}}
+</style></head><body class="{{ '' if cu else 'out' }}">
 {{ icon_sprite() }}
-{% if cu %}
-<header><div class="logo"><img src="{{ url_for('static', filename='logo.png') }}" alt="">{{ center }}</div>
-{% if cu.role=='admin' %}<form action="{{ url_for('view_branch') }}" style="margin:0"><select name="b" onchange="this.form.submit()" style="background:rgba(255,255,255,.08);color:var(--goldl);border-color:rgba(228,171,116,.5)">
-<option value="" style="color:#000">الحاسوب المركزي — كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" style="color:#000" {{ 'selected' if view_branch==b.id }}>عرض: {{ b.name }}</option>{% endfor %}</select></form>{% endif %}
-<div class="who">{{ cu.full_name or cu.username }} — {{ ROLES[cu.role] }}{% if cu.branch_id %} — {{ branch_name(cu.branch_id) }}{% endif %}
- | <a href="{{ url_for('change_password') }}">{{ ic('key') }} كلمة المرور</a> | <a href="{{ url_for('logout') }}">{{ ic('logout') }} خروج</a>
- | <span class="langs">{% for k, v in [('ar','ع'),('fr','FR'),('en','EN')] %}<a href="{{ url_for('set_lang', code=k) }}" class="{{ 'on' if cur_lang==k }}" title="{{ LANGS[k] }}">{{ v }}</a>{% endfor %}</span></div></header>
+{% if cu %}{% set ep = request.endpoint %}
+<aside class="side" id="side">
+<div class="brand"><img src="{{ url_for('static', filename='logo.png') }}" alt=""><div><b>بيلسان</b><span>للطب البديل</span></div></div>
+{% if cu.role=='admin' %}<form class="scope" action="{{ url_for('view_branch') }}"><select name="b" onchange="this.form.submit()">
+<option value="">الحاسوب المركزي — كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if view_branch==b.id }}>عرض: {{ b.name }}</option>{% endfor %}</select></form>{% endif %}
 <nav>
-{% set ep = request.endpoint %}
 <a href="{{ url_for('dashboard') }}" class="{{ 'on' if ep in ('dashboard','branch_view') }}">{{ ic('home') }}الرئيسية</a>
 {% if cu.role in ('admin','laser','beauty') %}<a href="{{ url_for('visit_queue') }}" class="{{ 'on' if ep in ('visit_queue','visit_view') }}">{{ ic('queue') }}{{ 'كل الأقسام الآن' if cu.role=='admin' else 'قائمة الانتظار' }}{% if queue_count %} <span class="badge">{{ queue_count }}</span>{% endif %}</a>{% endif %}
 {% if perm('reception_visits') %}<a href="{{ url_for('visit_new') }}" class="{{ 'on' if ep in ('visit_new','visits_list') }}">{{ ic('reception') }}استقبال زبون</a>{% endif %}
 {% if perm('collect') %}<a href="{{ url_for('reception') }}" class="{{ 'on' if ep in ('reception','receipt') }}">{{ ic('cash') }}{{ 'الاستقبال والتحصيل' if cu.role in ('admin','reception') else 'التحصيل' }}</a>
 {% elif cu.role in ('laser','beauty') %}<a href="{{ url_for('charge_new') }}" class="{{ 'on' if ep=='charge_new' }}">{{ ic('send') }}إرسال مبلغ للاستقبال</a>{% endif %}
 {% if perm('pos') %}<a href="{{ url_for('pos') }}" class="{{ 'on' if ep=='pos' }}">{{ ic('cart') }}بيع المنتجات</a>{% endif %}
-<a href="{{ url_for('appointments') }}" class="{{ 'on' if ep in ('appointments','calendar') }}">{{ ic('calendar') }}المواعيد</a>
+<a href="{{ url_for('appointments') }}" class="{{ 'on' if ep in ('appointments','appt_reschedule','appts_missed') }}">{{ ic('calendar') }}المواعيد</a>
 <a href="{{ url_for('plans') }}" class="{{ 'on' if ep in ('plans','plan_new','plan_view') }}">{{ ic('plans') }}خطط الحصص</a>
 <a href="{{ url_for('clients') }}" class="{{ 'on' if ep in ('clients','client_view','consent') }}">{{ ic('clients') }}الزبائن</a>
-<details class="dd"><summary>{{ ic('more') }}المزيد ▾{% if alerts_count and perm('stock_alerts') %} <span class="badge">{{ alerts_count }}</span>{% endif %}</summary><div class="ddm">
-{% if perm('calendar') %}<a href="{{ url_for('calendar') }}">{{ ic('rooms') }}جدول الغرف</a>{% endif %}
-{% if perm('reception_visits') %}<a href="{{ url_for('visits_list') }}">{{ ic('visits') }}الزيارات</a>{% endif %}
-{% if perm('direct_payment') %}<a href="{{ url_for('payment_new') }}">{{ ic('card') }}دفعة مباشرة</a>{% endif %}
-{% if perm('debts') %}<a href="{{ url_for('debts') }}">{{ ic('debt') }}الديون</a>{% endif %}
-{% if perm('cash_close') and cu.role!='admin' %}<a href="{{ url_for('cash_close') }}">{{ ic('lock') }}إغلاق صندوق اليوم</a>{% endif %}
-{% if perm('expenses') and cu.role!='admin' %}<a href="{{ url_for('expenses') }}">{{ ic('expense') }}إخراج مبلغ (مصروف)</a>{% endif %}
-{% if perm('products_edit') and cu.role!='admin' %}<a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>{% endif %}
-{% if perm('stock_use') and cu.role!='admin' %}<a href="{{ url_for('stock_use') }}">{{ ic('cream') }}استهلاك مواد العمل</a>{% endif %}
-{% if perm('purchases') and cu.role!='admin' %}<a href="{{ url_for('purchases') }}">{{ ic('invoice') }}فواتير الشراء</a>{% endif %}
-{% if perm('courses') %}<a href="{{ url_for('courses') }}">{{ ic('course') }}الدورات والشهادات</a>{% endif %}
-{% if perm('attendance') %}<a href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}
-{% if perm('stock_alerts') %}<a href="{{ url_for('stock_alerts_page') }}">{{ ic('alert') }}تنبيهات المخزون{% if alerts_count %} <span class="badge">{{ alerts_count }}</span>{% endif %}</a>{% endif %}
-</div></details>
-{% if cu.role=='admin' %}<details class="dd"><summary>{{ ic('shield') }}الإدارة ▾</summary><div class="ddm">
-<a href="{{ url_for('cash_daily') }}">{{ ic('safe') }}الصندوق اليومي</a>
-<a href="{{ url_for('cashbox') }}">{{ ic('vault') }}{{ 'كل العمليات (الصندوق المركزي)' if not view_branch else 'عمليات الفرع' }}</a>
-<a href="{{ url_for('reports') }}">{{ ic('reports') }}التقارير والأرباح</a>
-<a href="{{ url_for('expenses') }}">{{ ic('expense') }}المصاريف</a>
-<a href="{{ url_for('permissions') }}">{{ ic('key') }}صلاحيات العمال</a>
-<a href="{{ url_for('audit_page') }}">{{ ic('audit') }}سجل العمليات</a>
-<a href="{{ url_for('backup_page') }}">{{ ic('backup') }}النسخ الاحتياطي</a>
-<a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>
-<a href="{{ url_for('stock_use') }}">{{ ic('cream') }}استهلاك مواد العمل</a>
-<a href="{{ url_for('month_report') }}">{{ ic('reports') }}تقرير الشهر (ورقة وحدة)</a>
-<a href="{{ url_for('operations') }}">{{ ic('audit') }}إلغاء العمليات</a>
-<a href="{{ url_for('cancelled_ops') }}">{{ ic('audit') }}العمليات الملغاة</a>
-<a href="{{ url_for('stock_manage') }}">{{ ic('products') }}إدارة المخزون (الجرد)</a>
-<a href="{{ url_for('services_profit') }}">{{ ic('services') }}فائدة كل خدمة</a>
-<a href="{{ url_for('sessions_profit') }}">{{ ic('reports') }}فائدة كل حصة</a>
-<a href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات والموردون</a>
-<a href="{{ url_for('services') }}">{{ ic('services') }}الخدمات والأسعار</a>
-<a href="{{ url_for('branches') }}">{{ ic('branch') }}الفروع والغرف</a>
-{% if not NODE %}<a href="{{ url_for('approvals') }}">{{ ic('key') }}طلبات الموافقة{% if napprovals %} <span class="tag red">{{ napprovals }}</span>{% endif %}</a>
-<a href="{{ url_for('devices') }}">{{ ic('monitor') }}الحواسيب وكلمات السر</a>{% endif %}
-<a href="{{ url_for('users') }}">{{ ic('users') }}المستخدمون</a>
-<a href="{{ url_for('sms_page') }}">{{ ic('sms') }}رسائل SMS</a>
-<a href="{{ url_for('settings') }}">{{ ic('settings') }}الإعدادات</a>
-</div></details>{% endif %}
+{% if perm('calendar') %}<a href="{{ url_for('calendar') }}" class="{{ 'on' if ep=='calendar' }}">{{ ic('rooms') }}جدول الغرف</a>{% endif %}
+{% if perm('debts') %}<a href="{{ url_for('debts') }}" class="{{ 'on' if ep=='debts' }}">{{ ic('debt') }}الديون</a>{% endif %}
+<div class="sec">التسيير</div>
+{% if perm('reception_visits') %}<a href="{{ url_for('visits_list') }}" class="{{ 'on' if ep=='visits_list' }}">{{ ic('visits') }}الزيارات</a>{% endif %}
+{% if perm('direct_payment') %}<a href="{{ url_for('payment_new') }}" class="{{ 'on' if ep=='payment_new' }}">{{ ic('card') }}دفعة مباشرة</a>{% endif %}
+{% if perm('cash_close') and cu.role!='admin' %}<a href="{{ url_for('cash_close') }}" class="{{ 'on' if ep=='cash_close' }}">{{ ic('lock') }}إغلاق صندوق اليوم</a>{% endif %}
+{% if perm('expenses') and cu.role!='admin' %}<a href="{{ url_for('expenses') }}" class="{{ 'on' if ep=='expenses' }}">{{ ic('expense') }}إخراج مبلغ (مصروف)</a>{% endif %}
+{% if perm('products_edit') %}<a href="{{ url_for('products') }}" class="{{ 'on' if ep in ('products','product_import') }}">{{ ic('products') }}المنتجات والمخزون</a>
+<a href="{{ url_for('stock_manage') }}" class="{{ 'on' if ep=='stock_manage' }}">{{ ic('products') }}إدارة المخزون (الجرد)</a>{% endif %}
+{% if perm('stock_use') %}<a href="{{ url_for('stock_use') }}" class="{{ 'on' if ep=='stock_use' }}">{{ ic('cream') }}استهلاك مواد العمل</a>{% endif %}
+{% if perm('purchases') %}<a href="{{ url_for('purchases') }}" class="{{ 'on' if ep in ('purchases','purchase_new','purchase_view','purchase_auto','suppliers') }}">{{ ic('truck') }}المشتريات</a>{% endif %}
+{% if perm('stock_alerts') %}<a href="{{ url_for('stock_alerts_page') }}" class="{{ 'on' if ep=='stock_alerts_page' }}">{{ ic('alert') }}تنبيهات المخزون{% if alerts_count %} <span class="badge">{{ alerts_count }}</span>{% endif %}</a>{% endif %}
+{% if perm('courses') %}<a href="{{ url_for('courses') }}" class="{{ 'on' if ep in ('courses','course_view','certificate') }}">{{ ic('course') }}الدورات والشهادات</a>{% endif %}
+{% if perm('attendance') %}<a href="{{ url_for('staff') }}" class="{{ 'on' if ep in ('staff','employee_view','payslip') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}
+{% if perm('cancel_ops') or cu.role=='admin' %}<a href="{{ url_for('operations') }}" class="{{ 'on' if ep=='operations' }}">{{ ic('audit') }}إلغاء العمليات</a>{% endif %}
+{% if cu.role=='admin' %}<div class="sec">الإدارة</div>
+<a href="{{ url_for('cash_daily') }}" class="{{ 'on' if ep=='cash_daily' }}">{{ ic('safe') }}الصندوق اليومي</a>
+<a href="{{ url_for('cashbox') }}" class="{{ 'on' if ep=='cashbox' }}">{{ ic('vault') }}{{ 'كل العمليات (الصندوق المركزي)' if not view_branch else 'عمليات الفرع' }}</a>
+<a href="{{ url_for('reports') }}" class="{{ 'on' if ep=='reports' }}">{{ ic('reports') }}التقارير والأرباح</a>
+<a href="{{ url_for('month_report') }}" class="{{ 'on' if ep=='month_report' }}">{{ ic('reports') }}تقرير الشهر (ورقة وحدة)</a>
+<a href="{{ url_for('services_profit') }}" class="{{ 'on' if ep=='services_profit' }}">{{ ic('services') }}فائدة كل خدمة</a>
+<a href="{{ url_for('sessions_profit') }}" class="{{ 'on' if ep=='sessions_profit' }}">{{ ic('reports') }}فائدة كل حصة</a>
+<a href="{{ url_for('expenses') }}" class="{{ 'on' if ep=='expenses' }}">{{ ic('expense') }}المصاريف</a>
+<a href="{{ url_for('services') }}" class="{{ 'on' if ep=='services' }}">{{ ic('services') }}الخدمات والأسعار</a>
+{% if not NODE %}<a href="{{ url_for('approvals') }}" class="{{ 'on' if ep=='approvals' }}">{{ ic('key') }}طلبات الموافقة{% if napprovals %} <span class="badge">{{ napprovals }}</span>{% endif %}</a>{% endif %}
+<a href="{{ url_for('cancelled_ops') }}" class="{{ 'on' if ep=='cancelled_ops' }}">{{ ic('audit') }}العمليات الملغاة</a>
+<a href="{{ url_for('permissions') }}" class="{{ 'on' if ep=='permissions' }}">{{ ic('key') }}صلاحيات العمال</a>
+<a href="{{ url_for('branches') }}" class="{{ 'on' if ep in ('branches','branch_edit') }}">{{ ic('branch') }}الفروع والغرف</a>
+{% if not NODE %}<a href="{{ url_for('devices') }}" class="{{ 'on' if ep=='devices' }}">{{ ic('monitor') }}الحواسيب وكلمات السر</a>{% endif %}
+<a href="{{ url_for('users') }}" class="{{ 'on' if ep=='users' }}">{{ ic('users') }}المستخدمون</a>
+<a href="{{ url_for('sms_page') }}" class="{{ 'on' if ep=='sms_page' }}">{{ ic('sms') }}رسائل SMS</a>
+<a href="{{ url_for('audit_page') }}" class="{{ 'on' if ep=='audit_page' }}">{{ ic('audit') }}سجل العمليات</a>
+<a href="{{ url_for('backup_page') }}" class="{{ 'on' if ep=='backup_page' }}">{{ ic('backup') }}النسخ الاحتياطي</a>
+<a href="{{ url_for('settings') }}" class="{{ 'on' if ep=='settings' }}">{{ ic('settings') }}الإعدادات</a>{% endif %}
 </nav>
+<div class="tools"><a href="{{ url_for('change_password') }}">{{ ic('key') }} كلمة المرور</a><span style="margin-inline-start:auto" class="langs">{% for k, v in [('ar','ع'),('fr','FR'),('en','EN')] %}<a href="{{ url_for('set_lang', code=k) }}" class="{{ 'on' if cur_lang==k }}" title="{{ LANGS[k] }}">{{ v }}</a>{% endfor %}</span></div>
+<div class="me"><div class="nm"><b>{{ cu.full_name or cu.username }}</b><span>{{ ROLES[cu.role] }}{% if cu.branch_id %} — {{ branch_name(cu.branch_id) }}{% endif %}</span></div><a class="out" href="{{ url_for('logout') }}">خروج</a></div>
+</aside><div class="shade" onclick="document.body.classList.remove('menu')"></div>
+<div class="wrap">
+<div class="top"><button class="burger noprint" onclick="document.body.classList.toggle('menu')" aria-label="menu">☰</button>
+<div class="ttl" id="ttl"></div><span class="pill" id="hijama" style="display:none"></span>
+<div class="dt"><b id="dtg"></b><span id="dth"></span></div></div>
 {% endif %}
 <main>
 {% if NODE and node_status and node_status.clock_off >= 5 %}<div class="flash noprint" style="background:#fff4df;border:1px solid #e4ab74;color:#6b4a12">🕒 ساعة هاذ الحاسوب غالطة بـ {{ node_status.clock_off }} دقيقة. البرنامج يسجّل بساعة الحاسوب المركزي (ما كاين حتى مشكل)، بصّح صلّحوها في Windows: الإعدادات ← الوقت واللغة ← المنطقة الزمنية (UTC+01:00) West Central Africa + «ضبط الوقت تلقائيًا».</div>{% endif %}
@@ -159,16 +184,29 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 العمليات المسجّلة هنا تُرسل عاديًا. <a href="{{ url_for('update_now') }}" onclick="return confirm('تحديث البرنامج الآن؟ يتوقف دقيقة ثم يرجع وحده.')"><b>حدّث الآن</b></a></div>
 {% elif node_status.err %}<div class="flash err noprint">غير متصل بالحاسوب المركزي — البرنامج يعمل عاديًا والعمليات محفوظة هنا ({{ node_status.pending }} عملية تنتظر الإرسال)، وستُرسل تلقائيًا عند رجوع الإنترنت.
 <a href="{{ url_for('sync_now_route') }}">إعادة المحاولة الآن</a></div>
-{% elif node_status.ok %}<div class="mut noprint" style="color:var(--goldl);margin-bottom:8px">متصل بالحاسوب المركزي — آخر مزامنة {{ node_status.ok[11:19] }}{% if node_status.ms %} ({{ node_status.ms }} ms){% endif %}{% if node_status.pending %} · {{ node_status.pending }} عملية تنتظر الإرسال{% endif %} · <a style="color:var(--goldl)" href="{{ url_for('sync_now_route') }}">مزامنة الآن</a></div>{% endif %}{% endif %}
+{% elif node_status.ok %}<div class="nodebar noprint">🟢 متصل بالحاسوب المركزي — آخر مزامنة {{ node_status.ok[11:19] }}{% if node_status.ms %} ({{ node_status.ms }} ms){% endif %}{% if node_status.pending %} · {{ node_status.pending }} عملية تنتظر الإرسال{% endif %} · <a href="{{ url_for('sync_now_route') }}">مزامنة الآن</a></div>{% endif %}{% endif %}
 {% if bk and bk.warn %}<div class="flash err noprint">تنبيه: لم تُصنع نسخة احتياطية منذ أكثر من يومين{% if bk.err %} ({{ bk.err }}){% endif %}. <a href="{{ url_for('backup_page') }}">النسخ الاحتياطي</a></div>{% endif %}
 {% if cu and cu.role=='admin' and view_branch %}<div class="viewing noprint">أنت تعرض: <b>{{ branch_name(view_branch) }}</b> وحده — كل الصفحات مصفّاة على هذا الفرع.
 <a class="btn sm" href="{{ url_for('view_branch', b='') }}" style="margin-inline-start:auto">عرض كل الفروع</a></div>{% endif %}
 {% if cu and alerts_count and request.endpoint in ('dashboard','branch_view','reception','pos') %}<div class="flash err noprint">تنبيه: {{ alerts_count }} منتج قارب على النفاد أو اقتربت صلاحيته. <a href="{{ url_for('stock_alerts_page') }}">عرض القائمة</a></div>{% endif %}
-{% for cat, m in get_flashed_messages(with_categories=true) %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+{% set fl = get_flashed_messages(with_categories=true) %}
+{% for cat, m in fl if cat != 'ok' %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
 {% block body %}{% endblock %}
-</main>
+</main>{% if cu %}</div>{% endif %}
+<div class="toasts noprint">{% for cat, m in fl if cat == 'ok' %}<div class="toast">{{ m }}</div>{% endfor %}</div>
 <script>
 document.addEventListener('click',function(e){document.querySelectorAll('details.dd[open]').forEach(function(d){if(!d.contains(e.target))d.removeAttribute('open')})});
+document.querySelectorAll('.toast').forEach(function(x,i){setTimeout(function(){x.classList.add('hide');setTimeout(function(){x.remove()},500)},4500+i*400)});
+(function(){var h=document.querySelector('main>h1'),t=document.getElementById('ttl');if(t){
+ var a=document.querySelector('.side nav a.on');t.textContent=(h?h.textContent:(a?a.textContent:'')).trim()}
+ var g=document.getElementById('dtg');if(!g)return;
+ var L=document.documentElement.lang||'ar',loc=L==='ar'?'ar-DZ':L==='fr'?'fr-FR':'en-GB';
+ var d=new Date('{{ now_hm()[:10] }}T12:00:00');
+ try{g.textContent=d.toLocaleDateString(loc,{weekday:'long',day:'numeric',month:'long',year:'numeric',numberingSystem:'latn'});
+  document.getElementById('dth').textContent=new Intl.DateTimeFormat((L==='ar'?'ar':L)+'-u-ca-islamic-umalqura-nu-latn',{day:'numeric',month:'long',year:'numeric'}).format(d);
+  var hd=+new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{day:'numeric'}).format(d);
+  if(hd===17||hd===19||hd===21){var p=document.getElementById('hijama');p.textContent='اليوم من أيام الحجامة المسنونة ('+hd+')';p.style.display=''}
+ }catch(e){}})();
 document.querySelectorAll('.picker').forEach(function(pk){
   var inp=pk.querySelector('input[type=text]'), hid=pk.querySelector('input[type=hidden]'), list=pk.querySelector('.list'), t;
   inp.addEventListener('input',function(){hid.value='';clearTimeout(t);var q=inp.value.trim();

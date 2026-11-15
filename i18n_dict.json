@@ -1495,6 +1495,10 @@
 "Tarification",
 "Pricing"
 ],
+"التسيير": [
+"Gestion",
+"Management"
+],
 "التصحيحات": [
 "Corrections",
 "Corrections"
@@ -1576,7 +1580,7 @@
 "Forehead"
 ],
 "الجرد": [
-"L’inventaire",
+"Inventaire",
 "Inventory"
 ],
 "الجل": [
@@ -2850,6 +2854,10 @@
 "اليوم": [
 "Aujourd’hui",
 "Today"
+],
+"اليوم من أيام الحجامة المسنونة": [
+"Aujourd’hui est un jour de hijama recommandé",
+"Today is a recommended cupping day"
 ],
 "امشي": [
 "Marchez",
@@ -6744,7 +6752,7 @@
 "for certificates"
 ],
 "للطب البديل": [
-"de médecine alternative",
+"médecine alternative",
 "alternative medicine"
 ],
 "للغياب": [
