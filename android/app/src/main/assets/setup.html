@@ -1,0 +1,22 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="style.css"></head><body><div class="c">
+<img src="logo.png" alt=""><h2>ربط الهاتف بالحاسوب المركزي</h2>
+<p>اربطي الهاتف بنفس شبكة الويفي التي فيها الحاسوب المركزي، وتأكدي أن البرنامج شغال عليه.</p>
+<button class="g" id="sb" onclick="sc()">بحث تلقائي عن الحاسوب المركزي</button>
+<div class="f" id="found"></div>
+<p>أو اكتبي العنوان الظاهر في صفحة «الحواسيب» على الحاسوب المركزي:</p>
+<input id="a" placeholder="192.168.1.10:5000" inputmode="url" autocomplete="off">
+<button onclick="go(document.getElementById('a').value)">ربط</button>
+<div class="err" id="e"></div></div>
+<script>
+var cur=BilsanApp.current();if(cur)document.getElementById('a').value=cur.replace('http://','');
+function msg(t,ok){var e=document.getElementById('e');e.className=ok?'err ok':'err';e.textContent=t}
+function go(v){msg('جارٍ الاتصال...',true);BilsanApp.connect(v)}
+function done(ok,t){msg(t,false)}
+function sc(){var b=document.getElementById('sb');b.disabled=true;b.textContent='جارٍ البحث... (حتى دقيقة)';document.getElementById('found').innerHTML='';msg('');BilsanApp.scan()}
+function scanned(list,nowifi){var b=document.getElementById('sb');b.disabled=false;b.textContent='بحث تلقائي عن الحاسوب المركزي';
+ if(nowifi){msg('الهاتف غير متصل بشبكة ويفي');return}
+ if(!list.length){msg('لم يُعثر على الحاسوب المركزي. اكتبي العنوان بيدك.');return}
+ if(list.length==1){go(list[0]);return}
+ var f=document.getElementById('found');list.forEach(function(u){var a=document.createElement('a');a.href='#';a.textContent=u.replace('http://','');a.onclick=function(){go(u);return false};f.appendChild(a)})}
+</script></body></html>

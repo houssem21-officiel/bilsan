@@ -13,3 +13,6 @@ backups/
 build/
 dist/
 *.spec
+android/.gradle/
+android/app/build/
+android/build/

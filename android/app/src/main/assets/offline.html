@@ -1,0 +1,8 @@
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="style.css"></head><body><div class="c">
+<img src="logo.png" alt=""><h2>لا يوجد اتصال بالحاسوب المركزي</h2>
+<p>تأكدي أن:<br>• الحاسوب المركزي شغال والبرنامج مفتوح عليه<br>• الهاتف متصل بنفس شبكة الويفي</p>
+<p id="s" dir="ltr" style="font-weight:bold"></p>
+<button onclick="BilsanApp.retry()">إعادة المحاولة</button>
+<button class="l" onclick="BilsanApp.setup()">تغيير عنوان الحاسوب المركزي</button></div>
+<script>document.getElementById('s').textContent=BilsanApp.current().replace('http://','')</script></body></html>

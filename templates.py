@@ -90,6 +90,15 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 .tile .ic{box-sizing:border-box;width:56px;height:56px;padding:13px;border-radius:50%;color:#0f4c45;background:linear-gradient(135deg,#f7e2bd,#e4ab74);stroke-width:1.6}
 .badge{display:inline-block;min-width:20px;padding:0 6px;border-radius:10px;background:#c0392b;color:#fff;font-size:12px;text-align:center}
 .viewing{background:var(--gold);color:var(--g9);padding:6px 14px;border-radius:8px;margin-bottom:12px;display:flex;gap:10px;align-items:center}
+@media(max-width:760px){
+header{padding:6px 10px;gap:6px}header .logo{font-size:17px}header .logo img{height:38px}
+header select{max-width:100%;font-size:14px}header .who{margin-inline-start:0;font-size:13px;width:100%}
+nav{padding:0 4px}nav a,.dd summary{padding:8px 8px!important;font-size:14px!important}
+main{margin:10px auto;padding:0 8px}.card{padding:12px;overflow-x:auto}
+table{display:block;overflow-x:auto;font-size:14px}
+input,select,textarea{max-width:100%}input[style*="width"]{max-width:100%}
+.tiles{grid-template-columns:repeat(3,1fr);gap:8px}.tile{padding:10px 4px;font-size:13px;text-align:center}
+.tile .ic{width:44px;height:44px;padding:10px}h1{font-size:20px}}
 @media print{header,nav,.noprint{display:none!important}body,html{background:#fff!important}.card{border:0}}
 .hj{display:block;font-size:13.5px;color:#7a5323;margin-top:3px}.hj b{background:#f6e9d6;border:1px solid #ecd3b0;border-radius:14px;padding:1px 9px;margin-inline-start:6px}
 .hjd{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid #ece2d3;text-decoration:none;color:var(--txt)}.hjd:last-child{border:0}.hjd:hover{background:#f6efe3}
@@ -1899,6 +1908,10 @@ TEMPLATES["leave.html"] = r"""{% extends "base.html" %}{% block body %}
 
 
 TEMPLATES["devices.html"] = r"""{% extends "base.html" %}{% block body %}
+<div class="card" style="border-color:#c99a5b"><h2>{{ ic('phone') }}تطبيق الهاتف للمديرة</h2>
+<p>ثبّتي تطبيق «بيلسان — المديرة» على هاتفك، واربطي الهاتف بنفس شبكة الويفي التي فيها هذا الحاسوب، ثم اضغطي «بحث تلقائي» في التطبيق أو اكتبي هذا العنوان:</p>
+{% for u in phone_urls %}<p style="font-size:22px;font-weight:bold" dir="ltr">{{ u }}</p>{% else %}<p class="mut">لم يُعرف عنوان هذا الحاسوب في الشبكة.</p>{% endfor %}
+<p class="mut">تدخلين بنفس اسم المستخدم وكلمة المرور، وتجدين كل شيء كما في الحاسوب المركزي. الهاتف يعمل فقط عندما يكون الحاسوب المركزي شغالًا.</p></div>
 <div class="card"><h1>{{ page_icon() }} الحواسيب وكلمات السر</h1>
 <p class="mut">كل حاسوب مربوط بفرع ومكان، ويدخل بكلمة سر خاصة به. تغيير كلمة السر أو الإيقاف يصل للحاسوب عند اتصاله بالإنترنت.
 الحاسوب الموقوف لا يستطيع الدخول ولا إرسال أي شيء.</p>

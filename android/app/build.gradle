@@ -1,0 +1,31 @@
+plugins { id 'com.android.application' }
+
+android {
+    namespace 'com.bilsan.director'
+    compileSdk 34
+    defaultConfig {
+        applicationId 'com.bilsan.director'
+        minSdk 24
+        targetSdk 34
+        versionCode (System.getenv('APP_CODE') ?: '1') as int
+        versionName System.getenv('APP_VER') ?: '1.0'
+    }
+    signingConfigs {
+        release {
+            storeFile file(System.getenv('KS_FILE') ?: 'none.jks')
+            storePassword System.getenv('KS_PASS')
+            keyAlias 'bilsan'
+            keyPassword System.getenv('KS_PASS')
+        }
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}

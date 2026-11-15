@@ -5570,6 +5570,35 @@ def new_pair_code(db, uid):
     return code
 
 
+def phone_urls():
+    """عناوين الحاسوب المركزي في الشبكة المحلية (لتطبيق هاتف المديرة)."""
+    import socket
+    port = (request.host.rsplit(":", 1)[1] if ":" in request.host else "80")
+    ips = set()
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("10.255.255.255", 1))
+        ips.add(s.getsockname()[0])
+        s.close()
+    except OSError:
+        pass
+    try:
+        ips.update(socket.gethostbyname_ex(socket.gethostname())[2])
+    except OSError:
+        pass
+    ips = sorted(i for i in ips if not i.startswith("127.") and not i.startswith("169.254."))
+    return [f"http://{i}:{port}" for i in ips]
+
+
+@app.route("/app/ping")
+def app_ping():
+    """يتعرّف به تطبيق الهاتف على الحاسوب المركزي في الشبكة."""
+    r = Response(json.dumps({"bilsan": 1, "central": not sync.NODE, "name": setting("center_name"), "version": APP_VERSION},
+                            ensure_ascii=False), mimetype="application/json")
+    r.headers["Access-Control-Allow-Origin"] = "*"
+    return r
+
+
 @app.route("/devices", methods=["GET", "POST"])
 @login_required("admin")
 def devices():
@@ -5619,7 +5648,7 @@ def devices():
         db.commit()
         return redirect(url_for("devices"))
     codes = {r["user_id"]: r for r in db.execute("SELECT * FROM pair_codes WHERE expires>=?", (now_str(),))}
-    return render_template("devices.html", rows=device_rows(db), codes=codes,
+    return render_template("devices.html", phone_urls=phone_urls(), rows=device_rows(db), codes=codes,
                            branches=db.execute("SELECT * FROM branches WHERE active=1 ORDER BY id").fetchall(),
                            now=center_now(), version=APP_VERSION)
 
