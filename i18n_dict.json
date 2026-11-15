@@ -855,6 +855,10 @@
 "Choisissez la branche de cet utilisateur",
 "Choose this user’s branch"
 ],
+"اختر القسم اللي يروح ليه الزبون": [
+"Choisissez le service où va le client",
+"Choose the department the client goes to"
+],
 "اختر المادة والكمية": [
 "Choisissez le produit et la quantité",
 "Choose the product and quantity"
@@ -2030,6 +2034,10 @@
 "العكبر": [
 "Propolis",
 "Propolis"
+],
+"العلاج": [
+"Soins",
+"Treatment"
 ],
 "العمال": [
 "Employés",
@@ -4819,6 +4827,10 @@
 "Clients en soin maintenant",
 "Clients in treatment now"
 ],
+"زبائن في الأقسام الآن": [
+"Clients dans les services maintenant",
+"Clients in the departments now"
+],
 "زبائن في الغرف الآن": [
 "Clients dans les salles maintenant",
 "Clients in the rooms now"
@@ -5883,6 +5895,22 @@
 "J’ai lu, compris et accepté",
 "I have read, understood and agreed"
 ],
+"قسم التجميل": [
+"Service esthétique",
+"Beauty department"
+],
+"قسم العلاج": [
+"Service de soins",
+"Treatment department"
+],
+"قسم العلاج الآن": [
+"Service de soins maintenant",
+"Treatment department now"
+],
+"قسم الليزر": [
+"Service laser",
+"Laser department"
+],
 "قطن": [
 "Coton",
 "Cotton"
@@ -5946,6 +5974,10 @@
 "كل": [
 "Chaque",
 "Every"
+],
+"كل الأقسام الآن": [
+"Tous les services maintenant",
+"All departments now"
 ],
 "كل الحواسيب متصلة": [
 "Tous les ordinateurs sont connectés",

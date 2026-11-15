@@ -103,7 +103,7 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 <nav>
 {% set ep = request.endpoint %}
 <a href="{{ url_for('dashboard') }}" class="{{ 'on' if ep in ('dashboard','branch_view') }}">{{ ic('home') }}الرئيسية</a>
-{% if cu.role in ('admin','laser','beauty') %}<a href="{{ url_for('visit_queue') }}" class="{{ 'on' if ep in ('visit_queue','visit_view') }}">{{ ic('queue') }}{{ 'كل الغرف الآن' if cu.role=='admin' else 'قائمة الانتظار' }}{% if queue_count %} <span class="badge">{{ queue_count }}</span>{% endif %}</a>{% endif %}
+{% if cu.role in ('admin','laser','beauty') %}<a href="{{ url_for('visit_queue') }}" class="{{ 'on' if ep in ('visit_queue','visit_view') }}">{{ ic('queue') }}{{ 'كل الأقسام الآن' if cu.role=='admin' else 'قائمة الانتظار' }}{% if queue_count %} <span class="badge">{{ queue_count }}</span>{% endif %}</a>{% endif %}
 {% if perm('reception_visits') %}<a href="{{ url_for('visit_new') }}" class="{{ 'on' if ep in ('visit_new','visits_list') }}">{{ ic('reception') }}استقبال زبون</a>{% endif %}
 {% if perm('collect') %}<a href="{{ url_for('reception') }}" class="{{ 'on' if ep in ('reception','receipt') }}">{{ ic('cash') }}{{ 'الاستقبال والتحصيل' if cu.role in ('admin','reception') else 'التحصيل' }}</a>
 {% elif cu.role in ('laser','beauty') %}<a href="{{ url_for('charge_new') }}" class="{{ 'on' if ep=='charge_new' }}">{{ ic('send') }}إرسال مبلغ للاستقبال</a>{% endif %}
@@ -270,7 +270,7 @@ TEMPLATES["dash_admin.html"] = r"""{% extends "base.html" %}{% block body %}
 <span class="itm" style="background:#fff">{{ ic(icn) }}</span>{{ txt }}<span style="margin-inline-start:auto">←</span></a>{% endfor %}
 {% if not alerts %}<p class="mut">لا طلبات، لا فرق في الصندوق، لا نقص في المخزون، كل الحواسيب متصلة.</p>{% endif %}</div>
 <div class="grid" style="margin-bottom:16px">
-<a class="stat" href="{{ url_for('visit_queue') }}" style="text-decoration:none"><div class="l">زبائن في الغرف الآن (التجميل، الحجامة، الليزر)</div><div class="n">{{ waiting }}</div></a>
+<a class="stat" href="{{ url_for('visit_queue') }}" style="text-decoration:none"><div class="l">زبائن في الأقسام الآن (التجميل، العلاج، الليزر)</div><div class="n">{{ waiting }}</div></a>
 <div class="stat"><div class="l">مجموع مداخيل اليوم (كل الفروع)</div><div class="n">{{ grand|money }} {{ cur }}</div></div></div>
 {% if rooms %}<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:16px">
 {% for bname, b in rooms.items() %}<div class="card" style="margin:0"><h2>{{ ic('branch') }}{{ bname }} — {{ b.total|money }}</h2>
@@ -1244,7 +1244,7 @@ TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 {{ new_client_box(request.path) }}{% endblock %}"""
 
 TEMPLATES["visit_queue.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ page_icon() }}{{ 'كل الغرف الآن' if tgt=='all' else 'قائمة الانتظار' }}{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+<h1>{{ page_icon() }}{{ 'كل الأقسام الآن' if tgt=='all' else 'قائمة الانتظار' }}{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
 {% if not tgt %}<div class="card">لا توجد قائمة انتظار لهذا المستخدم.</div>{% else %}
 <div class="card"><div class="mut noprint" style="margin-bottom:8px">تتحدث القائمة تلقائيًا كل 5 ثوانٍ.</div>
 <div id="qrows">…</div></div>
@@ -1845,7 +1845,7 @@ TEMPLATES["tiles.html"] = r"""<div class="tiles noprint">
 <a class="tile" href="{{ url_for('permissions') }}">{{ ic('key') }}الصلاحيات</a>
 {% if not NODE %}<a class="tile" href="{{ url_for('devices') }}">{{ ic('monitor') }}الحواسيب</a>{% endif %}
 {% else %}
-{% if cu.role in ('laser','beauty','reception') %}<a class="tile" href="{{ url_for('visit_queue') }}">{{ ic('face' if cu.role=='beauty' else 'laser' if cu.role=='laser' else 'hijama') }}{{ 'زبوناتي الآن' if cu.role!='reception' else 'غرفة الحجامة الآن' }}</a>
+{% if cu.role in ('laser','beauty','reception') %}<a class="tile" href="{{ url_for('visit_queue') }}">{{ ic('face' if cu.role=='beauty' else 'laser' if cu.role=='laser' else 'hijama') }}{{ 'زبوناتي الآن' if cu.role!='reception' else 'قسم العلاج الآن' }}</a>
 <a class="tile" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }}الحصص اللي فاتت</a>{% endif %}
 {% if perm('stock_use') and cu.role in ('laser','beauty') %}<a class="tile" href="{{ url_for('stock_use') }}">{{ ic('cream') }}المواد المستعملة</a>{% endif %}
 {% if perm('attendance') %}<a class="tile" href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}

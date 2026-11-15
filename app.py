@@ -58,7 +58,7 @@ GRANT_KINDS = {"bonus": "منحة", "reward": "مكافأة", "perf": "منحة 
                "advance": "تسبيق على الراتب", "other": "أخرى"}
 VISIT_STATUS = {"waiting": "في الانتظار", "treating": "في العلاج", "done": "انتهى — ينتظر الدفع",
                 "paid": "مدفوعة", "cancelled": "ملغاة"}
-VISIT_TARGETS = {"beauty": "غرفة التجميل", "reception": "غرفة الحجامة", "laser": "غرفة الليزر",
+VISIT_TARGETS = {"beauty": "قسم التجميل", "reception": "قسم العلاج", "laser": "قسم الليزر",
                  "director": "المديرة"}  # «المديرة» باقية غير للزيارات القديمة؛ ما عادش تتبعث ليها
 SEND_TARGETS = ("beauty", "reception", "laser")
 CLIENT_FIELDS = ("birth_date", "gender", "address", "chronic", "allergies", "medications")
@@ -2818,7 +2818,7 @@ def visit_new():
             return redirect(url_for("visit_new"))
         target = f.get("target")
         if target not in SEND_TARGETS:
-            flash("اختر الغرفة اللي يروح ليها الزبون (التجميل، الحجامة، الليزر)", "err")
+            flash("اختر القسم اللي يروح ليه الزبون (التجميل، العلاج، الليزر)", "err")
             return redirect(url_for("visit_new", client_id=f.get("client_id")))
         vid = db.execute("""INSERT INTO visits(client_id,branch_id,target,request,status,created_by,created_at)
             VALUES(?,?,?,?,'waiting',?,?)""", (int(f["client_id"]), br, target, f.get("request", "").strip(),
