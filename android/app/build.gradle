@@ -7,7 +7,7 @@ android {
         applicationId 'com.bilsan.director'
         minSdk 24
         targetSdk 34
-        versionCode (System.getenv('APP_CODE') ?: '1') as int
+        versionCode Integer.parseInt(System.getenv('APP_CODE') ?: '1')
         versionName System.getenv('APP_VER') ?: '1.0'
     }
     signingConfigs {
