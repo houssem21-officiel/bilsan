@@ -42,8 +42,14 @@ body.out{background:url({{ url_for('static', filename='pattern.png') }}) repeat,
 .side .tools a{color:#cfe0d9;text-decoration:none}
 .langs{display:inline-flex;gap:4px;align-items:center}.langs a{padding:1px 7px;border-radius:6px;border:1px solid rgba(217,164,108,.5);text-decoration:none;font-size:12px;color:inherit}.langs a.on{background:var(--gold);color:#173f36!important;font-weight:bold}
 /* top */
-.wrap{margin-inline-start:var(--side);min-height:100vh;display:flex;flex-direction:column}
-.top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:12px 26px;min-height:64px}
+.wrap{margin-inline-start:var(--side);min-height:100vh;display:flex;flex-direction:column;
+ background:url({{ url_for('static', filename='pattern.png') }}) repeat,radial-gradient(ellipse at 50% 45%,#33655a 0%,#28554b 40%,#1b4038 75%,#12322b 100%) fixed}
+main>p,main>.mut,main>p.mut,main>.nodebar,main>.nodebar a{color:#efe4d0}
+main>.row .btn.light,main>p .btn.light{background:rgba(255,255,255,.94)}
+main>.row .btn:not(.light):not(.red),main>p .btn:not(.light):not(.red){background:#e9b98a;color:#3d2a14;border:1px solid #dba571}
+.side{border-inline-end:1px solid rgba(217,164,108,.35)}
+main>h2{color:#f3e7d3}
+.top{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.97);border-bottom:1px solid rgba(217,164,108,.5);box-shadow:0 2px 10px rgba(0,0,0,.12);display:flex;align-items:center;gap:14px;padding:12px 26px;min-height:64px}
 .top .ttl{font-size:23px;font-weight:bold;color:var(--txt)}
 .top .pill{background:#f6e9d6;color:#7a5323;border:1px solid #ecd3b0;border-radius:20px;padding:4px 14px;font-size:14px;font-weight:bold}
 .top .dt{margin-inline-start:auto;text-align:end;line-height:1.35}
