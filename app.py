@@ -3,7 +3,7 @@
 برنامج تسيير مركز الطب البديل بيلسان
 الخادم يعمل على الحاسوب المركزي، والفروع (سكيكدة، الحروش) تتصل به عبر المتصفح.
 """
-import os, sys, csv, io, json, sqlite3, threading, time, base64, math
+import os, sys, re, csv, io, json, sqlite3, threading, time, base64, math
 from datetime import datetime, timedelta, date
 from functools import wraps
 from urllib import request as urlreq, error as urlerr
@@ -543,12 +543,12 @@ TREAT_AREAS = ["الوجه", "الجبهة", "حول العينين", "الرق�
                "الساقين", "المنطقة الحساسة", "فروة الرأس"]
 SKIN_REACTIONS = ["عادية", "احمرار خفيف", "احمرار قوي", "تهيّج / حكة", "تورم", "ألم"]
 AFTERCARE_DEFAULTS = [
-    (("تقشير", "كربون"), "تجنبي الشمس 7 أيام واستعملي واقي الشمس (SPF 50) كل 3 ساعات.\nما تقشريش ولا تحكّي البشرة حتى يطيح التقشير وحدو.\nرطّبي البشرة صباحًا ومساءً.\nبلا مكياج 24 ساعة، وبلا حمام بخار ولا سباحة 3 أيام."),
-    (("هيدرا", "تنظيف", "أوكسيجين"), "بلا مكياج 12 ساعة.\nاشربي الماء بكثرة ورطّبي البشرة.\nواقي الشمس كل نهار.\nما تستعمليش مقشّر ولا منتجات قوية 3 أيام."),
-    (("ميزو", "إبر", "بلازما", "فيلر", "حقن"), "ما تلمسيش ولا تدلكيش المنطقة 24 ساعة.\nبلا مكياج 24 ساعة.\nبلا رياضة ولا حمام ولا سونا يومين.\nالاحمرار والانتفاخ الخفيف عاديين ويروحو في يوم ولا يومين.\nإذا كان ألم قوي ولا حرارة اتصلي بالمركز."),
-    (("ليزر", "إزالة الشعر", "إليكتروليز"), "تجنبي الشمس أسبوعين وحطي واقي الشمس.\nبلا شمع ولا ملقاط بين الجلسات (الحلاقة مسموحة).\nبلا حمام ساخن ولا سونا 48 ساعة.\nرطّبي المنطقة بكريم مهدّئ إذا كان احمرار."),
-    (("تبييض",), "واقي الشمس ضروري كل نهار.\nما تحكّيش المنطقة.\nاستعملي الكريم الموصوف حسب التعليمات.\nالنتيجة تبان مع الحصص."),
-    (("تخسيس", "نحت", "مساج", "تدليك"), "اشربي 2 لتر ماء في النهار.\nقلّلي الملح والسكر.\nامشي 30 دقيقة على الأقل.\nبلا أكل ثقيل ساعتين بعد الجلسة."),
+    (("تقشير", "كربون"), "تجنبي الشمس 7 أيام واستعملي واقي الشمس (SPF 50) كل 3 ساعات.\nلا تقشّري البشرة ولا تحكّيها حتى يسقط التقشير من تلقاء نفسه.\nرطّبي البشرة صباحًا ومساءً.\nدون مكياج 24 ساعة، وتجنبي حمام البخار والسباحة 3 أيام."),
+    (("هيدرا", "تنظيف", "أوكسيجين"), "دون مكياج 12 ساعة.\nاشربي الماء بكثرة ورطّبي البشرة.\nواقي الشمس كل يوم.\nلا تستعملي مقشّرًا ولا منتجات قوية 3 أيام."),
+    (("ميزو", "إبر", "بلازما", "فيلر", "حقن"), "لا تلمسي المنطقة ولا تدلكيها 24 ساعة.\nدون مكياج 24 ساعة.\nتجنبي الرياضة والحمام والساونا مدة يومين.\nالاحمرار والانتفاخ الخفيف طبيعيان ويزولان خلال يوم أو يومين.\nإذا شعرتِ بألم شديد أو حرارة فاتصلي بالمركز."),
+    (("ليزر", "إزالة الشعر", "إليكتروليز"), "تجنبي الشمس أسبوعين وضعي واقي الشمس.\nلا شمع ولا ملقاط بين الجلسات (الحلاقة مسموحة).\nتجنبي الحمام الساخن والساونا 48 ساعة.\nرطّبي المنطقة بكريم مهدّئ إذا كان احمرار."),
+    (("تبييض",), "واقي الشمس ضروري كل يوم.\nلا تحكّي المنطقة.\nاستعملي الكريم الموصوف حسب التعليمات.\nتظهر النتيجة مع توالي الحصص."),
+    (("تخسيس", "نحت", "مساج", "تدليك"), "اشربي 2 لتر ماء في اليوم.\nقلّلي الملح والسكر.\nامشي 30 دقيقة على الأقل.\nتجنبي الأكل الثقيل ساعتين بعد الجلسة."),
 ]
 
 
@@ -859,7 +859,7 @@ def director_alerts(db, due=None):
         al.append(("red", "safe", f"فرق في عدّ الصندوق ({n})", url_for("cash_daily")))
     n = db.execute("SELECT COUNT(*) FROM products WHERE needs_review=1").fetchone()[0]
     if n:
-        al.append(("amber", "products", f"{n} منتج جديد أو سعر تبدّل يحتاج مراجعتك", url_for("products")))
+        al.append(("amber", "products", f"{n} منتج جديد أو سعر تغيّر يحتاج مراجعتك", url_for("products")))
     st = stock_alerts(None)
     if st:
         out = sum(1 for s in st if s["out"])
@@ -868,7 +868,7 @@ def director_alerts(db, due=None):
     for b in active_branches():
         n = sum(1 for r in reorder_suggestions(b["id"]) if r["suggest"] > 0)
         if n:
-            al.append(("amber", "truck", f"{b['name']}: {n} مادة لازم تتشرى — الطلبية جاهزة، غير وافقي",
+            al.append(("amber", "truck", f"{b['name']}: {n} مادة لازم تتشرى — الطلبية جاهزة، ما عليكِ إلا الموافقة",
                        url_for("purchase_auto", branch=b["id"])))
     due = due if due is not None else due_salaries()
     if due:
@@ -884,11 +884,11 @@ def director_alerts(db, due=None):
     n = db.execute("""SELECT COUNT(*) FROM appointments WHERE plan_id IS NOT NULL AND status='scheduled'
         AND start_at IS NOT NULL AND substr(start_at,1,10)<?""", (center_today().isoformat(),)).fetchone()[0]
     if n:
-        al.append(("amber", "calendar", f"{n} حصة فاتت وما تسجّلتش (الزبونة ما جاتش؟)", url_for("appts_missed")))
+        al.append(("amber", "calendar", f"{n} حصة فائتة لم تُسجَّل (الزبونة لم تحضر؟)", url_for("appts_missed")))
     n = db.execute("SELECT COUNT(*) FROM charges WHERE status='pending' AND substr(created_at,1,10)<?",
                    (center_today().isoformat(),)).fetchone()[0]
     if n:
-        al.append(("amber", "debt", f"{n} مبلغ من أيام سابقة مازال ما تخلّصش", url_for("reception")))
+        al.append(("amber", "debt", f"{n} مبلغ من أيام سابقة لم يُدفع بعد", url_for("reception")))
     return al
 
 
@@ -1062,7 +1062,7 @@ def appt_status(aid):
         if st == "noshow" and a["status"] != "noshow":
             db.execute("UPDATE appointments SET missed=COALESCE(missed,0)+1 WHERE id=?", (aid,))
         db.commit()
-        if st == "noshow":  # ما جاتش: نقترحو موعد جديد مباشرة
+        if st == "noshow":  # لم تحضر: نقترحو موعد جديد مباشرة
             return redirect(url_for("appt_reschedule", aid=aid))
     return redirect(request.referrer or url_for("appointments"))
 
@@ -1111,7 +1111,7 @@ def shift_plan(at_old, at_new, rows):
 @app.route("/appointments/<int(signed=True):aid>/reschedule", methods=["GET", "POST"])
 @login_required()
 def appt_reschedule(aid):
-    """الزبونة ما جاتش: البرنامج يقترح أقرب موعد فارغ في نفس الغرفة، والحصص اللي من بعد تتأخر وحدها."""
+    """الزبونة لم تحضر: البرنامج يقترح أقرب موعد فارغ في نفس الغرفة، والحصص اللي من بعد تتأخر وحدها."""
     db = get_db()
     u = current_user()
     a = db.execute("""SELECT a.*, c.name AS client, c.phone, s.name AS service, pl.title AS plan_title, po.name AS room,
@@ -1158,7 +1158,7 @@ def appt_reschedule(aid):
 @app.route("/appointments/missed")
 @perm_required("appointments")
 def appts_missed():
-    """الحصص اللي فاتت والزبونة ما جاتش، ومازال ما خداتش موعد جديد."""
+    """الحصص الفائتة والزبونة لم تحضر، ولم تأخذ موعدًا جديدًا بعد."""
     db = get_db()
     u = current_user()
     br = u["branch_id"] or scope_branch()
@@ -1182,8 +1182,8 @@ def appts_missed():
 @app.route("/appointments/<int(signed=True):aid>/arrived", methods=["POST"])
 @login_required()
 def appt_arrived(aid):
-    """«الزبونة جات»: تتبعث للغرفة كزيارة. الغرفة تشوف رقم الحصة، وتزيد واش طلبت الزبونة.
-    ثمن الحصة يدخل في الزيارة إذا ما تخلّصش (الدفع بالحصة)، وإلا يبان «مخلّصة»."""
+    """«الزبونة وصلت»: تتبعث للغرفة كزيارة. الغرفة تشوف رقم الحصة، وتزيد واش طلبت الزبونة.
+    ثمن الحصة يدخل في الزيارة إذا ما تخلّصش (الدفع بالحصة)، وإلا يبان «مدفوعة»."""
     db = get_db()
     u = current_user()
     a = db.execute("""SELECT a.*, s.name AS service, pl.title AS plan_title, pl.pay_mode,
@@ -1210,7 +1210,7 @@ def appt_arrived(aid):
     vid = db.execute("""INSERT INTO visits(client_id,branch_id,target,request,status,created_by,created_at,appointment_id)
         VALUES(?,?,?,?,'waiting',?,?,?)""", (a["client_id"], a["branch_id"], target,
                                              (a["notes"] or "")[:300], u["id"], now_str(), aid)).lastrowid
-    note = "" if price else (" (مخلّصة)" if a["paid"] else " (ضمن الباقة)" if a["plan_id"] else "")
+    note = "" if price else (" (مدفوعة)" if a["paid"] else " (ضمن الباقة)" if a["plan_id"] else "")
     db.execute("""INSERT INTO visit_items(visit_id,kind,service_id,description,qty,unit_price,stage,added_by,created_at,appt_id)
         VALUES(?,'service',?,?,1,?,'reception',?,?,?)""", (vid, a["service_id"], label + note, price, u["id"], now_str(), aid))
     audit("وصول زبون لموعد", label, a["branch_id"])
@@ -1601,7 +1601,7 @@ def approvals():
                 elif a_["kind"].startswith("cxl_"):
                     ok = cancel_op(db, a_["kind"][4:], a_["ref_id"], a_["reason"], a_["requested_by"])
             if not ok:
-                flash("تعذّر التنفيذ: العملية تبدّلت (تخلّصت أو تلغات من قبل)", "err")
+                flash("تعذّر التنفيذ: العملية تغيّرت (دُفعت أو أُلغيت سابقًا)", "err")
                 dec, note = "rejected", "لم يعد ممكنًا"
             else:
                 note = request.form.get("note", "").strip()
@@ -1972,10 +1972,10 @@ def products():
             note = None
             if old["price"] != price:
                 audit("تغيير سعر منتج", f"{name}: {old['price']:g} ← {price:g}")
-                note = f"السعر تبدّل: {old['price']:g} ← {price:g}"
+                note = f"تغيّر السعر: {old['price']:g} ← {price:g}"
             if (old["cost_price"] or 0) != cost:
                 audit("تغيير سعر شراء", f"{name}: {(old['cost_price'] or 0):g} ← {cost:g}")
-                note = ((note + " — ") if note else "") + f"سعر الشراء تبدّل: {(old['cost_price'] or 0):g} ← {cost:g}"
+                note = ((note + " — ") if note else "") + f"تغيّر سعر الشراء: {(old['cost_price'] or 0):g} ← {cost:g}"
             db.execute("UPDATE products SET name=?,barcode=?,category=?,price=?,expiry=?,active=?,cost_price=? WHERE id=?",
                        vals + (pid,))
             if note and not admin:
@@ -2176,7 +2176,7 @@ def product_stock(pid):
             audit("تغيير سعر شراء", f"{p['name']}: {(p['cost_price'] or 0):g} ← {new:g} (عند إدخال سلعة)", bid)
             if current_user()["role"] != "admin":
                 db.execute("UPDATE products SET needs_review=1, review_note=?, added_by=? WHERE id=?",
-                           (f"سعر الشراء تبدّل: {(p['cost_price'] or 0):g} ← {new:g}", current_user()["id"], pid))
+                           (f"تغيّر سعر الشراء: {(p['cost_price'] or 0):g} ← {new:g}", current_user()["id"], pid))
             flash("تم تحديث سعر الشراء", "ok")
     if q:
         audit("تعديل مخزون", f"منتج {pid}: {q:+g} — {branch_name(bid)}", bid)
@@ -2747,7 +2747,7 @@ def session_economics(db, v, items):
         WHERE m.visit_id=? AND m.kind='use' ORDER BY m.id""", (v["id"],)).fetchall()
     income = sum(i["qty"] * i["unit_price"] for i in items)
     prepaid = 0
-    if v["appointment_id"]:  # حصة مخلّصة مسبقًا (باقة): نحسب ثمنها في دخل الحصة
+    if v["appointment_id"]:  # حصة مدفوعة مسبقًا (باقة): نحسب ثمنها في دخل الحصة
         ap = db.execute("SELECT price, paid FROM appointments WHERE id=?", (v["appointment_id"],)).fetchone()
         if ap and not any((i["appt_id"] == v["appointment_id"] and i["unit_price"] > 0) for i in items):
             prepaid = ap["price"] or 0
@@ -2837,7 +2837,7 @@ def visit_new():
             return redirect(url_for("visit_new"))
         target = f.get("target")
         if target not in SEND_TARGETS:
-            flash("اختر القسم اللي يروح ليه الزبون (التجميل، العلاج، الليزر)", "err")
+            flash("اختر القسم الذي يذهب إليه الزبون (التجميل، العلاج، الليزر)", "err")
             return redirect(url_for("visit_new", client_id=f.get("client_id")))
         vid = db.execute("""INSERT INTO visits(client_id,branch_id,target,request,status,created_by,created_at)
             VALUES(?,?,?,?,'waiting',?,?)""", (int(f["client_id"]), br, target, f.get("request", "").strip(),
@@ -2971,7 +2971,7 @@ def visit_view(vid):
                     db.execute("UPDATE appointments SET status='done' WHERE id=?", (ap["id"],))
                     nxt = schedule_next_session(db, ap)
                     if nxt:
-                        flash(f"الحصة الجاية تحددت: {nxt}", "ok")
+                        flash(f"تحدّد موعد الحصة القادمة: {nxt}", "ok")
                     if ap["plan_id"] and not db.execute("SELECT 1 FROM appointments WHERE plan_id=? AND status='scheduled'",
                                                         (ap["plan_id"],)).fetchone():
                         db.execute("UPDATE plans SET status='done' WHERE id=? AND status='active'", (ap["plan_id"],))
@@ -3585,7 +3585,7 @@ def month_digest(br, m):
             ("mats", "مواد العمل المستعملة", mats(d1, d2), mats(p1, p2), False),
             ("profit", "الربح الصافي", cur["profit"], prev["profit"], True),
             ("visits", "الحصص (الزيارات)", visits_n(d1, d2), visits_n(p1, p2), True),
-            ("served", "الزبائن اللي خلّصو", cur["served"], prev["served"], True),
+            ("served", "الزبائن الذين دفعوا", cur["served"], prev["served"], True),
             ("new", "زبائن جدد", cur["new_clients"], prev["new_clients"], True)):
         p = pct(a, b)
         lines.append(dict(key=key, label=label, cur=a, prev=b, pct=p, money=key not in ("visits", "served", "new"),
@@ -3598,12 +3598,12 @@ def month_digest(br, m):
     best_day = max(cur["days"], key=lambda x: x[1]) if cur["days"] and cur["max_day"] > 1 else None
     tips = []
     if lines[0]["pct"] is not None:
-        tips.append(f"المداخيل {'زادت' if lines[0]['pct'] >= 0 else 'نقصت'} بـ {abs(lines[0]['pct'])}% على الشهر الفايت.")
+        tips.append(f"المداخيل {'زادت' if lines[0]['pct'] >= 0 else 'نقصت'} بـ {abs(lines[0]['pct'])}% على الشهر الماضي.")
     if svc:
         tips.append(f"أكثر خدمة جابت فائدة: {svc[0]['name']} ({svc[0]['profit']:,.0f} دج صافي).")
         low = [s for s in svc if s["income"] > 0 and s["margin"] < 30]
         if low:
-            tips.append(f"خدمات فائدتها ضعيفة (أقل من 30%): {'، '.join(s['name'] for s in low[:3])} — شوفي سعرها ولا موادها.")
+            tips.append(f"خدمات فائدتها ضعيفة (أقل من 30%): {'، '.join(s['name'] for s in low[:3])} — راجعي سعرها أو موادها.")
     if cur["debts"] > 0:
         tips.append(f"ديون الزبائن الحالية: {cur['debts']:,.0f} دج.")
     return dict(mm=mm, pm=pm, d1=d1, d2=d2, lines=lines, workers=workers, svc=svc[:5], best_day=best_day,
@@ -3654,7 +3654,7 @@ def reorder_suggestions(br):
 @app.route("/purchases/auto", methods=["GET", "POST"])
 @perm_required("purchases")
 def purchase_auto():
-    """طلبية أوتوماتيكية: البرنامج يجمع المواد اللي قربت تكمل، والمديرة (ولا اللي عندو الصلاحية) يوافق بضغطة."""
+    """طلبية أوتوماتيكية: البرنامج يجمع المواد التي قاربت على النفاد، والمديرة (ولا اللي عندو الصلاحية) يوافق بضغطة."""
     db = get_db()
     u = current_user()
     br = (int(request.values.get("branch")) if u["role"] == "admin" and (request.values.get("branch") or "").lstrip("-").isdigit()
@@ -3670,7 +3670,7 @@ def purchase_auto():
         for sup, lines in groups.items():
             pid = db.execute("""INSERT INTO purchases(supplier_id,branch_id,day,notes,created_by,created_at)
                 VALUES(?,?,?,?,?,?)""", (int(sup) if sup.lstrip("-").isdigit() else None, br, center_today().isoformat(),
-                                         "طلبية أوتوماتيكية (مواد قربت تكمل)", u["id"], now_str())).lastrowid
+                                         "طلبية أوتوماتيكية (مواد قاربت على النفاد)", u["id"], now_str())).lastrowid
             for p, q in lines:
                 db.execute("INSERT INTO purchase_items(purchase_id,product_id,qty,unit_cost) VALUES(?,?,?,0)", (pid, p, q))
             made.append(pid)
@@ -3693,7 +3693,7 @@ OP_KINDS = {"payment": "وصل", "visit": "زيارة", "charge": "مبلغ في
 
 
 def day_operations(db, br, day):
-    """كل عمليات النهار في الفرع (اللي ممكن تتلغى)."""
+    """كل عمليات اليوم في الفرع (اللي ممكن تتلغى)."""
     ops = []
     for r in db.execute("""SELECT p.*, c.name AS client, u.full_name AS by_name FROM payments p LEFT JOIN clients c ON c.id=p.client_id
             LEFT JOIN users u ON u.id=p.received_by WHERE p.cancelled=0 AND p.branch_id=? AND substr(p.created_at,1,10)=?""", (br, day)):
@@ -3826,22 +3826,22 @@ def operations():
         if kind == "day":
             if admin:
                 n = cancel_day(db, br, day, reason, u["id"])
-                flash(f"تم إلغاء {n} عملية تاع نهار {day}. راهي محفوظة في «العمليات الملغاة».", "ok")
+                flash(f"تم إلغاء {n} عملية من يوم {day}. وهي محفوظة في «العمليات الملغاة».", "ok")
             else:
                 request_approval(db, "cxl_day", br, br, 0, reason, f"{day} — {branch_name(br)}")
-                flash("تبعث الطلب للمديرة", "ok")
+                flash("أُرسل الطلب إلى المديرة", "ok")
         elif kind in OP_KINDS and oid.lstrip("-").isdigit():
             oid = int(oid)
             if admin:
                 ok = cancel_op(db, kind, oid, reason, u["id"])
-                flash("تم الإلغاء. العملية محفوظة في «العمليات الملغاة» وما تدخلش في الحسابات." if ok
-                      else "العملية تلغات من قبل ولا تبدّلت", "ok" if ok else "err")
+                flash("تم الإلغاء. العملية محفوظة في «العمليات الملغاة» ولا تدخل في الحسابات." if ok
+                      else "العملية أُلغيت سابقًا أو تغيّرت", "ok" if ok else "err")
             else:
                 op = next((o for o in day_operations(db, br, day) if o["kind"] == kind and o["id"] == oid), None)
                 if op:
                     request_approval(db, "cxl_" + kind, oid, br, op["amount"] or 0, reason,
                                      f"{op['label']}" + (f" — {op['client']}" if op["client"] else ""))
-                    flash("تبعث طلب الإلغاء للمديرة", "ok")
+                    flash("أُرسل طلب الإلغاء إلى المديرة", "ok")
         db.commit()
         return redirect(url_for("operations", day=day, branch=br))
     ops = day_operations(db, br, day)
@@ -3873,13 +3873,13 @@ def cancelled_ops():
 
 
 # ---------------------------------------------------------------- إدارة المخزون (الجرد والتصحيح)
-STOCK_REASONS = ["غلطة في العدّ", "مواد استُعملت وما تسجّلتش", "تلف", "انتهاء الصلاحية", "ضياع", "سلعة دخلت وما تسجّلتش", "أخرى"]
+STOCK_REASONS = ["خطأ في العدّ", "مواد استُعملت ولم تُسجَّل", "تلف", "انتهاء الصلاحية", "ضياع", "سلعة دخلت ولم تُسجَّل", "أخرى"]
 
 
 @app.route("/stock/manage", methods=["GET", "POST"])
 @perm_required("products_edit")
 def stock_manage():
-    """تكتب الكمية الحقيقية اللي لقيتها، والبرنامج يحسب الفرق ويسجّلو بالسبب."""
+    """تكتب الكمية الحقيقية التي وجدتها، والبرنامج يحسب الفرق ويسجّلو بالسبب."""
     db = get_db()
     u = current_user()
     admin = u["role"] == "admin"
@@ -3890,7 +3890,7 @@ def stock_manage():
         reason = f.get("reason") if f.get("reason") in STOCK_REASONS else None
         note = f.get("note", "").strip()
         if not reason:
-            flash("اختار سبب التصحيح", "err")
+            flash("اختر سبب التصحيح", "err")
             return redirect(url_for("stock_manage", branch=br))
         n = 0
         for k, val in f.items():
@@ -3911,7 +3911,7 @@ def stock_manage():
             db.commit()
             flash(f"تم تصحيح {n} منتج", "ok")
         else:
-            flash("ما كاين حتى فرق: الكميات كيما راهي", "ok")
+            flash("لا يوجد أي فرق: الكميات كما هي", "ok")
         return redirect(url_for("stock_manage", branch=br))
     q = request.args.get("q", "").strip()
     rows = db.execute("""SELECT p.id, p.name, p.category, p.usage, COALESCE(p.cost_price,0) AS cost, COALESCE(s.qty,0) AS qty
@@ -4142,7 +4142,7 @@ def purchases():
         args.append(request.args["supplier"])
     rows = db.execute(q + " ORDER BY p.id DESC LIMIT 300", args).fetchall()
     who = []
-    if current_user()["role"] == "admin":  # المديرة تختار من يقدر يدخل المشتريات
+    if current_user()["role"] == "admin":  # المديرة تختار من يستطيع إدخال المشتريات
         for b in active_branches():
             for place in ["reception"] + [k for k in branch_depts(b["id"]) if k in ("laser", "beauty")]:
                 pp = place_perms(b["id"], place)
@@ -4223,7 +4223,7 @@ def purchase_view(pid):
                     changed.append(f"{i['name']}: {(i['price'] or 0):g} ← {new:g}")
                     if u["role"] != "admin":
                         db.execute("UPDATE products SET needs_review=1, review_note=?, added_by=? WHERE id=?",
-                                   (f"السعر تبدّل عند الاستلام: {(i['price'] or 0):g} ← {new:g}", u["id"], i["product_id"]))
+                                   (f"تغيّر السعر عند الاستلام: {(i['price'] or 0):g} ← {new:g}", u["id"], i["product_id"]))
             if changed:
                 audit("تغيير أسعار عند الاستلام", f"طلبية {rid_filter(pid)}: " + "، ".join(changed), p["branch_id"])
             db.execute("UPDATE purchases SET status='received', received_at=? WHERE id=?", (now_str(), pid))
@@ -4329,7 +4329,17 @@ def backup_page():
             flash(("تمت النسخة الاحتياطية: " if ok else "فشلت النسخة: ") + msg, "ok" if ok else "err")
         elif act == "settings":
             for k in ("backup_dir", "backup_dir2"):
-                db.execute("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)", (k, request.form.get(k, "").strip()))
+                v = request.form.get(k, "").strip()
+                if v:
+                    try:  # نتأكد أن المكان موجود ويقبل الكتابة
+                        os.makedirs(v, exist_ok=True)
+                        tf = os.path.join(v, ".bilsan_test")
+                        open(tf, "w").close()
+                        os.remove(tf)
+                    except OSError as e:
+                        flash(f"لا يمكن الحفظ في «{v}»: {e}", "err")
+                        return redirect(url_for("backup_page"))
+                db.execute("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)", (k, v))
             h = max(1, int(fnum(request.form.get("backup_every_hours"), 6)))
             db.execute("INSERT OR REPLACE INTO settings(key,value) VALUES('backup_every_hours',?)", (str(h),))
             db.commit()
@@ -4351,9 +4361,110 @@ def backup_page():
     files = backup.list_backups(st["dir"])
     total = sum(f["size"] for f in files)
     dbsize = sum(os.path.getsize(DB_PATH + e) for e in ("", "-wal") if os.path.exists(DB_PATH + e))
-    return render_template("backup.html", st=st, files=files, total=total, dbsize=dbsize,
+    return render_template("backup.html", st=st, files=files, total=total, dbsize=dbsize, central=not sync.NODE,
                            pending=os.path.exists(os.path.join(BASE_DIR, "restore_pending.txt")))
 
+
+
+@app.route("/api/hijama-days")
+@login_required()
+def api_hijama_days():
+    """عدد المواعيد في كل يوم من الأيام القادمة (لبطاقة «أيام الحجامة المسنونة القادمة»)."""
+    db = get_db()
+    u = current_user()
+    br = u["branch_id"] or scope_branch()
+    d1 = center_today().isoformat()
+    d2 = (center_today() + timedelta(days=75)).isoformat()
+    q = """SELECT substr(start_at,1,10) d, COUNT(*) n FROM appointments WHERE status IN ('scheduled','done')
+        AND substr(start_at,1,10) BETWEEN ? AND ?"""
+    args = [d1, d2]
+    if br:
+        q += " AND branch_id=?"
+        args.append(br)
+    return {"today": d1, "counts": {r["d"]: r["n"] for r in db.execute(q + " GROUP BY d", args)}}
+
+
+# ---------------------------------------------------------------- اختيار مكان النسخ الاحتياطي
+@app.route("/backup/browse")
+@login_required("admin")
+def backup_browse():
+    """تصفّح مجلدات الحاسوب لاختيار مكان حفظ النسخ الاحتياطية."""
+    p = request.args.get("p", "").strip()
+    drives = []
+    if os.name == "nt":
+        import string
+        drives = [f"{c}:\\" for c in string.ascii_uppercase if os.path.exists(f"{c}:\\")]
+    else:
+        drives = ["/"]
+    if not p or not os.path.isdir(p):
+        return {"path": "", "parent": "", "dirs": [], "drives": drives}
+    p = os.path.abspath(p)
+    dirs = []
+    try:
+        for n in sorted(os.listdir(p), key=str.lower):
+            fp = os.path.join(p, n)
+            if os.path.isdir(fp) and not n.startswith(("$", ".")) and n not in ("System Volume Information", "Windows",
+                                                                              "Program Files", "Program Files (x86)", "ProgramData"):
+                dirs.append(n)
+    except OSError:
+        pass
+    parent = os.path.dirname(p.rstrip("\\/")) if p.rstrip("\\/") != p[:3].rstrip("\\/") else ""
+    if os.name == "nt" and len(p) <= 3:
+        parent = ""
+    return {"path": p, "parent": parent, "dirs": dirs[:400], "drives": drives}
+
+
+@app.route("/backup/mkdir", methods=["POST"])
+@login_required("admin")
+def backup_mkdir():
+    base, name = request.form.get("p", ""), re.sub(r'[<>:"/\\|?*]', "", request.form.get("name", "")).strip()
+    if not name or not os.path.isdir(base):
+        return {"ok": False}
+    try:
+        os.makedirs(os.path.join(base, name), exist_ok=True)
+        return {"ok": True, "path": os.path.join(base, name)}
+    except OSError as e:
+        return {"ok": False, "err": str(e)}
+
+
+# ---------------------------------------------------------------- مسح كل البيانات (الرجوع من الصفر)
+RESET_ALWAYS = ["visit_items", "visits", "sale_items", "charges", "payments", "appointments", "plans", "client_notes",
+                "client_photos", "skin_cards", "clients", "course_trainees", "courses", "expenses", "purchase_items",
+                "purchases", "stock_moves", "approvals", "cancelled_ops", "cash_days", "sms_log", "audit"]
+RESET_STAFF = ["grants", "attendance", "employees"]
+RESET_CATALOG = ["service_materials", "stock", "products", "services", "suppliers"]
+
+
+@app.route("/factory-reset", methods=["POST"])
+@login_required("admin")
+def factory_reset():
+    """يمسح كل العمليات والزبائن ويرجع البرنامج من الصفر. في حاسوب المديرة فقط، بكلمة سرها."""
+    if sync.NODE:
+        abort(403)
+    db = get_db()
+    u = current_user()
+    f = request.form
+    if not check_password_hash(u["pw_hash"], f.get("password", "")):
+        flash("كلمة المرور غير صحيحة، لم يُمسح شيء", "err")
+        return redirect(url_for("backup_page"))
+    if f.get("confirm", "").strip() != "مسح":
+        flash("اكتب كلمة «مسح» للتأكيد، لم يُمسح شيء", "err")
+        return redirect(url_for("backup_page"))
+    ok, msg = backup.run_backup(connect, DB_PATH, "قبل مسح كل البيانات")
+    if not ok:
+        flash("تعذّرت النسخة الاحتياطية قبل المسح، فلم يُمسح شيء: " + msg, "err")
+        return redirect(url_for("backup_page"))
+    tables = list(RESET_ALWAYS) + (RESET_STAFF if f.get("staff") else []) + (RESET_CATALOG if f.get("catalog") else [])
+    for t in tables:
+        db.execute(f"DELETE FROM {t}")
+    if not f.get("catalog"):
+        db.execute("UPDATE stock SET qty=0")
+    db.commit()
+    audit("مسح كل البيانات", "رجوع البرنامج من الصفر" + (" مع العمال" if f.get("staff") else "")
+          + (" مع المنتجات والخدمات" if f.get("catalog") else "") + f" — نسخة قبل المسح: {msg}")
+    db.commit()
+    flash("تم مسح كل البيانات، والبرنامج يبدأ من الصفر. حُفظت نسخة احتياطية قبل المسح في صفحة «النسخ الاحتياطي».", "ok")
+    return redirect(url_for("dashboard"))
 
 @app.route("/backup/download/<name>")
 @login_required("admin")
@@ -4820,7 +4931,7 @@ def work_materials(db, branch_id=None):
 
 
 def save_service_mats(db, sid, ids, qtys):
-    """المواد المعتادة لخدمة: تتعمّر وحدها في كل حصة من هذه الخدمة."""
+    """المواد المعتادة لخدمة: تُملأ تلقائيًا في كل حصة من هذه الخدمة."""
     want = {}
     for p, q in zip(ids, qtys):
         q = fnum(q)
@@ -5646,7 +5757,7 @@ else:
 
 # ---------------------------------------------------------------- التحديث التلقائي للحواسيب
 # الحاسوب المركزي يُحدَّث يدويًا (ملف التثبيت). كل حاسوب آخر يرى أن المركزي بنسخة أحدث
-# فيحمّل منه ملف التحديث ويثبّته وحده: عند تشغيل الحاسوب، أو بعد 5 دقائق بلا استعمال.
+# فيحمّل منه ملف التحديث ويثبّته وحده: عند تشغيل الحاسوب، أو بعد 5 دقائق دون استعمال.
 START_TIME = time.time()
 LAST_REQ = [time.time()]
 
@@ -5825,7 +5936,7 @@ def update_now():
     return ("<!doctype html><meta charset=utf-8><meta http-equiv=refresh content='45;url=/'>"
             "<body style='font-family:Tahoma;background:#0f4c45;color:#f3d6a8;display:flex;align-items:center;"
             "justify-content:center;height:100vh;margin:0;text-align:center'><div><h2>جاري تحديث البرنامج...</h2>"
-            "<p>انتظر دقيقة، الصفحة ترجع وحدها.</p></div>")
+            "<p>انتظر دقيقة، ستعود الصفحة تلقائيًا.</p></div>")
 
 
 def update_loop():

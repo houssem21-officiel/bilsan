@@ -8,88 +8,90 @@ TEMPLATES["base.html"] = r"""<!doctype html>
 <title>{{ center }}</title>
 <style>
 :root{--g9:#173f36;--g8:#1f4d43;--g7:#24564a;--g5:#3f7c6c;--g2:#d9c7ad;--g1:#f5efe5;
---gold:#d9a46c;--goldl:#f0c9a0;--cream:#ffffff;--bg:#f4f0e8;--txt:#1f2a26;--mut:#6b6f66;--red:#b3261e;--amber:#9a6200;--line:#e8dfd1;--side:268px}
+--gold:#d9a46c;--goldl:#f0c9a0;--cream:#ffffff;--bg:#f4f0e8;--txt:#1f2a26;--mut:#6b6f66;--red:#b3261e;--amber:#9a6200;--line:#e8dfd1;--side:280px}
+.hj{display:block;font-size:13.5px;color:#7a5323;margin-top:3px}.hj b{background:#f6e9d6;border:1px solid #ecd3b0;border-radius:14px;padding:1px 9px;margin-inline-start:6px}
+.hjd{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid #f0e9de;text-decoration:none;color:var(--txt)}.hjd:last-child{border:0}.hjd:hover{background:#fbf7f0}
 *{box-sizing:border-box}
 html{min-height:100%;background:var(--bg)}
-body{margin:0;font-family:Tahoma,"Segoe UI",Arial,sans-serif;color:var(--txt);font-size:15px;min-height:100vh;background:var(--bg)}
+body{margin:0;font-family:Tahoma,"Segoe UI",Arial,sans-serif;color:var(--txt);font-size:17px;line-height:1.55;min-height:100vh;background:var(--bg)}
 body.out{background:url({{ url_for('static', filename='pattern.png') }}) repeat,radial-gradient(ellipse at 50% 45%,#33655a 0%,#28554b 40%,#1b4038 75%,#12322b 100%) fixed}
-/* ---- الشريط الجانبي ---- */
+/* side */
 .side{position:fixed;inset-block:0;inset-inline-start:0;width:var(--side);background:linear-gradient(180deg,#1f4a40 0%,#173d34 55%,#12322b 100%);
  color:#e9e1d2;display:flex;flex-direction:column;z-index:30;box-shadow:0 0 18px rgba(0,0,0,.18)}
 .side .brand{display:flex;align-items:center;gap:12px;padding:18px 18px 14px;border-bottom:1px solid rgba(255,255,255,.08)}
 .side .brand img{width:50px;height:50px;border-radius:12px;background:rgba(255,255,255,.06);padding:3px;border:1px solid rgba(217,164,108,.45)}
-.side .brand b{display:block;color:var(--goldl);font-size:19px}
-.side .brand span{font-size:12px;color:#b9c9c2}
+.side .brand b{display:block;color:var(--goldl);font-size:22px}
+.side .brand span{font-size:14px;color:#c4d3cd}
 .side .scope{padding:10px 14px 0}
 .side .scope select{width:100%;background:rgba(255,255,255,.07);color:#f1e7d6;border:1px solid rgba(217,164,108,.4);font-size:13px}
 .side .scope option{color:#000}
 .side nav{flex:1;overflow-y:auto;padding:10px 10px 14px;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent}
-.side nav a{display:flex;align-items:center;gap:10px;color:#e6dfd2;text-decoration:none;padding:10px 12px;margin:2px 0;border-radius:10px;font-size:14.5px;border:1px solid transparent}
+.side nav a{display:flex;align-items:center;gap:10px;color:#eee7da;text-decoration:none;padding:10px 12px;margin:2px 0;border-radius:10px;font-size:16px;border:1px solid transparent}
 .side nav a:hover{background:rgba(255,255,255,.06)}
 .side nav a.on{background:rgba(255,255,255,.09);border-color:rgba(217,164,108,.55);box-shadow:inset 3px 0 0 var(--gold);color:#fff}
 .side nav a .ic{color:#cfe0d9;width:1.2em;height:1.2em}
 .side nav a.on .ic{color:var(--goldl)}
-.side nav .sec{font-size:12px;color:#93aaa1;padding:14px 12px 4px}
+.side nav .sec{font-size:13.5px;color:#93aaa1;padding:14px 12px 4px}
 .side nav .badge{margin-inline-start:auto}
 .side .me{border-top:1px solid rgba(255,255,255,.08);padding:12px 14px;display:flex;align-items:center;gap:10px}
-.side .me .nm{flex:1;min-width:0}.side .me .nm b{display:block;color:#fff;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.side .me .nm span{font-size:12px;color:#a9bdb5}
-.side .me a.out{background:rgba(255,255,255,.1);color:#f1e7d6;text-decoration:none;padding:6px 12px;border-radius:9px;font-size:13px}
+.side .me .nm{flex:1;min-width:0}.side .me .nm b{display:block;color:#fff;font-size:16px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.side .me .nm span{font-size:13.5px;color:#b5c7c0}
+.side .me a.out{background:rgba(255,255,255,.1);color:#f1e7d6;text-decoration:none;padding:7px 13px;border-radius:9px;font-size:15px}
 .side .me a.out:hover{background:rgba(255,255,255,.18)}
-.side .tools{display:flex;gap:6px;align-items:center;padding:0 14px 12px;font-size:12px}
+.side .tools{display:flex;gap:6px;align-items:center;padding:0 14px 12px;font-size:14px}
 .side .tools a{color:#cfe0d9;text-decoration:none}
 .langs{display:inline-flex;gap:4px;align-items:center}.langs a{padding:1px 7px;border-radius:6px;border:1px solid rgba(217,164,108,.5);text-decoration:none;font-size:12px;color:inherit}.langs a.on{background:var(--gold);color:#173f36!important;font-weight:bold}
-/* ---- الشريط العلوي ---- */
+/* top */
 .wrap{margin-inline-start:var(--side);min-height:100vh;display:flex;flex-direction:column}
 .top{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:14px;padding:12px 26px;min-height:64px}
-.top .ttl{font-size:20px;font-weight:bold;color:var(--txt)}
-.top .pill{background:#f6e9d6;color:#7a5323;border:1px solid #ecd3b0;border-radius:20px;padding:3px 12px;font-size:12.5px;font-weight:bold}
+.top .ttl{font-size:23px;font-weight:bold;color:var(--txt)}
+.top .pill{background:#f6e9d6;color:#7a5323;border:1px solid #ecd3b0;border-radius:20px;padding:4px 14px;font-size:14px;font-weight:bold}
 .top .dt{margin-inline-start:auto;text-align:end;line-height:1.35}
-.top .dt b{display:block;font-size:14px}.top .dt span{font-size:12px;color:var(--mut)}
+.top .dt b{display:block;font-size:16px}.top .dt span{font-size:14px;color:var(--mut)}
 .top .burger{display:none;background:none;border:0;font-size:24px;cursor:pointer;color:var(--g8)}
 .top .sync{font-size:12px;color:var(--mut)}
 main{padding:22px 26px 40px;max-width:1500px;width:100%}
 @media screen{main>h1:first-of-type{display:none}}
-/* ---- العناصر ---- */
+/* items */
 .card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;margin-bottom:16px;box-shadow:0 1px 3px rgba(60,40,10,.04)}
-h1{font-size:21px;color:var(--txt);margin:0 0 14px}
-h2{font-size:17px;color:var(--txt);margin:0 0 12px}
+h1{font-size:24px;color:var(--txt);margin:0 0 14px}
+h2{font-size:19px;color:var(--txt);margin:0 0 12px}
 a{color:var(--g7)}
-table{width:100%;border-collapse:collapse;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:16px}
 th{background:#f7f2ea;color:var(--g9);text-align:start;padding:9px 8px;border-bottom:1px solid var(--line);font-weight:bold}
 td{padding:8px;border-bottom:1px solid #f0e9de;vertical-align:middle}
 tr.cx td{color:#999;text-decoration:line-through}
 input,select,textarea{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:#fff;min-width:0}
 textarea{width:100%}
 input:focus,select:focus,textarea:focus{outline:2px solid #e9c9a2;border-color:var(--gold)}
-.btn{display:inline-block;background:var(--g8);color:#fff;border:0;border-radius:10px;padding:9px 16px;
-cursor:pointer;text-decoration:none;font:inherit;font-size:14px;font-weight:bold}
+.btn{display:inline-block;background:var(--g8);color:#fff;border:0;border-radius:10px;padding:10px 18px;
+cursor:pointer;text-decoration:none;font:inherit;font-size:16px;font-weight:bold}
 .btn:hover{background:var(--g9)}
-.btn.sm{padding:5px 10px;font-size:13px;font-weight:normal}
+.btn.sm{padding:6px 11px;font-size:14.5px;font-weight:normal}
 .btn.light{background:#fff;color:var(--txt);border:1px solid var(--line);font-weight:normal}
 .btn.light:hover{background:var(--g1)}
 .btn.gold{background:#e9b98a;color:#3d2a14;border:1px solid #dba571}
 .btn.gold:hover{background:#e2ab77}
 .btn.red{background:var(--red)}
 .row{display:flex;gap:10px;flex-wrap:wrap;align-items:end}
-.row label{display:flex;flex-direction:column;gap:4px;font-size:13px;color:var(--mut)}
+.row label{display:flex;flex-direction:column;gap:4px;font-size:15px;color:#4f544c}
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
 .stat{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;box-shadow:0 1px 3px rgba(60,40,10,.04);position:relative}
-.stat .n{font-size:26px;font-weight:bold;color:var(--txt);margin-top:4px}
-.stat .l{color:var(--mut);font-size:13px}
+.stat .n{font-size:30px;font-weight:bold;color:var(--txt);margin-top:4px}
+.stat .l{color:var(--mut);font-size:15px}
 .flash{padding:11px 15px;border-radius:12px;margin-bottom:14px}
 .flash.ok{background:#e9f3ec;color:var(--g9);border:1px solid #c5ddcc}
 .flash.err{background:#fdecea;color:var(--red);border:1px solid #f3c1bc}
 .flash a{color:inherit}
 .toasts{position:fixed;bottom:18px;inset-inline-end:18px;display:flex;flex-direction:column;gap:8px;z-index:50}
-.toast{background:#1f4d43;color:#fff;padding:12px 18px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.18);min-width:200px;font-size:14px;transition:opacity .4s,transform .4s}
+.toast{background:#1f4d43;color:#fff;padding:13px 20px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.18);min-width:220px;font-size:16px;transition:opacity .4s,transform .4s}
 .toast.hide{opacity:0;transform:translateY(10px)}
-.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:12px;background:#e3efe8;color:var(--g9)}
-.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.chip{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:4px;padding:5px 11px;border:1px solid #e0d2bb;border-radius:20px;background:#fffaf2;cursor:pointer;font-size:13px}
+.tag{display:inline-block;padding:2px 10px;border-radius:20px;font-size:13.5px;background:#e3efe8;color:var(--g9)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 10px}.chip{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:4px;padding:6px 12px;border:1px solid #e0d2bb;border-radius:20px;background:#fffaf2;cursor:pointer;font-size:15px}
 .chip:has(input:checked){background:#f3e3c8;border-color:#c99a5b;font-weight:bold}
 .tag.amber{background:#fbeedd;color:var(--amber)}.tag.red{background:#fdecea;color:var(--red)}
 .tag.gray{background:#eee;color:#555}
-.mut{color:var(--mut);font-size:13px}
+.mut{color:var(--mut);font-size:15px}
 .right{text-align:left}
 .picker{position:relative}.picker .list{position:absolute;z-index:5;background:#fff;border:1px solid var(--line);
 border-radius:10px;width:100%;max-height:240px;overflow:auto;display:none;box-shadow:0 6px 18px rgba(0,0,0,.08)}
@@ -153,7 +155,7 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 <a href="{{ url_for('cash_daily') }}" class="{{ 'on' if ep=='cash_daily' }}">{{ ic('safe') }}الصندوق اليومي</a>
 <a href="{{ url_for('cashbox') }}" class="{{ 'on' if ep=='cashbox' }}">{{ ic('vault') }}{{ 'كل العمليات (الصندوق المركزي)' if not view_branch else 'عمليات الفرع' }}</a>
 <a href="{{ url_for('reports') }}" class="{{ 'on' if ep=='reports' }}">{{ ic('reports') }}التقارير والأرباح</a>
-<a href="{{ url_for('month_report') }}" class="{{ 'on' if ep=='month_report' }}">{{ ic('reports') }}تقرير الشهر (ورقة وحدة)</a>
+<a href="{{ url_for('month_report') }}" class="{{ 'on' if ep=='month_report' }}">{{ ic('reports') }}تقرير الشهر (ورقة واحدة)</a>
 <a href="{{ url_for('services_profit') }}" class="{{ 'on' if ep=='services_profit' }}">{{ ic('services') }}فائدة كل خدمة</a>
 <a href="{{ url_for('sessions_profit') }}" class="{{ 'on' if ep=='sessions_profit' }}">{{ ic('reports') }}فائدة كل حصة</a>
 <a href="{{ url_for('expenses') }}" class="{{ 'on' if ep=='expenses' }}">{{ ic('expense') }}المصاريف</a>
@@ -178,9 +180,9 @@ h2 .ic{color:var(--gold);margin-inline-end:6px}
 <div class="dt"><b id="dtg"></b><span id="dth"></span></div></div>
 {% endif %}
 <main>
-{% if NODE and node_status and node_status.clock_off >= 5 %}<div class="flash noprint" style="background:#fff4df;border:1px solid #e4ab74;color:#6b4a12">🕒 ساعة هاذ الحاسوب غالطة بـ {{ node_status.clock_off }} دقيقة. البرنامج يسجّل بساعة الحاسوب المركزي (ما كاين حتى مشكل)، بصّح صلّحوها في Windows: الإعدادات ← الوقت واللغة ← المنطقة الزمنية (UTC+01:00) West Central Africa + «ضبط الوقت تلقائيًا».</div>{% endif %}
+{% if NODE and node_status and node_status.clock_off >= 5 %}<div class="flash noprint" style="background:#fff4df;border:1px solid #e4ab74;color:#6b4a12">🕒 ساعة هذا الحاسوب متأخرة أو متقدمة بـ {{ node_status.clock_off }} دقيقة. البرنامج يسجّل بساعة الحاسوب المركزي (لا توجد أي مشكلة)، لكن يُرجى تصحيحها في Windows: الإعدادات ← الوقت واللغة ← المنطقة الزمنية (UTC+01:00) West Central Africa + «ضبط الوقت تلقائيًا».</div>{% endif %}
 {% if NODE and node_status %}{% if node_status.newver %}<div class="flash noprint" style="background:#fff4df;border:1px solid #e4ab74;color:#6b4a12">{{ ic('sync') }}
-<b>نسخة جديدة من البرنامج جاهزة في حاسوب المديرة.</b> هذا الحاسوب يتحدّث وحده عند تشغيله أو بعد 5 دقائق بلا استعمال.
+<b>نسخة جديدة من البرنامج جاهزة في حاسوب المديرة.</b> يتحدث هذا الحاسوب تلقائيًا عند تشغيله أو بعد 5 دقائق دون استعمال.
 العمليات المسجّلة هنا تُرسل عاديًا. <a href="{{ url_for('update_now') }}" onclick="return confirm('تحديث البرنامج الآن؟ يتوقف دقيقة ثم يرجع وحده.')"><b>حدّث الآن</b></a></div>
 {% elif node_status.err %}<div class="flash err noprint">غير متصل بالحاسوب المركزي — البرنامج يعمل عاديًا والعمليات محفوظة هنا ({{ node_status.pending }} عملية تنتظر الإرسال)، وستُرسل تلقائيًا عند رجوع الإنترنت.
 <a href="{{ url_for('sync_now_route') }}">إعادة المحاولة الآن</a></div>
@@ -207,6 +209,25 @@ document.querySelectorAll('.toast').forEach(function(x,i){setTimeout(function(){
   var hd=+new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{day:'numeric'}).format(d);
   if(hd===17||hd===19||hd===21){var p=document.getElementById('hijama');p.textContent='اليوم من أيام الحجامة المسنونة ('+hd+')';p.style.display=''}
  }catch(e){}})();
+/* الأيام القمرية: 17 و19 و21 من الشهر الهجري هي أيام الحجامة المسنونة */
+function bilHday(d){try{return +new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn',{day:'numeric'}).format(d)}catch(e){return 0}}
+function bilHtxt(d){var L=document.documentElement.lang||'ar';try{return new Intl.DateTimeFormat((L==='ar'?'ar':L)+'-u-ca-islamic-umalqura-nu-latn',{day:'numeric',month:'long',year:'numeric'}).format(d)}catch(e){return ''}}
+function bilHijri(){document.querySelectorAll('input[type=date][data-hijri]').forEach(function(el){
+ var s=el.parentNode.querySelector('.hj');if(!s){s=document.createElement('span');s.className='hj';el.insertAdjacentElement('afterend',s)}
+ var html='';if(el.value){var d=new Date(el.value+'T12:00:00'),h=bilHday(d);
+ html=bilHtxt(d)+((h===17||h===19||h===21)?' <b>يوم حجامة مسنون</b>':'')}
+ if(s.dataset.v!==el.value){s.dataset.v=el.value;s.innerHTML=html}})}
+document.addEventListener('input',function(e){if(e.target.matches&&e.target.matches('input[type=date][data-hijri]'))bilHijri()});
+bilHijri();try{new MutationObserver(function(ms){for(var i=0;i<ms.length;i++){for(var j=0;j<ms[i].addedNodes.length;j++){var n=ms[i].addedNodes[j];
+ if(n.nodeType===1&&!n.classList.contains('hj')&&(n.matches('input[data-hijri]')||n.querySelector('input[data-hijri]'))){bilHijri();return}}}}).observe(document.body,{childList:true,subtree:true})}catch(e){}
+(function(){var box=document.getElementById('hijama-days');if(!box)return;
+ fetch('{{ url_for("api_hijama_days") }}',{cache:'no-store'}).then(function(r){return r.json()}).then(function(j){
+  var L=document.documentElement.lang||'ar',loc=L==='ar'?'ar-DZ':L==='fr'?'fr-FR':'en-GB',out=[],d=new Date(j.today+'T12:00:00');
+  for(var i=0;i<75&&out.length<4;i++){var h=bilHday(d);if(h===17||h===19||h===21){var iso=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+   out.push('<a class="hjd" href="{{ url_for("appointments") }}?date='+iso+'"><b>'+d.toLocaleDateString(loc,{weekday:'long',day:'numeric',month:'long',numberingSystem:'latn'})+'</b>'+
+    '<span class="tag amber">'+bilHtxt(d)+'</span><span class="tag" style="margin-inline-start:auto">'+(j.counts[iso]||0)+' موعد</span></a>')}
+   d.setDate(d.getDate()+1)}
+  box.innerHTML=out.join('')||'<span class="mut">—</span>'}).catch(function(){})})();
 document.querySelectorAll('.picker').forEach(function(pk){
   var inp=pk.querySelector('input[type=text]'), hid=pk.querySelector('input[type=hidden]'), list=pk.querySelector('.list'), t;
   inp.addEventListener('input',function(){hid.value='';clearTimeout(t);var q=inp.value.trim();
@@ -222,17 +243,17 @@ document.querySelectorAll('.picker').forEach(function(pk){
 </script>
 {% if cu %}<script>
 /* تحديث تلقائي:
-   - صفحات المتابعة (الرئيسية، التحصيل، المواعيد...) تتحدث وحدها كي توصل معلومة جديدة.
-   - كل الصفحات تتحدث كي تشغّل المديرة أو توقف مهمة، باش تبان أو تختفي فورًا.
-   ما تتحدثش إذا كان العامل يكتب في خانة. */
+   - صفحات المتابعة (الرئيسية، التحصيل، المواعيد...) تتحدث تلقائيًا عند وصول معلومة جديدة.
+   - كل الصفحات تتحدث عندما تفعّل المديرة مهمة أو توقفها، لتظهر أو تختفي فورًا.
+   لا تتحدث إذا كان العامل يكتب في خانة. */
 (function(){var s=null,p=null,dirty=false,live={{ 'true' if live_page() else 'false' }};
 document.addEventListener('input',function(){dirty=true});document.addEventListener('change',function(){dirty=true});
 function busy(){return dirty||document.querySelector('details[open].dd')}
 function reload(){try{sessionStorage.setItem('bil_y',window.scrollY)}catch(e){}location.reload()}
 /* انتظار دائم: الخادم يرد فور ما تتسجل معلومة جديدة */
-/* كل تبويب عندو رقم: الانتظار القديم تاعو يتحرّر كي يفتح صفحة جديدة (الضغط السريع ما يبلوكيش البرنامج) */
+/* لكل تبويب رقم: يتحرر انتظاره القديم عند فتح صفحة جديدة */
 var tab=null;try{tab=sessionStorage.getItem('bil_tab');if(!tab){tab=Math.random().toString(36).slice(2);sessionStorage.setItem('bil_tab',tab)}}catch(e){}
-var ctl=null,gone=false,day=null; /* نهار جديد (الحاسوب تشعل الصباح): الصفحة تروح وحدها لليوم الجديد */window.addEventListener('pagehide',function(){gone=true;try{ctl&&ctl.abort()}catch(e){}});
+var ctl=null,gone=false,day=null; /* يوم جديد: تنتقل الصفحة تلقائيًا إلى اليوم الجديد */window.addEventListener('pagehide',function(){gone=true;try{ctl&&ctl.abort()}catch(e){}});
 function poll(){if(gone)return;try{ctl=new AbortController()}catch(e){ctl=null}
  fetch('/api/stamp?wait='+(s===null?'':'1')+'&s='+(s===null?'':s)+(tab?'&t='+tab:''),{cache:'no-store',signal:ctl?ctl.signal:undefined}).then(function(r){return r.json()}).then(function(d){
  if(p!==null&&d.p!==p&&d.p&&!busy()){reload();return}
@@ -240,8 +261,8 @@ function poll(){if(gone)return;try{ctl=new AbortController()}catch(e){ctl=null}
  if(d.d){if(day&&d.d!==day&&!busy()){location.href=location.pathname;return}day=d.d}
  if(d.x){tab=Math.random().toString(36).slice(2);try{sessionStorage.setItem('bil_tab',tab)}catch(e){}}
  s=d.s;if(d.p)p=d.p;setTimeout(poll,d.busy?3000:d.x?1000:200)}).catch(function(){if(!gone)setTimeout(poll,3000)})}
-setTimeout(poll,800);  /* نستناو شوية: إذا العامل راهو يتنقّل بسرعة ما نحجزوش الخادم */
-/* ما نبعثوش نفس الاستمارة مرتين كي يضغط بزاف */
+setTimeout(poll,800);  /* ننتظر قليلًا قبل أول طلب */
+/* لا نرسل الاستمارة نفسها مرتين */
 document.addEventListener('submit',function(e){var f=e.target;if(f.target==='_blank'||f.method.toLowerCase()!=='post')return;
  if(f.dataset.sent){e.preventDefault();return}f.dataset.sent=1;setTimeout(function(){delete f.dataset.sent},4000)},true);
 try{var y=sessionStorage.getItem('bil_y');if(y){window.scrollTo(0,+y);sessionStorage.removeItem('bil_y')}}catch(e){}
@@ -317,7 +338,7 @@ TEMPLATES["dash_admin.html"] = r"""{% extends "base.html" %}{% block body %}
 {% if rooms %}<div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-bottom:16px">
 {% for bname, b in rooms.items() %}<div class="card" style="margin:0"><h2>{{ ic('branch') }}{{ bname }} — {{ b.total|money }}</h2>
 <table>{% for k, e in b.income.items() %}<tr><td><span class="itm">{{ ic({'hijama':'hijama','herbs':'leaf','laser':'laser','beauty':'face','director':'shield','product':'cart','course':'course'}.get(k,'services')) }}</span>{{ SECTIONS.get(k,k) }}</td><td><b>{{ e.amount|money }}</b></td></tr>{% endfor %}</table></div>{% endfor %}</div>{% endif %}
-{% include "tiles.html" %}
+{% include "tiles.html" %}{% include "hijama_card.html" %}
 <div class="grid" style="margin-bottom:16px">
 {% for b in per_branch %}
 <div class="stat"><div class="l"><a href="{{ url_for('branch_view', bid=b.id) }}">{{ b.name }}</a></div><div class="n">{{ b.total|money }} {{ cur }}</div>
@@ -340,7 +361,7 @@ TEMPLATES["dash_admin.html"] = r"""{% extends "base.html" %}{% block body %}
 
 TEMPLATES["dash_staff.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}مرحبًا {{ cu.full_name or cu.username }}</h1>
-{% include "tiles.html" %}
+{% include "tiles.html" %}{% include "hijama_card.html" %}
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">مواعيد اليوم</div><div class="n">{{ appts|length }}</div></div>
 {% if can_collect %}
@@ -364,8 +385,8 @@ TEMPLATES["appt_table.html"] = r"""<table><tr><th>الساعة</th>{% if cu.role
 <td>{% if a.paid %}<span class="tag">مدفوعة</span>{% elif a.plan_id %}<span class="tag amber">غير مدفوعة{% if a.price %} ({{ '%g'|format(a.price) }}){% endif %}</span>{% else %}<span class="mut">-</span>{% endif %}</td>
 <td>{% if a.sms_sent_at %}<span class="tag">أُرسل</span>{% endif %}{% if a.morning_sent_at %} <span class="tag" title="تذكير الصباح">☀ أُرسل</span>{% endif %}{% if not a.sms_sent_at and not a.morning_sent_at %}<span class="mut">-</span>{% endif %}</td>
 <td>{% if a.status=='scheduled' %}
-{% if perm('appointments') and a.start_at and a.start_at < now_hm() %}<a class="btn red sm" href="{{ url_for('appt_reschedule', aid=a.id) }}" title="فات الوقت: موعد جديد">ما جاتش ← موعد جديد</a>{% endif %}
-{% if perm('appointments') %}<form method="post" action="{{ url_for('appt_arrived', aid=a.id) }}" style="display:inline"><button class="btn gold sm" title="تتبعث للغرفة، والغرفة تزيد واش طلبت">{{ ic('send') }} الزبونة جات</button></form>{% endif %}
+{% if perm('appointments') and a.start_at and a.start_at < now_hm() %}<a class="btn red sm" href="{{ url_for('appt_reschedule', aid=a.id) }}" title="فات الوقت: موعد جديد">لم تحضر ← موعد جديد</a>{% endif %}
+{% if perm('appointments') %}<form method="post" action="{{ url_for('appt_arrived', aid=a.id) }}" style="display:inline"><button class="btn gold sm" title="تُرسَل إلى الغرفة، وتضيف الغرفة ما طلبته">{{ ic('send') }} الزبونة وصلت</button></form>{% endif %}
 <form method="post" action="{{ url_for('appt_done', aid=a.id) }}" style="display:inline-flex;gap:4px">
 {% if a.paid %}<input type="hidden" name="amount" value="0">{% else %}<input name="amount" {% if locked %}readonly title="السعر تحدده المديرة"{% endif %} placeholder="المبلغ" style="width:90px" value="{{ ('%g'|format(a.price) if a.price else '') if a.plan_id else ('%g'|format(a.sprice) if a.sprice else '') }}">{% endif %}
 <button class="btn sm" title="إنهاء وإرسال المبلغ للاستقبال">تم ✓</button>
@@ -443,7 +464,7 @@ TEMPLATES["appointments.html"] = r"""{% extends "base.html" %}{% from "macros.ht
 <h1>{{ page_icon() }}المواعيد</h1>
 <div class="row" style="margin-bottom:14px"><a class="btn" href="{{ url_for('plan_new') }}">+ موعد بعدة حصص (خطة جلسات)</a>
 <a class="btn light" href="{{ url_for('plans') }}">كل خطط الحصص</a>
-{% if perm('appointments') %}<a class="btn light" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }} الحصص اللي فاتت (ما جاوش)</a>{% endif %}</div>
+{% if perm('appointments') %}<a class="btn light" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }} الحصص الفائتة (لم يحضروا)</a>{% endif %}</div>
 {% if perm('appointments') %}<div class="card"><h2>موعد واحد</h2>
 <form method="post" class="row">
 {{ client_picker(sel_client, True) }}
@@ -451,7 +472,7 @@ TEMPLATES["appointments.html"] = r"""{% extends "base.html" %}{% from "macros.ht
 {% if cu.role in ('admin','reception') %}<label>القسم<select name="dept" id="dept">{% for k in depts %}<option value="{{ k }}">{{ DEPTS[k] }}</option>{% endfor %}</select></label>{% endif %}
 <label>الخدمة<select name="service_id"><option value="">—</option>{% for s in services %}{% if cu.role not in ('laser','beauty') or s.dept==cu.role %}<option value="{{ s.id }}" data-dept="{{ s.dept }}">{{ s.name }} ({{ DEPTS[s.dept] }})</option>{% endif %}{% endfor %}</select></label>
 <label>الغرفة<select name="post_id"><option value="">—</option>{% for p in posts %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></label>
-<label>التاريخ<input type="date" name="date" value="{{ d }}" required></label>
+<label>التاريخ<input type="date" name="date" value="{{ d }}" required data-hijri></label>
 <label>الساعة<input type="time" name="time" required></label>
 <label>ملاحظة<input name="notes"></label>
 <label style="flex-direction:row;align-items:center;gap:4px"><input type="checkbox" name="force" value="1"> حجز رغم التعارض</label>
@@ -459,7 +480,7 @@ TEMPLATES["appointments.html"] = r"""{% extends "base.html" %}{% from "macros.ht
 <p class="mut">مواعيد التجميل تصل الزبون تذكيرًا برسالة SMS قبل الموعد تلقائيًا (حسب الإعدادات).</p></div>{% endif %}
 {{ new_client_box(request.path ~ '?date=' ~ d) }}
 <div class="card"><form class="row" style="margin-bottom:12px">
-<label>اليوم<input type="date" name="date" value="{{ d }}"></label>
+<label>اليوم<input type="date" name="date" value="{{ d }}" data-hijri></label>
 {{ branch_filter(br) }}
 {% if cu.role in ('admin','reception') %}<label>القسم<select name="dept"><option value="">الكل</option>{% for k,v in DEPTS.items() %}<option value="{{ k }}" {{ 'selected' if dept==k }}>{{ v }}</option>{% endfor %}</select></label>{% endif %}
 <button class="btn light">عرض</button></form>
@@ -487,8 +508,8 @@ TEMPLATES["reception.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 {% if perm('direct_payment') %}<a class="btn" href="{{ url_for('payment_new', branch=br) }}">دفعة مباشرة</a>{% endif %}
 {% if perm('appointments') %}<a class="btn light" href="{{ url_for('appointments') }}">موعد جديد</a>{% endif %}
 {% if perm('cash_close') and cu.role!='admin' %}<a class="btn light" href="{{ url_for('cash_close') }}">إغلاق صندوق اليوم</a>{% endif %}</div>
-{% if (old_pending or old_visits) and not show_old %}<div class="flash noprint" style="background:#f6efe3;border:1px solid #e0d2bb;color:#5b4a35">📅 هاذي عمليات اليوم برك. من أيام سابقة باقي: {% if old_pending %}{{ old_pending }} مبلغ ما تخلّصش{% endif %}{% if old_pending and old_visits %} و{% endif %}{% if old_visits %}{{ old_visits }} زيارة ما كملتش{% endif %} — <a href="?old=1">عرضها</a></div>{% endif %}
-{% if show_old %}<div class="flash noprint" style="background:#f6efe3;border:1px solid #e0d2bb;color:#5b4a35">راك تشوف حتى الأيام السابقة — <a href="{{ url_for('reception') }}">الرجوع لليوم برك</a></div>{% endif %}
+{% if (old_pending or old_visits) and not show_old %}<div class="flash noprint" style="background:#f6efe3;border:1px solid #e0d2bb;color:#5b4a35">📅 هذه عمليات اليوم فقط. من أيام سابقة باقي: {% if old_pending %}{{ old_pending }} مبلغ غير مدفوع{% endif %}{% if old_pending and old_visits %} و{% endif %}{% if old_visits %}{{ old_visits }} زيارة لم تكتمل{% endif %} — <a href="?old=1">عرضها</a></div>{% endif %}
+{% if show_old %}<div class="flash noprint" style="background:#f6efe3;border:1px solid #e0d2bb;color:#5b4a35">أنت تعرض الأيام السابقة أيضًا — <a href="{{ url_for('reception') }}">الرجوع إلى اليوم فقط</a></div>{% endif %}
 {% if open_visits %}<div class="card"><h2>زبائن داخل العلاج الآن ({{ open_visits|length }})</h2><table><tr><th>#</th><th>الوصول</th><th>الزبون</th><th>عند</th><th>الحالة</th></tr>
 {% for v in open_visits %}<tr><td><a href="{{ url_for('visit_view', vid=v.id) }}">{{ v.id|rid }}</a></td><td>{{ v.created_at[11:16] }}</td><td>{{ v.client }}</td><td>{{ VISIT_TARGETS.get(v.target,'') }}</td><td><span class="tag amber">{{ VISIT_STATUS[v.status] }}</span></td></tr>{% endfor %}</table></div>{% endif %}
 <div class="card"><h2>مبالغ من الأقسام تنتظر التحصيل ({{ pending|length }})</h2>
@@ -508,7 +529,7 @@ TEMPLATES["reception.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 <form method="post" action="{{ url_for('approval_request') }}" style="display:flex;gap:4px;flex-wrap:wrap"><input type="hidden" name="kind" value="discount"><input type="hidden" name="ref_id" value="{{ c.id }}">
 <input name="amount" type="number" min="1" step="any" placeholder="مبلغ التخفيض" style="width:110px" required><input name="reason" placeholder="السبب" style="width:140px"><button class="btn sm">طلب تخفيض</button></form>
 <form method="post" action="{{ url_for('charge_cancel', chid=c.id) }}" style="display:flex;gap:4px;margin-top:6px"><input name="reason" placeholder="سبب الإلغاء" style="width:180px" required><button class="btn red sm">طلب إلغاء</button></form>
-<div class="mut" style="font-size:12px">يوصل للمديرة، والجواب يبان هنا.</div></div></details>{% endif %}</td></tr>
+<div class="mut" style="font-size:12px">يصل إلى المديرة، ويظهر الرد هنا.</div></div></details>{% endif %}</td></tr>
 {% else %}<tr><td colspan="9" class="mut">لا توجد مبالغ معلقة</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>{% if cu.role=='admin' %}عمليات اليوم — المجموع: {{ total|money }} {{ cur }}{% else %}الوصولات التي سلّمتها اليوم (لإعادة الطباعة){% endif %}</h2>
 <table><tr><th>الوصل</th><th>الوقت</th><th>الزبون</th><th>النوع</th><th>البيان</th><th>الدفع</th><th>المبلغ</th></tr>
@@ -536,7 +557,7 @@ TEMPLATES["pos.html"] = r"""{% extends "base.html" %}{% from "macros.html" impor
 <div style="display:grid;grid-template-columns:minmax(0,3fr) minmax(280px,2fr);gap:16px">
 <div class="card"><div style="display:flex;gap:8px;margin-bottom:10px"><input id="search" placeholder="ابحث عن منتج أو امسح الباركود" style="flex:1" autofocus>
 <button type="button" class="btn gold" onclick="qpShow(true,document.getElementById('search').value.trim())">{{ ic('products') }} منتج جديد غير مسجّل</button></div>
-<div id="nores" class="mut" style="display:none;margin-bottom:8px">ما لقيناش هذا المنتج. <a href="#" onclick="qpShow(true,document.getElementById('search').value.trim());return false">أضفه كمنتج جديد</a></div>
+<div id="nores" class="mut" style="display:none;margin-bottom:8px">لم نجد هذا المنتج. <a href="#" onclick="qpShow(true,document.getElementById('search').value.trim());return false">أضفه كمنتج جديد</a></div>
 <table id="plist"><tr><th>المنتج</th><th>الفئة</th><th>السعر</th><th>المخزون</th><th></th></tr></table>
 {% if not prods %}<p class="mut">لا توجد منتجات بعد. اضغط «منتج جديد غير مسجّل» لإضافة واحد.</p>{% endif %}</div>
 <div class="card"><h2>السلة</h2>
@@ -579,7 +600,7 @@ renderP('');
 
 TEMPLATES["quick_product.html"] = r"""<div id="qp" class="card" style="display:none;border:2px dashed var(--gold,#e4ab74)">
 <h2>{{ ic('products') }}منتج جديد غير مسجّل</h2>
-<p class="mut" style="margin-top:-6px">يُضاف إلى قائمة المنتجات مباشرة{% if cu.role!='admin' %}، والمديرة تراجعه وتقدر تعدّل سعره{% endif %}.</p>
+<p class="mut" style="margin-top:-6px">يُضاف إلى قائمة المنتجات مباشرة{% if cu.role!='admin' %}، وتراجعه المديرة ويمكنها تعديل سعره{% endif %}.</p>
 <div class="row"><label>الاسم<input id="qp_name" style="min-width:220px"></label>
 <label>سعر البيع<input id="qp_price" type="number" min="0" step="any" style="width:110px"></label>
 <label>سعر الشراء<input id="qp_cost" type="number" min="0" step="any" style="width:110px"></label>
@@ -657,7 +678,7 @@ TEMPLATES["cashbox.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 
 TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}المنتجات والمخزون{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
-{% if review %}<div class="card" style="border:2px solid var(--gold,#e4ab74)"><h2>{{ ic('alert') }}منتجات جديدة أو أسعار بدّلها العمال ({{ review|length }})</h2>
+{% if review %}<div class="card" style="border:2px solid var(--gold,#e4ab74)"><h2>{{ ic('alert') }}منتجات جديدة أو أسعار غيّرها العمال ({{ review|length }})</h2>
 <p class="mut">راجع الاسم والسعر، ثم اضغط «تمت المراجعة».</p>
 <table><tr><th>المنتج</th><th>سعر البيع</th><th>سعر الشراء</th><th>من</th><th></th></tr>
 {% for p in review %}<tr><td>{{ item_ic(p.name, 'product') }}{{ p.name }}{% if p.review_note %}<div><span class="tag amber">{{ p.review_note }}</span></div>{% endif %}</td><td>{{ p.price|money }}</td><td>{{ (p.cost_price or 0)|money }}</td>
@@ -833,22 +854,22 @@ TEMPLATES["services.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>الفرع<select name="branch_id"><option value="">كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if edit and edit.branch_id==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>
 {% if edit %}<label>الحالة<select name="active"><option value="1">نشطة</option><option value="0" {{ 'selected' if not edit.active }}>موقوفة</option></select></label>{% endif %}
 <div style="flex-basis:100%;border-top:1px dashed #d9cbb3;margin-top:6px;padding-top:8px"><b>{{ ic('plans') }} الباقة (للخدمات بعدة حصص):</b>
-<span class="mut">كي العامل يختار هذه الخدمة في «خطة حصص»، البرنامج يعمّر عدد الحصص وتواريخها وسعرها وحدو.</span></div>
+<span class="mut">عندما يختار العامل هذه الخدمة في «خطة حصص»، يملأ البرنامج عدد الحصص وتواريخها وسعرها تلقائيًا.</span></div>
 <label>عدد الحصص<input name="pkg_sessions" type="number" min="1" value="{{ edit.pkg_sessions or 1 if edit else 1 }}" style="width:70px"></label>
 <label>كل كم يوم حصة<input name="pkg_interval" type="number" min="0" value="{{ edit.pkg_interval or 0 if edit else 0 }}" style="width:70px"></label>
 <label>سعر الباقة كاملة ({{ cur }})<input name="pkg_total" value="{{ '%g'|format(edit.pkg_total or 0) if edit else '' }}" placeholder="فارغ = سعر الحصة × العدد" style="width:150px"></label>
-<label>طريقة الدفع<select name="pkg_pay"><option value="session">بالحصة (كل حصة تتخلّص وحدها)</option><option value="full" {{ 'selected' if edit and edit.pkg_pay=='full' }}>الباقة كاملة مسبقًا</option></select></label>
+<label>طريقة الدفع<select name="pkg_pay"><option value="session">بالحصة (كل حصة تُدفع على حدة)</option><option value="full" {{ 'selected' if edit and edit.pkg_pay=='full' }}>الباقة كاملة مسبقًا</option></select></label>
 <div style="flex-basis:100%;border-top:1px dashed #d9cbb3;margin-top:6px;padding-top:8px"><b>{{ ic('cream') }} المواد المعتادة لهذه الخدمة:</b>
-<span class="mut">كل حصة من هذه الخدمة تتعمّر فيها هاذ المواد وحدها، والغرفة غير تأكّد (وتبدّل الكمية إذا لزم).</span></div>
+<span class="mut">تُملأ هذه المواد تلقائيًا في كل حصة من هذه الخدمة، وما على الغرفة إلا التأكيد (وعدّل الكمية إذا لزم).</span></div>
 <input type="hidden" name="mats_form" value="1">
-<label style="flex-basis:100%">{{ ic('print') }} نصائح بعد الجلسة (تتطبع للزبونة) <span class="mut">— إذا تخليها فارغة يخرجو نصائح جاهزة حسب نوع الخدمة</span>
+<label style="flex-basis:100%">{{ ic('print') }} نصائح بعد الجلسة (تُطبع للزبونة) <span class="mut">— إذا تركتها فارغة تظهر نصائح جاهزة حسب نوع الخدمة</span>
 <textarea name="aftercare" rows="3" placeholder="كل نصيحة في سطر">{{ edit.aftercare or '' if edit else '' }}</textarea></label>
 <div id="smrows" style="flex-basis:100%">{% set cur_m = smats.get(edit.id, []) if edit else [] %}
 {% for r in cur_m + [None, None] %}<div class="row" style="margin-bottom:6px"><select name="sm_id" style="min-width:260px"><option value="">— مادة —</option>
 {% for m in mat_products %}<option value="{{ m.id }}" {{ 'selected' if r and r.product_id==m.id }}>{{ m.name }}</option>{% endfor %}</select>
 <input name="sm_qty" type="number" min="0" step="any" placeholder="الكمية" value="{{ '%g'|format(r.qty) if r else '' }}" style="width:90px"></div>{% endfor %}</div>
 <button type="button" class="btn light sm" onclick="var r=document.querySelector('#smrows .row').cloneNode(true);r.querySelectorAll('input').forEach(x=>x.value='');r.querySelector('select').value='';document.getElementById('smrows').appendChild(r)">+ مادة أخرى</button>
-{% if not mat_products %}<span class="mut">ما كاين حتى منتج من نوع «مواد العمل» — بدّل نوعه في صفحة المنتجات.</span>{% endif %}
+{% if not mat_products %}<span class="mut">لا يوجد أي منتج من نوع «مواد العمل» — غيّر نوعه في صفحة المنتجات.</span>{% endif %}
 <div style="flex-basis:100%"></div>
 <button class="btn">حفظ</button></form></div>
 <div class="card"><table><tr><th>الخدمة</th><th>النوع</th><th>القسم</th><th>الفرع</th><th>المدة</th><th>السعر</th><th>الباقة</th><th>المواد المعتادة</th><th></th></tr>
@@ -889,10 +910,10 @@ TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
 <p><label>نص الرسالة<textarea name="sms_template" rows="3">{{ s.sms_template }}</textarea></label></p>
 <p class="mut">المتغيرات المتاحة: {name} اسم الزبون، {center} اسم المركز، {branch} الفرع، {date} التاريخ، {time} الساعة.</p>
 <h2>رسائل أخرى</h2>
-<p><label><input type="checkbox" name="sms_morning" value="1" {{ 'checked' if s.sms_morning=='1' }}> تذكير ثاني صباح نهار الموعد</label>
+<p><label><input type="checkbox" name="sms_morning" value="1" {{ 'checked' if s.sms_morning=='1' }}> تذكير ثانٍ صباح يوم الموعد</label>
 <label style="display:inline-flex;margin-inline-start:12px">ابتداءً من الساعة<input name="sms_morning_hour" value="{{ s.sms_morning_hour }}" style="width:50px"></label></p>
 <p><label>نص تذكير الصباح<textarea name="sms_morning_template" rows="2">{{ s.sms_morning_template }}</textarea></label></p>
-<p class="mut">هكذا الزبونة توصلها رسالتين: وحدة قبل الموعد (حسب الساعات المكتوبة فوق، مثلا 24 = قبل بيوم) ووحدة الصباح تاع النهار.</p>
+<p class="mut">وهكذا تصل الزبونة رسالتان: واحدة قبل الموعد (حسب الساعات المكتوبة فوق، مثلا 24 = قبل يوم) وأخرى صباح اليوم نفسه.</p>
 <p><label><input type="checkbox" name="sms_confirm" value="1" {{ 'checked' if s.sms_confirm=='1' }}> رسالة تأكيد للزبون عند تسجيل موعده</label></p>
 <p><label>نص التأكيد<textarea name="sms_confirm_template" rows="2">{{ s.sms_confirm_template }}</textarea></label></p>
 <p><label><input type="checkbox" name="sms_birthday" value="1" {{ 'checked' if s.sms_birthday=='1' }}> تهنئة الزبائن بعيد ميلادهم (صباحًا)</label></p>
@@ -912,7 +933,7 @@ TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
 <p class="mut">تحتاج تفعيل بوابة SMS فوق، ورقم هاتف المديرة في خانة «هاتف المدير».</p>
 <p><label><input type="checkbox" name="daily_summary" value="1" {{ 'checked' if s.daily_summary=='1' }}> ملخص اليوم كل ليلة (مداخيل كل فرع، المصاريف، فرق الصندوق، الطلبات والتنبيهات)</label>
 <label style="display:inline-flex;margin-inline-start:12px">في الساعة<input type="time" name="daily_summary_time" value="{{ s.daily_summary_time or '21:00' }}" style="width:110px"></label></p>
-<p><label><input type="checkbox" name="approvals_sms" value="1" {{ 'checked' if s.approvals_sms=='1' }}> رسالة فورية كي يطلب عامل تخفيض أو إلغاء</label></p>
+<p><label><input type="checkbox" name="approvals_sms" value="1" {{ 'checked' if s.approvals_sms=='1' }}> رسالة فورية عندما يطلب عامل تخفيضًا أو إلغاءً</label></p>
 <p><button class="btn light sm" formaction="{{ url_for('summary_test') }}" formmethod="post">إرسال ملخص اليوم الآن (تجربة)</button></p></div>
 {% if not NODE %}<div class="card"><h2>ربط حاسوب فرع (العمل بدون إنترنت)</h2>
 <p>مفتاح المزامنة: <code dir="ltr" style="background:#efe2cf;padding:3px 8px;border-radius:6px">{{ s.sync_key }}</code></p>
@@ -1027,7 +1048,7 @@ TEMPLATES["attendance.html"] = r"""{% extends "base.html" %}{% block body %}
 {% if is_off %}<div class="flash err noprint">هذا يوم راحة: لا يُخصم شيء. إذا عمل أحد اليوم سجّله «حاضر» فيُضاف له يوم.</div>{% endif %}
 <div class="row noprint" style="margin-bottom:10px">{% if not auto %}<button type="button" class="btn light sm" onclick="document.querySelectorAll('select.st').forEach(s=>{if(!s.value)s.value='present'})">تحديد غير المسجَّلين «حاضر»</button>{% endif %}
 <button type="button" class="btn light sm" onclick="window.print()">طباعة</button></div>
-{% if auto %}<p class="mut noprint">كل العمال حاضرون تلقائيًا ويأخذون أجرتهم كاملة. سجّل فقط من غاب: «غياب يوم» يُخصم يومًا، و«غياب نصف يوم» يُخصم نصف يوم. الأجرة تُحسب وحدها.</p>
+{% if auto %}<p class="mut noprint">كل العمال حاضرون تلقائيًا ويأخذون أجرتهم كاملة. سجّل فقط من غاب: «غياب يوم» يُخصم يومًا، و«غياب نصف يوم» يُخصم نصف يوم. تُحسب الأجرة تلقائيًا.</p>
 {% else %}<p class="mut noprint">«نصف يوم» يُحسب نصف أجرة اليوم. الحاضر والمتأخر يومٌ كامل.</p>{% endif %}
 <table><tr><th>العامل</th><th>الحالة</th><th>ساعة الدخول</th><th>ساعة الخروج</th><th>ملاحظة</th></tr>
 {% for e in emps %}{% set a = att.get(e.id) %}<tr><td>{{ e.name }}{% if e.post %}<div class="mut">{{ e.post }}</div>{% endif %}</td>
@@ -1161,11 +1182,11 @@ TEMPLATES["plan_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" 
 {% if cu.role in ('admin','reception') %}<label>القسم<select name="dept">{% for k in depts %}<option value="{{ k }}" {{ 'selected' if k!='reception' and loop.index==2 }}>{{ DEPTS[k] }}</option>{% endfor %}</select></label>{% endif %}
 <label>الخدمة<select name="service_id" id="svc" onchange="fillPkg()" required><option value="">—</option>{% for s in services %}{% if cu.role not in ('laser','beauty') or s.dept==cu.role %}<option value="{{ s.id }}" data-n="{{ s.pkg_sessions or 1 }}" data-i="{{ s.pkg_interval or 0 }}" data-p="{{ s.price or 0 }}" data-t="{{ s.pkg_total or 0 }}" data-pay="{{ s.pkg_pay or 'session' }}" data-d="{{ s.dept }}">{{ s.name }}</option>{% endif %}{% endfor %}</select></label>
 <label>الغرفة<select name="post_id"><option value="">—</option>{% for p in posts %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></label>
-<label>اسم الخطة<input name="title" placeholder="يتكتب وحدو من الخدمة" style="width:240px"></label></div>
+<label>اسم الخطة<input name="title" placeholder="يُكتب تلقائيًا من الخدمة" style="width:240px"></label></div>
 <h2 style="margin-top:16px">{{ ic('plans') }} الحصص والسعر</h2>
 <div class="row">
 <label>عدد الحصص<input name="n" id="n" type="number" min="1" max="100" value="1" style="width:80px" required oninput="dates()"></label>
-<label>تاريخ الحصة الأولى<input type="date" name="first_date" id="d0" oninput="dates()"></label>
+<label>تاريخ الحصة الأولى<input type="date" name="first_date" id="d0" oninput="dates()" data-hijri></label>
 <label>الساعة<input type="time" name="time" id="tm" value="09:00" oninput="dates()"></label>
 <label>كل كم يوم حصة؟<input name="interval" id="iv" type="number" min="0" value="7" style="width:70px" oninput="dates()"></label></div>
 <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr));margin:10px 0">
@@ -1176,11 +1197,11 @@ TEMPLATES["plan_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" 
 {% else %}<details style="margin:6px 0"><summary class="btn light sm" style="list-style:none">طلب سعر آخر من المديرة</summary>
 <div class="row" style="margin-top:6px"><label>السعر المطلوب للباقة كاملة<input name="want_price" type="number" min="0" step="any" style="width:130px"></label>
 <label>السبب<input name="want_reason" style="width:220px"></label></div>
-<p class="mut">الخطة تتسجّل بالسعر العادي، وإذا وافقت المديرة يتبدّل السعر وحدو.</p></details>{% endif %}
-<h2 style="margin-top:12px">{{ ic('calendar') }} مواعيد الحصص <span class="mut" style="font-size:13px">(تتعمّر وحدها، وتقدر تبدّل أي تاريخ)</span></h2>
+<p class="mut">تُسجَّل الخطة بالسعر العادي، وإذا وافقت المديرة يتغيّر السعر تلقائيًا.</p></details>{% endif %}
+<h2 style="margin-top:12px">{{ ic('calendar') }} مواعيد الحصص <span class="mut" style="font-size:13px">(تُملأ تلقائيًا، ويمكنك تعديل أي تاريخ)</span></h2>
 <table id="sess" style="max-width:520px"><tr><th>الحصة</th><th>التاريخ</th><th>الساعة</th></tr></table>
 <label style="margin-top:8px">ملاحظة<input name="notes" style="width:300px"></label>
-<p class="mut">إذا تركت التاريخ فارغ، الحصة تتسجّل بلا موعد. وكي تكمل كل حصة، البرنامج يحدد تاريخ الحصة الجاية وحدو.</p>
+<p class="mut">إذا تركت التاريخ فارغًا، تُسجَّل الحصة بدون موعد. وعند انتهاء كل حصة، يحدد البرنامج تاريخ الحصة التالية تلقائيًا.</p>
 <script>
 var OFF={{ weekly_off|tojson }}, ADMIN={{ 'true' if cu.role=='admin' else 'false' }}, CUR='{{ cur }}';
 function fmt(x){return Number(x).toLocaleString('fr-FR',{maximumFractionDigits:2})+' '+CUR}
@@ -1198,7 +1219,7 @@ function dates(){price();var tb=document.getElementById('sess');tb.querySelector
  var n=Math.min(+document.getElementById('n').value||1,100),d0=document.getElementById('d0').value,iv=+document.getElementById('iv').value||0,tm=document.getElementById('tm').value||'09:00';
  for(var i=0;i<n;i++){var v='';if(d0&&(i==0||iv>0)){var d=new Date(d0+'T12:00:00');d.setDate(d.getDate()+iv*i);
    for(var k=0;k<7&&OFF.indexOf((d.getDay()+6)%7)>-1;k++)d.setDate(d.getDate()+1);v=d.toISOString().slice(0,10)}
-  var r=document.createElement('tr');r.className='s';r.innerHTML='<td><b>'+(i+1)+'</b></td><td><input type="date" name="sd" value="'+v+'"></td><td><input type="time" name="st" value="'+tm+'"></td>';tb.appendChild(r)}}
+  var r=document.createElement('tr');r.className='s';r.innerHTML='<td><b>'+(i+1)+'</b></td><td><input type="date" name="sd" value="'+v+'" data-hijri></td><td><input type="time" name="st" value="'+tm+'"></td>';tb.appendChild(r)}}
 if(document.getElementById('pm'))document.getElementById('pm').onchange=price;
 dates();
 </script>
@@ -1219,7 +1240,7 @@ TEMPLATES["plan_view.html"] = r"""{% extends "base.html" %}{% block body %}
 {% for x in sessions %}{% set k = x.id|string %}<tr>
 <td class="noprint"><input type="checkbox" class="sel" name="sel" value="{{ x.id }}" {{ 'disabled' if x.paid }} data-p="{{ x.price or 0 }}" onchange="calc()"></td>
 <td><b>{{ x.session_no }}</b></td>
-<td><input type="date" name="d_{{ k }}" value="{{ (x.start_at or '')[:10] }}"></td>
+<td><input type="date" name="d_{{ k }}" value="{{ (x.start_at or '')[:10] }}" data-hijri></td>
 <td><input type="time" name="t_{{ k }}" value="{{ (x.start_at or '')[11:16] }}" style="width:105px"></td>
 <td><select name="r_{{ k }}"><option value="">—</option>{% for r in posts %}<option value="{{ r.id }}" {{ 'selected' if x.post_id==r.id }}>{{ r.name }}</option>{% endfor %}</select></td>
 <td><select name="s_{{ k }}">{% for kk,v in APPT_STATUS.items() %}<option value="{{ kk }}" {{ 'selected' if x.status==kk }}>{{ v }}</option>{% endfor %}</select></td>
@@ -1271,7 +1292,7 @@ TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 .tgts input:focus-visible+span{outline:3px solid #e4ab74}</style>
 <div class="tgts" id="tgts">{% for k,v in targets.items() %}<label><input type="radio" name="target" value="{{ k }}" required{% if targets|length==1 %} checked{% endif %}>
 <span>{{ ic({'director':'shield','reception':'hijama','laser':'laser','beauty':'face'}[k]) }}{{ v }}</span></label>{% endfor %}</div>
-<div class="mut" style="margin-top:6px">كي تختار خدمة تحت، يتختار القسم تاعها وحدو. تقدر تبدّلو.</div>
+<div class="mut" style="margin-top:6px">عند اختيار خدمة أدناه، يُختار قسمها تلقائيًا. يمكنك تعديله.</div>
 {% if sel_client %}<div class="row" style="margin-top:10px;gap:18px">
 {% if sel_client.chronic %}<span class="tag red">أمراض مزمنة: {{ sel_client.chronic }}</span>{% endif %}
 {% if sel_client.allergies %}<span class="tag red">حساسية: {{ sel_client.allergies }}</span>{% endif %}
@@ -1289,7 +1310,7 @@ TEMPLATES["visit_new.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 
 TEMPLATES["visit_queue.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}{{ 'كل الأقسام الآن' if tgt=='all' else 'قائمة الانتظار' }}{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
-{% if request.args.get('old') %}<p class="noprint"><a class="btn light sm" href="{{ url_for('visit_queue') }}">الرجوع لليوم برك</a></p>{% endif %}
+{% if request.args.get('old') %}<p class="noprint"><a class="btn light sm" href="{{ url_for('visit_queue') }}">الرجوع إلى اليوم فقط</a></p>{% endif %}
 {% if not tgt %}<div class="card">لا توجد قائمة انتظار لهذا المستخدم.</div>{% else %}
 <div class="card"><div class="mut noprint" style="margin-bottom:8px">تتحدث القائمة تلقائيًا كل 5 ثوانٍ.</div>
 <div id="qrows">…</div></div>
@@ -1310,7 +1331,7 @@ TEMPLATES["visit_queue_rows.html"] = r"""<table><tr><th>#</th><th>الوصول</
 <td><span class="tag {{ 'amber' if v.status=='waiting' else '' }}">{{ VISIT_STATUS[v.status] }}</span></td>
 <td><a class="btn sm" href="{{ url_for('visit_view', vid=v.id) }}">فتح الملف</a></td></tr>
 {% else %}<tr><td colspan="9" class="mut">لا يوجد زبائن في الانتظار</td></tr>{% endfor %}</table>
-{% if n_old and not show_old %}<p class="mut noprint" style="margin-top:8px">📅 كاين {{ n_old }} زيارة من أيام سابقة ما كملتش — <a href="{{ url_for('visit_queue', old=1) }}">عرضها</a></p>{% endif %}"""
+{% if n_old and not show_old %}<p class="mut noprint" style="margin-top:8px">📅 يوجد {{ n_old }} زيارة من أيام سابقة لم تكتمل — <a href="{{ url_for('visit_queue', old=1) }}">عرضها</a></p>{% endif %}"""
 
 TEMPLATES["visits.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}الزيارات</h1>
@@ -1329,9 +1350,9 @@ TEMPLATES["visit_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <div><div style="font-size:20px;font-weight:bold">الحصة {{ v.session_no }} من {{ v.plan_n }}</div><div class="mut">{{ v.plan_title }}</div></div>
 <div style="flex:1;min-width:160px;background:#efe2cf;border-radius:8px;height:12px;overflow:hidden"><div style="height:100%;background:#0f4c45;width:{{ (100*(v.plan_done or 0)/(v.plan_n or 1))|round }}%"></div></div>
 <span class="mut">{{ v.plan_done or 0 }} كملو</span>
-{% if v.session_paid %}<span class="tag" style="background:#e2f5e9;color:#145c32">الحصة مخلّصة</span>{% endif %}
+{% if v.session_paid %}<span class="tag" style="background:#e2f5e9;color:#145c32">الحصة مدفوعة</span>{% endif %}
 <a class="btn light sm" href="{{ url_for('plan_view', pid=v.plan_id) }}">الخطة كاملة</a></div>
-<p class="mut" style="color:#f3e3c8;margin-top:-6px">إذا طلبت الزبونة حاجة زايدة (خدمة أخرى ولا منتج)، زيدها تحت، وتتحصّل في الاستقبال مع الحصة.</p>{% endif %}
+<p class="mut" style="color:#f3e3c8;margin-top:-6px">إذا طلبت الزبونة شيئًا إضافيًا (خدمة أخرى أو منتج)، أضفها أدناه، وتُحصَّل في الاستقبال مع الحصة.</p>{% endif %}
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">الزبون</div><div class="n" style="font-size:18px"><a href="{{ url_for('client_view', cid=v.client_id) }}">{{ v.client }}</a></div>
 <div class="mut">{{ v.phone or '' }}{% if v.birth_date %} · {{ v.birth_date|age }} سنة{% endif %}{% if v.gender %} · {{ v.gender }}{% endif %}{% if v.address %} · {{ v.address }}{% endif %}</div></div>
@@ -1358,33 +1379,33 @@ TEMPLATES["visit_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="chips">{% for x in TREAT_AREAS %}<label class="chip"><input type="checkbox" name="area" value="{{ x }}"> {{ x }}</label>{% endfor %}</div></div>
 <label>رد فعل البشرة<select name="reaction"><option value="">—</option>{% for x in SKIN_REACTIONS %}<option>{{ x }}</option>{% endfor %}</select></label>
 <label>الجهاز / الإعدادات<input name="settings" placeholder="مثلا: طاقة 18، 3 تمريرات" style="width:200px"></label>
-<label style="flex:1">التوصية للجلسة الجاية<input name="advice" placeholder="مثلا: نزيدو التركيز على الخدود"></label>{% endif %}
+<label style="flex:1">التوصية للجلسة القادمة<input name="advice" placeholder="مثلا: زيادة التركيز على الخدين"></label>{% endif %}
 <label style="flex:1;flex-basis:100%">ملاحظة هذه الجلسة<textarea name="note" rows="2"></textarea></label><button class="btn">حفظ الملاحظة</button>
 <a class="btn gold" href="{{ url_for('visit_aftercare', vid=v.id) }}" target="_blank">{{ ic('print') }} نصائح بعد الجلسة</a>
 <a class="btn light" href="{{ url_for('client_view', cid=v.client_id) }}#">الملف الكامل والصور</a>
 <a class="btn light" href="{{ url_for('consent', cid=v.client_id, procedure=v.request or '') }}">وثيقة الموافقة</a></form>
 {% for n in vnotes %}<div style="margin-top:6px"><span class="mut">{{ n.created_at[:10] }} · {{ n.by_name or '' }}:</span> {{ n.note }}</div>{% endfor %}</div>{% endif %}
 {% if (can_treat or cu.role=='admin') and v.status!='cancelled' %}<div class="card"><h2>{{ ic('cream') }}المواد المستعملة في هذه الحصة</h2>
-<p class="mut">اختار المواد اللي استعملتها (كريم، جل، إبر، قطن...). تنقص من المخزون وتنحسب على الحصة.</p>
+<p class="mut">اختر المواد التي استعملتها (كريم، جل، إبر، قطن...). تُخصم من المخزون وتُحسب على الحصة.</p>
 {% if eco.mats %}<table style="max-width:760px"><tr><th>المادة</th><th>الكمية</th>{% if cu.role=='admin' %}<th>سعر الشراء</th><th>التكلفة</th>{% endif %}<th>سجّلها</th><th></th></tr>
 {% for m in eco.mats %}<tr><td>{{ item_ic(m.name,'product') }}{{ m.name }}</td><td>{{ '%g'|format(-m.qty) }}</td>
 {% if cu.role=='admin' %}<td class="mut">{{ m.unit|money }}</td><td>{{ m.cost|money }}</td>{% endif %}<td class="mut">{{ m.by_name or '' }}</td>
 <td><form method="post" onsubmit="return confirm('حذف هذه المادة؟ ترجع للمخزون')"><input type="hidden" name="action" value="unuse_mat"><input type="hidden" name="move_id" value="{{ m.id }}"><button class="btn red sm">×</button></form></td></tr>{% endfor %}</table>{% endif %}
 {% if mats_list %}<form method="post" style="margin-top:10px"><input type="hidden" name="action" value="use_mat">
-{% if mats_default %}<p style="background:#eef7ee;border-radius:8px;padding:6px 10px">✅ المواد المعتادة لهذه الخدمة تعمّرت وحدها. تأكّد من الكمية (بدّلها ولا فرّغها إذا ما استعملتهاش) واضغط «تسجيل المواد».</p>{% endif %}
-<div id="matrows">{% for d in mats_default + [None] * (1 if mats_default else 2) %}<div class="row" style="margin-bottom:6px"><select name="mat_id" style="min-width:260px"><option value="">— اختار مادة —</option>
+{% if mats_default %}<p style="background:#eef7ee;border-radius:8px;padding:6px 10px">✅ مُلئت المواد المعتادة لهذه الخدمة تلقائيًا. تأكّد من الكمية (عدّلها أو امسحها إن لم تستعملها) واضغط «تسجيل المواد».</p>{% endif %}
+<div id="matrows">{% for d in mats_default + [None] * (1 if mats_default else 2) %}<div class="row" style="margin-bottom:6px"><select name="mat_id" style="min-width:260px"><option value="">— اختر مادة —</option>
 {% for m in mats_list %}<option value="{{ m.id }}" {{ 'selected' if d and d.id==m.id }}>{{ m.name }} (الموجود {{ '%g'|format(m.qty) }})</option>{% endfor %}</select>
 <input name="mat_qty" type="number" min="0" step="any" placeholder="الكمية" value="{{ '%g'|format(d.qty) if d else '' }}" style="width:90px"></div>{% endfor %}</div>
 <button type="button" class="btn light sm" onclick="var r=document.querySelector('#matrows .row').cloneNode(true);r.querySelectorAll('input').forEach(x=>x.value='');r.querySelector('select').value='';document.getElementById('matrows').appendChild(r)">+ مادة أخرى</button>
 <button class="btn">تسجيل المواد</button></form>
-{% else %}<p class="mut">ما كاين حتى مادة من نوع «مواد العمل». المديرة ولا الاستقبال يبدّلو نوع المواد في صفحة المنتجات.</p>{% endif %}</div>{% endif %}
+{% else %}<p class="mut">لا توجد أي مادة من نوع «مواد العمل». تغيّر المديرة أو الاستقبال نوع المواد في صفحة المنتجات.</p>{% endif %}</div>{% endif %}
 {% if cu.role=='admin' %}<div class="card" style="border-inline-start:6px solid {{ '#2a8a57' if eco.profit>=0 else '#b3261e' }}"><h2>{{ ic('reports') }}فائدة هذه الحصة</h2>
 <table style="max-width:520px">
-<tr><td>سعر الحصة كاملة{% if eco.prepaid %} <span class="mut">(منها {{ eco.prepaid|money }} حصة من باقة مخلّصة)</span>{% endif %}</td><td><b>{{ eco.income|money }}</b></td></tr>
+<tr><td>سعر الحصة كاملة{% if eco.prepaid %} <span class="mut">(منها {{ eco.prepaid|money }} حصة من باقة مدفوعة)</span>{% endif %}</td><td><b>{{ eco.income|money }}</b></td></tr>
 <tr><td>المواد المستعملة</td><td style="color:#b3261e">− {{ eco.mat_cost|money }}</td></tr>
 {% if eco.sold_cost %}<tr><td>سعر شراء المنتجات المبيعة</td><td style="color:#b3261e">− {{ eco.sold_cost|money }}</td></tr>{% endif %}
 <tr style="background:#efe2cf"><td><b>فائدة الحصة الصافية</b></td><td><b style="font-size:18px;color:{{ '#145c32' if eco.profit>=0 else '#b3261e' }}">{{ eco.profit|money }} {{ cur }}</b></td></tr></table>
-<p class="mut">المواد تنحسب بسعر الشراء المسجّل في المنتجات. <a href="{{ url_for('sessions_profit') }}">فائدة كل الحصص</a></p></div>{% endif %}
+<p class="mut">تُحسب المواد بسعر الشراء المسجّل في المنتجات. <a href="{{ url_for('sessions_profit') }}">فائدة كل الحصص</a></p></div>{% endif %}
 {% if can_edit %}<div class="card"><h2>إضافة شيء قمت به</h2>
 <form method="post" class="row"><input type="hidden" name="action" value="add">
 <label>النوع<select name="kind" id="kind" onchange="sw()"><option value="service">خدمة</option><option value="product">منتج من المخزون</option>{% if not locked %}<option value="other">شيء آخر (أكتبه)</option><option value="discount">تخفيض (اكتب المبلغ في السعر)</option>{% endif %}</select></label>
@@ -1658,14 +1679,14 @@ TEMPLATES["suppliers.html"] = r"""{% extends "base.html" %}{% block body %}
 
 TEMPLATES["purchases.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}طلبيات الشراء</h1>
-<div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ فاتورة / طلبية شراء</a><a class="btn gold" href="{{ url_for('purchase_auto') }}">{{ ic('truck') }} طلبية أوتوماتيكية (المواد اللي قربت تكمل)</a>{% if cu.role=='admin' %}<a class="btn light" href="{{ url_for('suppliers') }}">الموردون</a>{% endif %}</div>
+<div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ فاتورة / طلبية شراء</a><a class="btn gold" href="{{ url_for('purchase_auto') }}">{{ ic('truck') }} طلبية أوتوماتيكية (المواد التي قاربت على النفاد)</a>{% if cu.role=='admin' %}<a class="btn light" href="{{ url_for('suppliers') }}">الموردون</a>{% endif %}</div>
 <div class="card"><form class="row" style="margin-bottom:10px">{{ branch_filter(br) }}<button class="btn light">عرض</button></form>
 <table><tr><th>#</th><th>التاريخ</th><th>المورد</th>{% if not br %}<th>الفرع</th>{% endif %}<th>أدخلها</th><th>المجموع</th><th>المدفوع</th><th>الحالة</th></tr>
 {% for p in rows %}<tr class="{{ 'cx' if p.status=='cancelled' }}"><td><a href="{{ url_for('purchase_view', pid=p.id) }}">{{ p.id|rid }}</a></td><td>{{ p.day }}</td><td>{{ p.supplier or '-' }}</td>{% if not br %}<td>{{ p.branch }}</td>{% endif %}<td>{{ p.by_name or '' }}</td>
 <td>{{ p.total|money }}</td><td>{{ p.paid|money }}</td><td><span class="tag {{ 'amber' if p.status=='ordered' else '' }}">{{ PURCHASE_STATUS[p.status] }}</span></td></tr>
 {% else %}<tr><td colspan="8" class="mut">لا توجد طلبيات</td></tr>{% endfor %}</table></div>
-{% if who %}<div class="card"><h2>{{ ic('key') }}من يقدر يدخل المشتريات؟</h2>
-<p class="mut">شغّل أو أوقف لكل مكان. يصل لحاسوبه في ثوانٍ. «الدفع من الصندوق» يسمح له يسجّل المبلغ اللي خلّصه للمورد كمصروف.</p>
+{% if who %}<div class="card"><h2>{{ ic('key') }}من يستطيع إدخال المشتريات؟</h2>
+<p class="mut">شغّل أو أوقف لكل مكان. يصل لحاسوبه في ثوانٍ. «الدفع من الصندوق» يسمح له بتسجيل المبلغ الذي دفعه للمورد كمصروف.</p>
 <style>.sw{position:relative;display:inline-block;width:46px;height:24px}.sw input{opacity:0;width:0;height:0}
 .sl{position:absolute;inset:0;background:#cfc6b8;border-radius:24px;cursor:pointer;transition:.2s}
 .sl:before{content:"";position:absolute;width:18px;height:18px;right:3px;top:3px;background:#fff;border-radius:50%;transition:.2s}
@@ -1684,7 +1705,7 @@ TEMPLATES["purchase_new.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>للفرع<select name="branch_id">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
 <label>التاريخ<input type="date" name="day" value="{{ today }}"></label><label>ملاحظة<input name="notes"></label></div>
 <table style="margin-top:12px" id="lines"><tr><th>المنتج</th><th>الكمية المطلوبة</th><th></th></tr></table>
-<p class="mut">اكتب الكميات فقط. كي توصل السلعة، تأكد من الكمية اللي وصلت فعلًا وبدّل سعر البيع إذا تبدّل.</p>
+<p class="mut">اكتب الكميات فقط. عند وصول السلعة، تأكد من الكمية التي وصلت فعلًا وعدّل سعر البيع إن تغيّر.</p>
 <p><button type="button" class="btn light sm" onclick="addLine()">+ سطر</button>
 <button type="button" class="btn gold sm" onclick="qpShow(true)">{{ ic('products') }} منتج جديد غير مسجّل</button></p>
 <button class="btn gold">حفظ الطلبية</button></form></div>
@@ -1713,12 +1734,12 @@ TEMPLATES["purchase_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <p>المورد: <b>{{ p.supplier or '-' }}</b> {{ p.sphone or '' }} {{ p.saddress or '' }} — الحالة: <span class="tag amber">{{ PURCHASE_STATUS[p.status] }}</span>{% if p.notes %} — {{ p.notes }}{% endif %}</p>
 <form method="post">
 {% set can_price = cu.role=='admin' or perm('sale_prices') %}{% set can_cost = cu.role=='admin' or perm('cost_prices') %}
-<table><tr><th>المنتج</th><th>الكمية المطلوبة</th>{% if p.status=='ordered' %}<th class="noprint">الكمية اللي وصلت</th>{% if can_price %}<th class="noprint">سعر البيع</th>{% endif %}{% if can_cost %}<th class="noprint">سعر الشراء للوحدة</th>{% endif %}
+<table><tr><th>المنتج</th><th>الكمية المطلوبة</th>{% if p.status=='ordered' %}<th class="noprint">الكمية التي وصلت</th>{% if can_price %}<th class="noprint">سعر البيع</th>{% endif %}{% if can_cost %}<th class="noprint">سعر الشراء للوحدة</th>{% endif %}
 {% elif can_cost %}<th>سعر الشراء</th><th>المجموع</th>{% endif %}</tr>
 {% for i in items %}<tr><td>{{ i.name }}</td>
 <td>{% if p.status=='ordered' %}<input name="q_{{ i.id }}" value="{{ '%g'|format(i.qty) }}" style="width:70px">{% else %}{{ '%g'|format(i.qty) }}{% endif %}</td>
 {% if p.status=='ordered' %}<td class="noprint"><input name="rq_{{ i.id }}" value="{{ '%g'|format(i.qty) }}" style="width:70px" title="إذا وصلت أقل، اكتب الكمية الحقيقية"></td>
-{% if can_price %}<td class="noprint"><input name="sp_{{ i.id }}" value="{{ '%g'|format(i.price or 0) }}" style="width:90px" title="سعر البيع الحالي: بدّلو إذا تبدّل"></td>{% endif %}
+{% if can_price %}<td class="noprint"><input name="sp_{{ i.id }}" value="{{ '%g'|format(i.price or 0) }}" style="width:90px" title="سعر البيع الحالي: عدّله إن تغيّر"></td>{% endif %}
 {% if can_cost %}<td class="noprint"><input name="rc_{{ i.id }}" value="{{ '%g'|format(i.unit_cost or i.cost_price or 0) if (i.unit_cost or i.cost_price) else '' }}" placeholder="من فاتورة المورد" style="width:110px" title="سعر الشراء للوحدة من فاتورة المورد"></td>{% endif %}
 {% elif can_cost %}<td>{{ i.unit_cost|money }}</td><td>{{ (i.qty*i.unit_cost)|money }}</td>{% endif %}</tr>{% endfor %}
 {% if can_cost and p.status!='ordered' and total %}<tr style="background:#efe2cf"><td colspan="3"><b>المجموع</b></td><td><b>{{ total|money }} {{ cur }}</b></td></tr>{% endif %}</table>
@@ -1727,7 +1748,7 @@ TEMPLATES["purchase_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>
 <button class="btn gold" name="action" value="receive" onclick="return confirm('تأكيد استلام السلعة؟ تُضاف الكميات إلى مخزون الفرع')">استلام السلعة</button>
 <button class="btn red" name="action" value="cancel" onclick="return confirm('إلغاء الطلبية؟')">إلغاء</button></div>
-<p class="mut noprint">عند الاستلام: اكتب الكمية اللي وصلت فعلًا (ممكن أقل من المطلوبة)، و{% if can_cost %}سعر الشراء من فاتورة المورد، و{% endif %}بدّل سعر البيع إذا تبدّل. الكميات تتزاد للمخزون، وأي تبديل في السعر يبان للمديرة.</p>{% endif %}
+<p class="mut noprint">عند الاستلام: اكتب الكمية التي وصلت فعلًا (قد تكون أقل من المطلوبة)، و{% if can_cost %}سعر الشراء من فاتورة المورد، و{% endif %}عدّل سعر البيع إن تغيّر. تُضاف الكميات إلى المخزون، وأي تغيير في السعر يظهر للمديرة.</p>{% endif %}
 </form>
 {% if p.status=='received' and total %}<p>المدفوع للمورد: <b>{{ paid|money }}</b> — الباقي: <b style="color:{{ '#b3261e' if total-paid>0 else 'inherit' }}">{{ (total-paid)|money }}</b></p>
 {% if total-paid > 0 and cu.role=='admin' %}<form method="post" class="row noprint"><input type="hidden" name="action" value="pay"><label>دفع للمورد<input name="amount" value="{{ '%g'|format(total-paid) }}" style="width:100px"></label>
@@ -1742,7 +1763,7 @@ TEMPLATES["permissions.html"] = r"""{% extends "base.html" %}{% block body %}
 td.c{text-align:center}</style>
 <h1>{{ page_icon() }}صلاحيات العمال</h1>
 <div class="card mut">كل مكان (استقبال، غرفة ليزر، غرفة تجميل) في كل فرع له صلاحياته. كل من يعمل في ذلك المكان يأخذها.
-المهمة المغلقة تختفي من شاشة العامل ولا يستطيع فتحها. التغيير يظهر في حاسوب العامل خلال ثوانٍ (إذا كان متصلًا)، وشاشته تتحدث وحدها.
+المهمة المغلقة تختفي من شاشة العامل ولا يستطيع فتحها. التغيير يظهر في حاسوب العامل خلال ثوانٍ (إذا كان متصلًا)، وتتحدث شاشته تلقائيًا.
 <b>الصندوق والمجاميع والتقارير والرواتب والأسعار والإعدادات للمديرة وحدها دائمًا.</b></div>
 {% for d in data %}<div class="card" id="b{{ d.b.id }}"><h2>{{ d.b.name }}</h2>
 <table><tr><th>المهمة</th>{% for p in d.places %}<th class="c">{{ PLACES[p] }}<div class="mut">{{ d.staff.get(p,0) }} عامل</div>
@@ -1803,17 +1824,57 @@ TEMPLATES["backup.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card"><form method="post"><input type="hidden" name="action" value="now"><button class="btn gold">صنع نسخة احتياطية الآن</button></form>
 <p class="mut">كل عملية في البرنامج تُحفظ فورًا. النسخة الاحتياطية نسخة كاملة إضافية في مكان آخر، تحمي من عطب الحاسوب أو القرص أو الفيروسات.
 الاحتفاظ: كل النسخ لآخر 30 يومًا، ثم نسخة لكل شهر (أي نسخة لكل سنة إلى الأبد).</p></div>
-<div class="card"><h2>أين تُحفظ النسخ</h2><form method="post" class="row"><input type="hidden" name="action" value="settings">
-<label>المجلد الرئيسي<input name="backup_dir" value="{{ st.dir }}" dir="ltr" style="width:280px"></label>
-<label>مجلد ثانٍ (فلاشة أو مجلد Google Drive) — اختياري<input name="backup_dir2" value="{{ st.dir2 or '' }}" dir="ltr" style="width:280px" placeholder="E:\\Bilsan_Backup"></label>
-<label>كل كم ساعة<input name="backup_every_hours" value="{{ st.every }}" style="width:70px"></label><button class="btn light">حفظ</button></form>
+<div class="card"><h2>{{ ic('backup') }}أين تُحفظ النسخ التلقائية</h2>
+<p class="mut" style="margin-top:-4px">اختر بنفسك المجلد الذي تُحفظ فيه النسخ: اضغط «اختيار…» وتنقّل بين الأقراص والمجلدات (القرص D، أو فلاشة، أو مجلد Google Drive).</p>
+<form method="post"><input type="hidden" name="action" value="settings">
+<div class="row"><label>المجلد الرئيسي<input name="backup_dir" id="bd1" value="{{ st.dir }}" dir="ltr" style="width:340px"></label>
+<button type="button" class="btn gold" onclick="bkOpen('bd1')">📁 اختيار…</button></div>
+<div class="row" style="margin-top:10px"><label>مجلد ثانٍ (اختياري)<input name="backup_dir2" id="bd2" value="{{ st.dir2 or '' }}" dir="ltr" style="width:340px" placeholder="D:\Bilsan_Backup"></label>
+<button type="button" class="btn gold" onclick="bkOpen('bd2')">📁 اختيار…</button>
+<button type="button" class="btn light" onclick="document.getElementById('bd2').value=''">بدون مجلد ثانٍ</button></div>
+<div class="row" style="margin-top:10px"><label>نسخة تلقائية كل كم ساعة<input name="backup_every_hours" value="{{ st.every }}" style="width:90px"></label>
+<button class="btn">حفظ المكان</button></div></form>
+<div id="bkm" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:60;align-items:center;justify-content:center">
+<div class="card" style="width:min(620px,94vw);max-height:84vh;display:flex;flex-direction:column;margin:0">
+<h2>اختيار مجلد الحفظ</h2><div class="row" id="bkdrives" style="margin-bottom:8px"></div>
+<div dir="ltr" id="bkpath" style="font-weight:bold;padding:6px 10px;background:#f7f2ea;border-radius:8px;margin-bottom:8px;word-break:break-all"></div>
+<div id="bklist" style="overflow:auto;flex:1;border:1px solid var(--line);border-radius:10px;min-height:200px"></div>
+<div class="row" style="margin-top:10px"><input id="bknew" placeholder="اسم مجلد جديد"><button type="button" class="btn light" onclick="bkMk()">إنشاء مجلد هنا</button>
+<span style="margin-inline-start:auto"></span><button type="button" class="btn light" onclick="bkClose()">إلغاء</button><button type="button" class="btn" onclick="bkPick()">اختيار هذا المجلد</button></div></div></div>
+<script>
+var bkT=null,bkP='';
+function bkOpen(id){bkT=id;document.getElementById('bkm').style.display='flex';var v=document.getElementById(id).value;bkGo(v||'')}
+function bkClose(){document.getElementById('bkm').style.display='none'}
+function bkItem(box,label,path){var el=document.createElement(box==='bkdrives'?'button':'div');
+ if(box==='bkdrives'){el.type='button';el.className='btn light sm'}else{el.className='hjd';el.style.cursor='pointer'}
+ el.textContent=label;el.onclick=function(){bkGo(path)};document.getElementById(box).appendChild(el)}
+function bkGo(p){fetch('{{ url_for("backup_browse") }}?p='+encodeURIComponent(p)).then(function(r){return r.json()}).then(function(j){
+ bkP=j.path;document.getElementById('bkpath').textContent=j.path||'اختر قرصًا';
+ document.getElementById('bkdrives').innerHTML='';j.drives.forEach(function(d){bkItem('bkdrives','💽 '+d,d)});
+ var L=document.getElementById('bklist');L.innerHTML='';if(j.parent)bkItem('bklist','⬆ ..',j.parent);
+ var sep=j.path.indexOf('/')===0?'/':'\\';
+ j.dirs.forEach(function(n){bkItem('bklist','📁 '+n,j.path.replace(/[\\\/]$/,'')+sep+n)});
+ if(!j.dirs.length&&!j.parent){L.innerHTML='<p class="mut" style="padding:10px">اختر قرصًا من الأعلى</p>'}})}
+function bkPick(){if(!bkP){alert('اختر قرصًا أو مجلدًا أولًا');return}document.getElementById(bkT).value=bkP;bkClose()}
+function bkMk(){var n=document.getElementById('bknew').value.trim();if(!n||!bkP)return;var f=new FormData();f.append('p',bkP);f.append('name',n);
+ fetch('{{ url_for("backup_mkdir") }}',{method:'POST',body:f}).then(function(r){return r.json()}).then(function(j){if(j.ok){document.getElementById('bknew').value='';bkGo(j.path)}else alert('تعذّر إنشاء المجلد')})}
+</script>
 <p class="mut">أنصح بمجلد ثانٍ داخل Google Drive للحاسوب: هكذا تبقى نسخة خارج المحل حتى لو ضاع الحاسوب.</p></div>
 <div class="card"><h2>النسخ</h2><table><tr><th>التاريخ</th><th>الحجم</th><th></th></tr>
 {% for f in files %}<tr><td>{{ f.dt.strftime('%Y-%m-%d %H:%M') }}</td><td>{{ '%.1f'|format(f.size/1048576) }} ميغا</td>
 <td><a class="btn light sm" href="{{ url_for('backup_download', name=f.name) }}">تحميل</a>
 <form method="post" style="display:inline" onsubmit="return confirm('استرجاع البيانات كما كانت في {{ f.dt.strftime('%Y-%m-%d %H:%M') }}؟ كل ما سُجّل بعدها سيُلغى (البيانات الحالية تُحفظ نسخة قبل الاسترجاع).')">
 <input type="hidden" name="action" value="restore"><input type="hidden" name="name" value="{{ f.name }}"><button class="btn red sm">استرجاع</button></form></td></tr>
-{% else %}<tr><td colspan="3" class="mut">لا توجد نسخ بعد</td></tr>{% endfor %}</table></div>{% endblock %}"""
+{% else %}<tr><td colspan="3" class="mut">لا توجد نسخ بعد</td></tr>{% endfor %}</table></div>
+{% if central %}<div class="card" style="border:2px solid #f3c1bc"><h2 style="color:var(--red)">⚠ مسح جميع البيانات والبدء من الصفر</h2>
+<p>يمسح كل الزبائن والمواعيد والزيارات والوصولات والمصاريف والمشتريات والسجلات، ويُصفّر كميات المخزون، في كل الفروع وكل الحواسيب.
+تبقى الفروع والمستخدمون وكلمات السر والصلاحيات والإعدادات. <b>تُصنع نسخة احتياطية تلقائيًا قبل المسح</b> لاسترجاع البيانات عند الخطأ.</p>
+<form method="post" action="{{ url_for('factory_reset') }}" onsubmit="return confirm('هل أنت متأكدة؟ ستُمسح كل البيانات في كل الحواسيب.')">
+<div class="chips"><label class="chip"><input type="checkbox" name="staff" value="1"> مسح العمال وحضورهم أيضًا</label>
+<label class="chip"><input type="checkbox" name="catalog" value="1"> مسح المنتجات والخدمات والموردين أيضًا</label></div>
+<div class="row"><label>كلمة مرور المديرة<input type="password" name="password" required autocomplete="new-password"></label>
+<label>اكتبي كلمة «مسح» للتأكيد<input name="confirm" required style="width:140px"></label>
+<button class="btn red">مسح جميع البيانات</button></div></form></div>{% endif %}{% endblock %}"""
 
 TEMPLATES["leave.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1 class="noprint">مغادرة العمل وتصفية الحساب — {{ e.name }}</h1>
@@ -1847,7 +1908,7 @@ TEMPLATES["devices.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card"><h1>{{ page_icon() }} الحواسيب وكلمات السر</h1>
 <p class="mut">كل حاسوب مربوط بفرع ومكان، ويدخل بكلمة سر خاصة به. تغيير كلمة السر أو الإيقاف يصل للحاسوب عند اتصاله بالإنترنت.
 الحاسوب الموقوف لا يستطيع الدخول ولا إرسال أي شيء.</p>
-<p>نسخة البرنامج في هذا الحاسوب: <b dir="ltr">{{ version }}</b>. الحواسيب الأخرى تتحدث وحدها إلى هذه النسخة عند تشغيلها أو بعد 5 دقائق بلا استعمال.</p>
+<p>نسخة البرنامج في هذا الحاسوب: <b dir="ltr">{{ version }}</b>. تتحدث الحواسيب الأخرى تلقائيًا إلى هذه النسخة عند تشغيلها أو بعد 5 دقائق دون استعمال.</p>
 <table><tr><th>الحاسوب</th><th>الفرع</th><th>المكان</th><th>آخر اتصال</th><th>النسخة</th><th>الحالة</th><th>كلمة سر جديدة</th><th></th></tr>
 {% for d in rows %}<tr{% if not d.active %} style="opacity:.55"{% endif %}>
 <td><b>{{ d.full_name }}</b><div class="mut">رقم {{ d.slot }}</div></td><td>{{ d.branch }}</td><td>{{ PLACES.get(d.role, d.role) }}</td>
@@ -1874,6 +1935,9 @@ TEMPLATES["devices.html"] = r"""{% extends "base.html" %}{% block body %}
 {% endblock %}"""
 
 
+TEMPLATES["hijama_card.html"] = r"""<div class="card noprint"><h2>🌙 أيام الحجامة المسنونة القادمة</h2>
+<p class="mut" style="margin-top:-6px">17 و19 و21 من الشهر الهجري (الأيام القمرية)</p><div id="hijama-days"><span class="mut">…</span></div></div>"""
+
 TEMPLATES["tiles.html"] = r"""<div class="tiles noprint">
 {% if perm('reception_visits') %}<a class="tile" href="{{ url_for('visit_new') }}">{{ ic('reception') }}استقبال زبون</a>{% endif %}
 {% if perm('collect') %}<a class="tile" href="{{ url_for('reception') }}">{{ ic('cash') }}التحصيل</a>{% endif %}
@@ -1892,7 +1956,7 @@ TEMPLATES["tiles.html"] = r"""<div class="tiles noprint">
 {% if not NODE %}<a class="tile" href="{{ url_for('devices') }}">{{ ic('monitor') }}الحواسيب</a>{% endif %}
 {% else %}
 {% if cu.role in ('laser','beauty','reception') %}<a class="tile" href="{{ url_for('visit_queue') }}">{{ ic('face' if cu.role=='beauty' else 'laser' if cu.role=='laser' else 'hijama') }}{{ 'زبوناتي الآن' if cu.role!='reception' else 'قسم العلاج الآن' }}</a>
-<a class="tile" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }}الحصص اللي فاتت</a>{% endif %}
+<a class="tile" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }}الحصص الفائتة</a>{% endif %}
 {% if perm('stock_use') and cu.role in ('laser','beauty') %}<a class="tile" href="{{ url_for('stock_use') }}">{{ ic('cream') }}المواد المستعملة</a>{% endif %}
 {% if perm('purchases') %}<a class="tile" href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات</a>{% endif %}
 {% if perm('products_edit') %}<a class="tile" href="{{ url_for('stock_manage') }}">{{ ic('products') }}إدارة المخزون</a>{% endif %}
@@ -1907,9 +1971,9 @@ TEMPLATES["stock_use.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}استهلاك مواد العمل — {{ branch_name(br) }}</h1>
 {% if admin %}<div class="card noprint"><form class="row"><label>الفرع<select name="branch" onchange="this.form.submit()">{% for b in branches %}<option value="{{ b.id }}" {{ 'selected' if b.id==br }}>{{ b.name }}</option>{% endfor %}</select></label></form></div>{% endif %}
 <div class="card"><h2>{{ ic('cream') }}تسجيل ما استُعمل</h2>
-<p class="mut">المواد اللي تستعملها الغرف في العلاج (كؤوس الحجامة، الجل، الكريمات، الإبر...). تخرج من المخزون وتنحسب على الغرفة.
-باش يبان منتج هنا، لازم يكون نوعه «للاستعمال» ولا «للبيع وللاستعمال» في صفحة المنتجات.</p>
-{% if not mats %}<p class="flash">ما كاين حتى منتج من نوع «مواد العمل» بعد. روح لـ <a href="{{ url_for('products', usage='use') }}">المنتجات والمخزون</a> وبدّل نوع المواد.</p>{% else %}
+<p class="mut">المواد التي تستعملها الغرف في العلاج (كؤوس الحجامة، الجل، الكريمات، الإبر...). تُخصم من المخزون وتُحسب على الغرفة.
+لكي يظهر المنتج هنا، يجب أن يكون نوعه «للاستعمال» أو «للبيع وللاستعمال» في صفحة المنتجات.</p>
+{% if not mats %}<p class="flash">لا يوجد بعدُ أي منتج من نوع «مواد العمل». اذهب إلى <a href="{{ url_for('products', usage='use') }}">المنتجات والمخزون</a> وغيّر نوع المواد.</p>{% else %}
 <form method="post"><input type="hidden" name="branch" value="{{ br }}">
 <h2 style="margin-top:6px">في أي غرفة؟</h2>
 <style>.tgts{display:flex;gap:10px;flex-wrap:wrap}.tgts label{cursor:pointer}.tgts input{position:absolute;opacity:0}
@@ -1933,7 +1997,7 @@ TEMPLATES["stock_use.html"] = r"""{% extends "base.html" %}{% block body %}
 
 TEMPLATES["approvals.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}طلبات الموافقة</h1>
-<p class="mut" style="color:#f3e3c8">العامل ما يقدرش يدير تخفيض ولا يلغي مبلغ أو وصل وحدو: يبعث طلب، وانتي توافقي ولا ترفضي. القرار يوصل لحاسوبو في ثوانٍ.</p>
+<p class="mut" style="color:#f3e3c8">لا يستطيع العامل منح تخفيض أو إلغاء مبلغ أو وصل بمفرده: يرسل طلبًا، وأنتِ توافقين أو ترفضين. يصل القرار إلى حاسوبه خلال ثوانٍ.</p>
 <div class="card"><table><tr><th>الوقت</th><th>الفرع</th><th>الطلب</th><th>المبلغ</th><th>التفاصيل</th><th>السبب</th><th>من</th><th>القرار</th></tr>
 {% for r in rows %}<tr{% if r.status!='pending' %} style="opacity:.6"{% endif %}><td>{{ r.requested_at[5:16] }}</td><td>{{ r.branch }}</td>
 <td><b>{{ {'discount':'تخفيض','cancel_charge':'إلغاء مبلغ','cancel_payment':'إلغاء وصل'}[r.kind] }}</b></td><td><b>{{ r.amount|money }}</b></td>
@@ -1974,12 +2038,12 @@ TEMPLATES["services_profit.html"] = r"""{% extends "base.html" %}{% from "macros
 <div class="stat"><div class="l">الدخل</div><div class="n">{{ grand.income|money }}</div></div>
 <div class="stat"><div class="l">المواد</div><div class="n" style="color:#b3261e">{{ grand.cost|money }}</div></div>
 <div class="stat" style="border-top-color:#2a6153"><div class="l">الفائدة الصافية</div><div class="n" style="color:#145c32">{{ grand.profit|money }}</div></div></div>
-<div class="card"><table><tr><th>الخدمة</th><th>الغرفة</th><th>الحصص</th><th>الدخل</th><th>المواد</th><th>الفائدة الصافية</th><th>فائدة الحصة الوحدة</th><th>نسبة الفائدة</th></tr>
+<div class="card"><table><tr><th>الخدمة</th><th>الغرفة</th><th>الحصص</th><th>الدخل</th><th>المواد</th><th>الفائدة الصافية</th><th>فائدة الحصة الواحدة</th><th>نسبة الفائدة</th></tr>
 {% for s in rows %}<tr><td>{{ item_ic(s.name) }}{{ s.name }}</td><td class="mut">{{ USE_ROOMS.get(s.room) or DEPTS.get(s.room) or '' }}</td><td>{{ s.n }}</td>
 <td>{{ s.income|money }}</td><td style="color:#b3261e">{{ s.cost|money }}</td><td><b style="color:{{ '#145c32' if s.profit>=0 else '#b3261e' }}">{{ s.profit|money }}</b></td><td>{{ s.avg|money }}</td>
 <td><div style="display:flex;align-items:center;gap:6px"><div style="width:80px;background:#eee;border-radius:3px;height:10px"><div style="width:{{ [[s.margin,0]|max,100]|min }}%;height:10px;border-radius:3px;background:{{ '#2a8a57' if s.margin>=50 else '#c99a5b' if s.margin>=30 else '#b3261e' }}"></div></div>{{ s.margin }}%</div></td></tr>
-{% else %}<tr><td colspan="8" class="mut">ما كاين حتى حصة في هاذ الفترة</td></tr>{% endfor %}</table>
-<p class="mut">🟢 فوق 50% مليحة · 🟡 بين 30 و50% · 🔴 تحت 30%: شوفي سعرها ولا المواد اللي تستعمل فيها. باش تكون الأرقام صحيحة: سجّلي «المواد المعتادة» لكل خدمة في صفحة الخدمات، وسعر الشراء لكل مادة.</p></div>{% endblock %}"""
+{% else %}<tr><td colspan="8" class="mut">لا توجد حصص في هذه الفترة</td></tr>{% endfor %}</table>
+<p class="mut">🟢 فوق 50% مليحة · 🟡 بين 30 و50% · 🔴 تحت 30%: راجعي سعرها أو المواد المستعملة فيها. لتكون الأرقام صحيحة: سجّلي «المواد المعتادة» لكل خدمة في صفحة الخدمات، وسعر الشراء لكل مادة.</p></div>{% endblock %}"""
 
 TEMPLATES["month_report.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}تقرير الشهر{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
@@ -1991,16 +2055,16 @@ TEMPLATES["month_report.html"] = r"""{% extends "base.html" %}{% from "macros.ht
 <img src="{{ url_for('static', filename='logo_full.jpg') }}" style="width:60px;border-radius:6px"><div><b>{{ center }}</b><div class="mut">{{ branch_name(br) if br else 'كل الفروع' }}</div></div>
 <div style="margin-inline-start:auto;text-align:left"><b>تقرير شهر {{ s.mm }}</b><div class="mut">مقارنة مع {{ s.pm }}</div></div></div>
 {% if s.tips %}<div style="background:#f6efe3;border-radius:8px;padding:8px 12px;margin-bottom:12px">{% for t in s.tips %}<div>• {{ t }}</div>{% endfor %}</div>{% endif %}
-<table><tr><th></th><th>هاذ الشهر</th><th>الشهر الفايت</th><th>الفرق</th></tr>
+<table><tr><th></th><th>هذا الشهر</th><th>الشهر الماضي</th><th>الفرق</th></tr>
 {% for l in s.lines %}<tr{% if l.key=='profit' %} style="background:#efe2cf;font-weight:bold"{% endif %}><td>{{ l.label }}</td>
 <td>{{ l.cur|money if l.money else l.cur }}</td><td class="mut">{{ l.prev|money if l.money else l.prev }}</td>
 <td>{% if l.pct is not none %}<span class="tag {{ '' if l.good else 'red' }}" style="{{ 'background:#dff3e6;color:#145c32' if l.good and l.pct }}">{{ '▲' if l.pct>0 else '▼' if l.pct<0 else '=' }} {{ l.pct|abs }}%</span>{% else %}<span class="mut">—</span>{% endif %}</td></tr>{% endfor %}</table>
-<p class="mut">الربح الصافي = المداخيل − المصاريف (المواد المستعملة داخلة في المصاريف كي تتشرى).</p></div>
+<p class="mut">الربح الصافي = المداخيل − المصاريف (المواد المستعملة محسوبة في المصاريف عند شرائها).</p></div>
 <div class="grid">
 <div class="card"><h2>{{ ic('services') }}أحسن الخدمات (الفائدة الصافية)</h2><table><tr><th>الخدمة</th><th>الحصص</th><th>الفائدة</th></tr>
 {% for x in s.svc %}<tr><td>{{ x.name }}</td><td>{{ x.n }}</td><td><b>{{ x.profit|money }}</b> <span class="mut">{{ x.margin }}%</span></td></tr>{% else %}<tr><td colspan="3" class="mut">لا شيء</td></tr>{% endfor %}</table>
 <p class="noprint"><a href="{{ url_for('services_profit', month=s.mm, branch=br or None) }}">كل الخدمات ←</a></p></div>
-<div class="card"><h2>{{ ic('staff') }}العاملات (الحصص اللي كمّلوها)</h2><table><tr><th>العاملة</th><th>الحصص</th><th>المداخيل</th></tr>
+<div class="card"><h2>{{ ic('staff') }}العاملات (الحصص المكتملة)</h2><table><tr><th>العاملة</th><th>الحصص</th><th>المداخيل</th></tr>
 {% for w in s.workers %}<tr><td>{{ '🥇 ' if loop.first }}{{ w.name }}</td><td>{{ w.n }}</td><td>{{ w.rev|money }}</td></tr>{% else %}<tr><td colspan="3" class="mut">لا شيء</td></tr>{% endfor %}</table></div>
 <div class="card"><h2>{{ ic('reports') }}أرقام أخرى</h2>
 {% if s.best_day %}<p>أحسن يوم: <b>{{ s.best_day[0] }}</b> — {{ s.best_day[1]|money }}</p>{% endif %}
@@ -2011,49 +2075,49 @@ TEMPLATES["month_report.html"] = r"""{% extends "base.html" %}{% from "macros.ht
 TEMPLATES["purchase_auto.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}طلبية أوتوماتيكية — {{ branch_name(br) }}</h1>
 {% if branches %}<div class="row noprint" style="margin-bottom:10px">{% for b in branches %}<a class="btn {{ '' if b.id==br else 'light' }}" href="{{ url_for('purchase_auto', branch=b.id) }}">{{ b.name }}</a>{% endfor %}</div>{% endif %}
-<div class="card"><p class="mut">البرنامج جمع المواد اللي وصلت حد التنبيه، ولا اللي ما تكفّيش أسبوع حسب الاستهلاك تاع آخر 30 يوم.
-الكمية المقترحة تكفّي شهر تقريبًا (وناقص منها اللي راهو مطلوب من قبل). بدّلي الكمية ولا المورد إذا حبيتي، ومن بعد «إنشاء الطلبيات» — تخرج طلبية لكل مورد.</p>
+<div class="card"><p class="mut">جمع البرنامج المواد التي بلغت حد التنبيه، أو التي لا تكفي أسبوعًا حسب استهلاك آخر 30 يوم.
+الكمية المقترحة تكفي شهرًا تقريبًا (مطروحًا منها ما طُلب سابقًا). عدّلي الكمية أو المورد إن شئتِ، ثم اضغطي «إنشاء الطلبيات» — تخرج طلبية لكل مورد.</p>
 {% if rows %}<form method="post"><input type="hidden" name="branch" value="{{ br }}">
-<table><tr><th><input type="checkbox" checked onclick="document.querySelectorAll('input[name=pick]').forEach(x=>x.checked=this.checked)"></th><th>المادة</th><th>الموجود</th><th>حد التنبيه</th><th>الاستهلاك (30 يوم)</th><th>يكفّي</th><th>مطلوب من قبل</th><th>الكمية للطلب</th><th>المورد</th></tr>
+<table><tr><th><input type="checkbox" checked onclick="document.querySelectorAll('input[name=pick]').forEach(x=>x.checked=this.checked)"></th><th>المادة</th><th>الموجود</th><th>حد التنبيه</th><th>الاستهلاك (30 يوم)</th><th>يكفي</th><th>مطلوب من قبل</th><th>الكمية للطلب</th><th>المورد</th></tr>
 {% for r in rows %}<tr><td><input type="checkbox" name="pick" value="{{ r.id }}" {{ 'checked' if r.suggest>0 }}></td>
 <td>{{ item_ic(r.name,'product') }}{{ r.name }}{% if r.usage=='use' %} <span class="tag" style="background:#e3eefc;color:#1d4f91">مواد العمل</span>{% endif %}</td>
 <td><span class="tag {{ 'red' if r.qty<=0 else 'amber' }}">{{ '%g'|format(r.qty) }}</span></td><td class="mut">{{ '%g'|format(r.min_qty) }}</td>
 <td class="mut">{{ '%g'|format(r.used30) }}</td><td>{% if r.days_left is not none %}<b style="color:{{ '#b3261e' if r.days_left<3 else '#9a6b16' }}">{{ r.days_left }} يوم</b>{% else %}<span class="mut">—</span>{% endif %}</td>
 <td class="mut">{{ '%g'|format(r.ordered) if r.ordered else '' }}</td>
 <td><input name="q_{{ r.id }}" type="number" min="0" step="any" value="{{ r.suggest }}" style="width:80px"></td>
-<td><select name="s_{{ r.id }}"><option value="">— بلا مورد —</option>{% for s in sups %}<option value="{{ s.id }}" {{ 'selected' if r.last_sup==s.id }}>{{ s.name }}</option>{% endfor %}</select></td></tr>{% endfor %}</table>
+<td><select name="s_{{ r.id }}"><option value="">— دون مورد —</option>{% for s in sups %}<option value="{{ s.id }}" {{ 'selected' if r.last_sup==s.id }}>{{ s.name }}</option>{% endfor %}</select></td></tr>{% endfor %}</table>
 <p class="row" style="margin-top:12px"><button class="btn gold">{{ ic('truck') }} إنشاء الطلبيات</button><a class="btn light" href="{{ url_for('purchases') }}">رجوع</a></p></form>
-{% else %}<p>✅ كلشي متوفّر، ما كاين حتى مادة لازم تتشرى دروك.</p>{% endif %}</div>{% endblock %}"""
+{% else %}<p>✅ كل شيء متوفر، لا توجد مادة يجب شراؤها الآن.</p>{% endif %}</div>{% endblock %}"""
 
 
 TEMPLATES["appt_reschedule.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}موعد جديد — {{ a.client }}</h1>
 <div class="card"><p>{% if a.plan_id %}<b>{{ a.plan_title }}</b> — حصة {{ a.session_no }} من {{ a.plan_n }}{% else %}<b>{{ a.service or 'موعد' }}</b>{% endif %}
 {% if a.room %} · الغرفة: {{ a.room }}{% endif %} · الهاتف: <a href="tel:{{ a.phone }}">{{ a.phone }}</a></p>
-<p class="mut">الموعد اللي فات: {{ a.start_at or '-' }}{% if a.missed %} · <span class="tag red">غابت {{ a.missed }} مرة على هاذ الحصة</span>{% endif %}</p>
+<p class="mut">الموعد الفائت: {{ a.start_at or '-' }}{% if a.missed %} · <span class="tag red">غابت {{ a.missed }} مرة في هذه الحصة</span>{% endif %}</p>
 <form method="post"><div class="row">
-<label>التاريخ الجديد<input type="date" name="date" value="{{ at[:10] }}" required></label>
+<label>التاريخ الجديد<input type="date" name="date" value="{{ at[:10] }}" required data-hijri></label>
 <label>الساعة<input type="time" name="time" value="{{ at[11:16] }}" required></label>
 <label style="flex-direction:row;align-items:center;gap:4px"><input type="checkbox" name="force" value="1"> حجز رغم التعارض</label></div>
-<p style="background:#eef7ee;border-radius:8px;padding:6px 10px">✅ البرنامج اختار أقرب يوم الغرفة فيه فارغة في نفس الساعة. بدّليه إذا الزبونة حبّت وقت آخر.</p>
-{% if preview %}<p><label><input type="checkbox" name="shift" value="1" checked> أخّر الحصص اللي من بعد بنفس الفرق (باش تبقى المدة بين الحصص كيما هي)</label></p>
-<table style="max-width:520px"><tr><th>الحصة</th><th>كانت</th><th>تولّي</th></tr>
+<p style="background:#eef7ee;border-radius:8px;padding:6px 10px">✅ البرنامج اختار أقرب يوم الغرفة فيه فارغة في نفس الساعة. غيّريه إذا رغبت الزبونة في وقت آخر.</p>
+{% if preview %}<p><label><input type="checkbox" name="shift" value="1" checked> أخّر الحصص التالية بنفس الفارق (لتبقى المدة بين الحصص كما هي)</label></p>
+<table style="max-width:520px"><tr><th>الحصة</th><th>كانت</th><th>تصبح</th></tr>
 {% for r, nat in preview %}<tr><td>{{ r.session_no }}</td><td class="mut">{{ r.start_at }}</td><td><b>{{ nat }}</b></td></tr>{% endfor %}</table>
-<p class="mut">(التواريخ هاذو حسب الاقتراح؛ إذا بدّلتي التاريخ يتحسبو من جديد كي تحفظي.)</p>{% endif %}
+<p class="mut">(هذه التواريخ حسب الاقتراح؛ إذا غيّرتِ التاريخ تُعاد حسابها عند الحفظ.)</p>{% endif %}
 <p class="row"><button class="btn gold">حفظ الموعد الجديد</button><a class="btn light" href="{{ url_for('appts_missed') }}">رجوع</a></p></form>
-<p class="mut">التذكير بالرسالة يتعاود وحدو للموعد الجديد (قبل بيوم والصباح).</p></div>{% endblock %}"""
+<p class="mut">يُعاد إرسال التذكير تلقائيًا للموعد الجديد (قبل يوم وفي الصباح).</p></div>{% endblock %}"""
 
 TEMPLATES["appts_missed.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ page_icon() }}الحصص اللي فاتت (ما جاوش)</h1>
-<div class="card"><p class="mut">مواعيد فات وقتها والزبونة ما جاتش (آخر 60 يوم)، ومازال ما خداتش موعد جديد. اضغطي «موعد جديد» والبرنامج يقترح أقرب وقت فارغ.</p>
-<table><tr><th>الموعد اللي فات</th>{% if not br %}<th>الفرع</th>{% endif %}<th>الزبونة</th><th>الهاتف</th><th>الخدمة / الحصة</th><th>غابت</th><th></th></tr>
+<h1>{{ page_icon() }}الحصص الفائتة (لم يحضروا)</h1>
+<div class="card"><p class="mut">مواعيد فات وقتها ولم تحضر الزبونة (آخر 60 يوم)، ولم تأخذ موعدًا جديدًا بعد. اضغطي «موعد جديد» والبرنامج يقترح أقرب وقت فارغ.</p>
+<table><tr><th>الموعد الفائت</th>{% if not br %}<th>الفرع</th>{% endif %}<th>الزبونة</th><th>الهاتف</th><th>الخدمة / الحصة</th><th>غابت</th><th></th></tr>
 {% for a in rows %}<tr><td>{{ a.start_at }}</td>{% if not br %}<td>{{ a.branch }}</td>{% endif %}
 <td><a href="{{ url_for('client_view', cid=a.client_id) }}">{{ a.client }}</a></td><td><a href="tel:{{ a.phone }}">{{ a.phone }}</a></td>
 <td>{% if a.plan_id %}{{ a.plan_title }} <span class="tag">حصة {{ a.session_no }} من {{ a.plan_n }}</span>{% else %}{{ a.service or '-' }}{% endif %}</td>
 <td>{% if a.missed %}<span class="tag red">{{ a.missed }}</span>{% endif %}</td>
 <td><a class="btn gold sm" href="{{ url_for('appt_reschedule', aid=a.id) }}">{{ ic('calendar') }} موعد جديد</a>
-<form method="post" action="{{ url_for('appt_status', aid=a.id) }}" style="display:inline" onsubmit="return confirm('إلغاء هاذ الموعد نهائيًا؟')"><input type="hidden" name="status" value="cancelled"><button class="btn light sm">إلغاء</button></form></td></tr>
-{% else %}<tr><td colspan="7" class="mut">✅ ما كاين حتى حصة فاتت بلا موعد جديد</td></tr>{% endfor %}</table></div>{% endblock %}"""
+<form method="post" action="{{ url_for('appt_status', aid=a.id) }}" style="display:inline" onsubmit="return confirm('إلغاء هذا الموعد نهائيًا؟')"><input type="hidden" name="status" value="cancelled"><button class="btn light sm">إلغاء</button></form></td></tr>
+{% else %}<tr><td colspan="7" class="mut">✅ لا توجد حصة فائتة بدون موعد جديد</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 
 TEMPLATES["skin_card.html"] = r"""<div class="card" style="border-inline-start:6px solid {{ '#b3261e' if skin and skin.contra else '#c99a5b' }}">
@@ -2066,15 +2130,15 @@ TEMPLATES["skin_card.html"] = r"""<div class="card" style="border-inline-start:6
 {% if skin.routine %}<div class="mut">روتين العناية: {{ skin.routine }}</div>{% endif %}
 {% if skin.notes %}<div class="mut">{{ skin.notes }}</div>{% endif %}
 <div class="mut" style="font-size:12px">آخر تعديل: {{ skin.updated_at[:16] }}</div>
-{% else %}<p class="mut">ما كاينش بطاقة بشرة لهاذ الزبونة. عمّريها في أول جلسة (تبقى في ملفها للجلسات الجاية).</p>{% endif %}
-<details{% if not skin %} open{% endif %} style="margin-top:8px"><summary class="btn light sm" style="display:inline-block">{{ 'تعديل البطاقة' if skin else 'تعمير البطاقة' }}</summary>
+{% else %}<p class="mut">لا توجد بطاقة بشرة لهذه الزبونة. املئيها في أول جلسة (تبقى في ملفها للجلسات القادمة).</p>{% endif %}
+<details{% if not skin %} open{% endif %} style="margin-top:8px"><summary class="btn light sm" style="display:inline-block">{{ 'تعديل البطاقة' if skin else 'ملء البطاقة' }}</summary>
 <form method="post" action="{{ url_for('client_skin', cid=cid) }}" style="margin-top:10px">
 <div class="row"><label>نوع البشرة<select name="skin_type"><option value="">—</option>{% for x in SKIN_TYPES %}<option {{ 'selected' if skin and skin.skin_type==x }}>{{ x }}</option>{% endfor %}</select></label>
 <label>الفوتوتايب (لون البشرة)<select name="phototype"><option value="">—</option>{% for x in PHOTOTYPES %}<option {{ 'selected' if skin and skin.phototype==x }}>{{ x }}</option>{% endfor %}</select></label></div>
 <p><b>مشاكل البشرة:</b></p><div class="chips">{% for x in SKIN_CONCERNS %}<label class="chip"><input type="checkbox" name="concerns" value="{{ x }}" {{ 'checked' if skin and skin.concerns and x in skin.concerns.split('، ') }}> {{ x }}</label>{% endfor %}</div>
 <p><b style="color:#b3261e">موانع / انتباه:</b></p><div class="chips">{% for x in SKIN_CONTRA %}<label class="chip"><input type="checkbox" name="contra" value="{{ x }}" {{ 'checked' if skin and skin.contra and x in skin.contra.split('، ') }}> {{ x }}</label>{% endfor %}</div>
 <div class="row"><label style="flex:1">حساسية من مواد معيّنة<input name="sensitivities" value="{{ skin.sensitivities or '' if skin else '' }}"></label>
-<label style="flex:1">روتين العناية الحالي (المنتجات اللي تستعملها)<input name="routine" value="{{ skin.routine or '' if skin else '' }}"></label></div>
+<label style="flex:1">روتين العناية الحالي (المنتجات التي تستعملها)<input name="routine" value="{{ skin.routine or '' if skin else '' }}"></label></div>
 <label>ملاحظات<textarea name="notes" rows="2">{{ skin.notes or '' if skin else '' }}</textarea></label>
 <button class="btn">حفظ البطاقة</button></form></details></div>"""
 
@@ -2087,52 +2151,52 @@ h2{font-size:17px;background:#f6efe3;padding:6px 10px;border-radius:8px}li{margi
 <div><b>{{ center }}</b><div class="mut">{{ v.branch }}</div></div><div style="margin-inline-start:auto;text-align:left" class="mut">{{ v.created_at[:10] }}</div></div>
 <h1>نصائح بعد الجلسة</h1><p>السيدة: <b>{{ v.client }}</b></p>
 {% for name, lines in tips %}<h2>{{ name }}</h2><ul>{% for l in lines if l.strip() %}<li>{{ l }}</li>{% endfor %}</ul>{% else %}
-<p class="mut">ما كاين حتى نصيحة مكتوبة لهاذ الخدمة. المديرة تقدر تكتبها في صفحة «الخدمات».</p>{% endfor %}
-{% if nxt %}<p style="border:1px dashed #c99a5b;border-radius:8px;padding:8px 12px">📅 موعدك الجاي: <b>{{ nxt.start_at[:10] }}</b> على الساعة <b>{{ nxt.start_at[11:16] }}</b></p>{% endif %}
-<p class="mut">لأي سؤال ولا إذا حسّيتي بحاجة غير عادية، اتصلي بالمركز.</p>
+<p class="mut">لا توجد نصائح مكتوبة لهذه الخدمة. يمكن للمديرة كتابتها في صفحة «الخدمات».</p>{% endfor %}
+{% if nxt %}<p style="border:1px dashed #c99a5b;border-radius:8px;padding:8px 12px">📅 موعدك القادم: <b>{{ nxt.start_at[:10] }}</b> على الساعة <b>{{ nxt.start_at[11:16] }}</b></p>{% endif %}
+<p class="mut">لأي سؤال أو إذا شعرتِ بأي شيء غير عادي، اتصلي بالمركز.</p>
 <button onclick="window.print()">طباعة</button><script>setTimeout(function(){window.print()},400)</script></body></html>"""
 
 
 TEMPLATES["operations.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}إلغاء العمليات — {{ branch_name(br) }}</h1>
 {% if branches %}<div class="row noprint" style="margin-bottom:10px">{% for b in branches %}<a class="btn {{ '' if b.id==br else 'light' }}" href="{{ url_for('operations', branch=b.id, day=day) }}">{{ b.name }}</a>{% endfor %}</div>{% endif %}
-<div class="card"><form class="row"><input type="hidden" name="branch" value="{{ br }}"><label>النهار<input type="date" name="day" value="{{ day }}"{% if not admin %}{% endif %}></label><button class="btn light">عرض</button></form>
-<p class="mut">العملية الملغاة <b>تبقى محفوظة</b> في «العمليات الملغاة»، بصّح ما تدخلش لا في الصندوق ولا في تقرير الشهر ولا في المخزون (السلعة ترجع للمخزون).
-{% if not admin %}الإلغاء يروح طلب للمديرة، وكي توافق يتنفّذ وحدو.{% endif %}</p></div>
-<div class="card"><h2>عمليات نهار {{ day }} ({{ ops|length }})</h2>
+<div class="card"><form class="row"><input type="hidden" name="branch" value="{{ br }}"><label>اليوم<input type="date" name="day" value="{{ day }}"{% if not admin %}{% endif %}></label><button class="btn light">عرض</button></form>
+<p class="mut">العملية الملغاة <b>تبقى محفوظة</b> في «العمليات الملغاة»، لكنها لا تدخل في الصندوق ولا في تقرير الشهر ولا في المخزون (السلعة ترجع للمخزون).
+{% if not admin %}يُرسل الإلغاء طلبًا إلى المديرة، وعند موافقتها يُنفَّذ تلقائيًا.{% endif %}</p></div>
+<div class="card"><h2>عمليات يوم {{ day }} ({{ ops|length }})</h2>
 <table><tr><th>الوقت</th><th>العملية</th><th>الزبون</th><th>المبلغ</th><th>بواسطة</th><th class="noprint">إلغاء</th></tr>
 {% for o in ops %}<tr><td>{{ (o.at or '')[11:16] }}</td><td>{{ o.label }}</td><td>{{ o.client or '' }}</td><td>{{ o.amount|money if o.amount is not none else '' }}</td><td class="mut">{{ o.by or '' }}</td>
 <td class="noprint">{% if (o.kind, o.id) in pend %}<span class="tag amber">في انتظار المديرة</span>{% else %}
-<form method="post" class="row" style="gap:4px" onsubmit="return confirm('إلغاء هاذ العملية؟')"><input type="hidden" name="kind" value="{{ o.kind }}"><input type="hidden" name="id" value="{{ o.id }}"><input type="hidden" name="day" value="{{ day }}"><input type="hidden" name="branch" value="{{ br }}">
+<form method="post" class="row" style="gap:4px" onsubmit="return confirm('إلغاء هذه العملية؟')"><input type="hidden" name="kind" value="{{ o.kind }}"><input type="hidden" name="id" value="{{ o.id }}"><input type="hidden" name="day" value="{{ day }}"><input type="hidden" name="branch" value="{{ br }}">
 <input name="reason" placeholder="السبب" required style="width:140px"><button class="btn red sm">{{ 'إلغاء' if admin else 'طلب إلغاء' }}</button></form>{% endif %}</td></tr>
-{% else %}<tr><td colspan="6" class="mut">ما كاين حتى عملية في هاذ النهار</td></tr>{% endfor %}</table>
-{% if ops %}<form method="post" class="row noprint" style="margin-top:14px;border-top:1px dashed #e0d2bb;padding-top:12px" onsubmit="return confirm('إلغاء كل عمليات نهار {{ day }}؟ (تبقى محفوظة في «العمليات الملغاة»)')">
+{% else %}<tr><td colspan="6" class="mut">لا توجد عمليات في هذا اليوم</td></tr>{% endfor %}</table>
+{% if ops %}<form method="post" class="row noprint" style="margin-top:14px;border-top:1px dashed #e0d2bb;padding-top:12px" onsubmit="return confirm('إلغاء كل عمليات يوم {{ day }}؟ (تبقى محفوظة في «العمليات الملغاة»)')">
 <input type="hidden" name="kind" value="day"><input type="hidden" name="day" value="{{ day }}"><input type="hidden" name="branch" value="{{ br }}">
-<b style="color:#b3261e">⚠ إلغاء كل عمليات هاذ النهار ({{ ops|length }}):</b><input name="reason" placeholder="السبب (مثلا: نهار تجربة)" required style="width:220px">
+<b style="color:#b3261e">⚠ إلغاء كل عمليات هذا اليوم ({{ ops|length }}):</b><input name="reason" placeholder="السبب (مثلا: يوم تجريبي)" required style="width:220px">
 <button class="btn red">{{ 'إلغاء الكل' if admin else 'طلب إلغاء الكل' }}</button></form>{% endif %}</div>
-{% if done %}<div class="card"><h2>تلغات في هاذ النهار ({{ done|length }})</h2><table><tr><th>العملية</th><th>المبلغ</th><th>السبب</th><th>طلبها</th><th>نفّذها</th><th>وقت الإلغاء</th></tr>
+{% if done %}<div class="card"><h2>أُلغيت في هذا اليوم ({{ done|length }})</h2><table><tr><th>العملية</th><th>المبلغ</th><th>السبب</th><th>طلبها</th><th>نفّذها</th><th>وقت الإلغاء</th></tr>
 {% for d in done %}<tr style="color:#7a6a58"><td><s>{{ d.summary }}</s></td><td>{{ d.amount|money }}</td><td>{{ d.reason }}</td><td>{{ d.req_name or '' }}</td><td>{{ d.by_name or '' }}</td><td>{{ d.created_at[:16] }}</td></tr>{% endfor %}</table></div>{% endif %}
 {% endblock %}"""
 
 TEMPLATES["cancelled_ops.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}العمليات الملغاة</h1>
 <div class="card noprint"><form class="row"><label>الشهر<input type="month" name="month" value="{{ mm }}"></label>{{ branch_filter(br) }}<button class="btn light">عرض</button><button type="button" class="btn gold" onclick="window.print()">طباعة</button></form>
-<p class="mut">هاذو عمليات تلغات: محفوظة هنا برك، وما تدخلش لا في الصندوق ولا في التقارير.</p></div>
-<div class="card"><table><tr><th>نهار العملية</th>{% if not br %}<th>الفرع</th>{% endif %}<th>النوع</th><th>العملية</th><th>المبلغ</th><th>السبب</th><th>طلبها</th><th>نفّذها</th><th>وقت الإلغاء</th></tr>
+<p class="mut">هذه عمليات ملغاة: محفوظة هنا فقط، ولا تدخل في الصندوق ولا في التقارير.</p></div>
+<div class="card"><table><tr><th>يوم العملية</th>{% if not br %}<th>الفرع</th>{% endif %}<th>النوع</th><th>العملية</th><th>المبلغ</th><th>السبب</th><th>طلبها</th><th>نفّذها</th><th>وقت الإلغاء</th></tr>
 {% for d in rows %}<tr><td>{{ d.day }}</td>{% if not br %}<td>{{ d.branch }}</td>{% endif %}<td>{{ {'payment':'وصل','visit':'زيارة','charge':'مبلغ في الانتظار','expense':'مصروف','stock':'حركة مخزون'}.get(d.kind, d.kind) }}</td>
 <td>{{ d.summary }}</td><td>{{ d.amount|money }}</td><td>{{ d.reason }}</td><td>{{ d.req_name or '' }}</td><td>{{ d.by_name or '' }}</td><td class="mut">{{ d.created_at[:16] }}</td></tr>
-{% else %}<tr><td colspan="9" class="mut">ما كاين حتى عملية ملغاة في هاذ الشهر</td></tr>{% endfor %}</table></div>{% endblock %}"""
+{% else %}<tr><td colspan="9" class="mut">لا توجد عمليات ملغاة في هذا الشهر</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["stock_manage.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}إدارة المخزون — {{ branch_name(br) }}</h1>
 {% if branches and not printing %}<div class="row noprint" style="margin-bottom:10px">{% for b in branches %}<a class="btn {{ '' if b.id==br else 'light' }}" href="{{ url_for('stock_manage', branch=b.id) }}">{{ b.name }}</a>{% endfor %}</div>{% endif %}
-{% if printing %}<p>ورقة الجرد — {{ now_hm()[:10] }} — اكتبوا الكمية اللي لقيتوها فعلًا.</p>
+{% if printing %}<p>ورقة الجرد — {{ now_hm()[:10] }} — اكتبوا الكمية الموجودة فعلًا.</p>
 <table><tr><th>المنتج</th><th>الفئة</th><th>في البرنامج</th><th style="width:140px">الكمية الحقيقية</th></tr>
 {% for r in rows %}<tr><td>{{ r.name }}</td><td>{{ r.category or '' }}</td><td>{{ '%g'|format(r.qty) }}</td><td></td></tr>{% endfor %}</table>
 <script>setTimeout(function(){window.print()},400)</script>{% else %}
-<div class="card noprint"><p class="mut">إذا الكمية في البرنامج ماشي كيما الحقيقة (غلطة، مواد استُعملت وما تسجّلتش، تلف...): اكتب <b>الكمية الحقيقية اللي لقيتها</b>، والبرنامج يحسب الفرق وحدو ويسجّلو بالسبب.
-خلّي الخانة فارغة للمنتجات اللي صحاح.</p>
-<form class="row"><input type="hidden" name="branch" value="{{ br }}"><input name="q" value="{{ q }}" placeholder="ابحث على منتج"><button class="btn light">بحث</button>
+<div class="card noprint"><p class="mut">إذا كانت الكمية في البرنامج لا تطابق الواقع (خطأ، مواد استُعملت ولم تُسجَّل، تلف...): اكتب <b>الكمية الحقيقية التي وجدتها</b>، ويحسب البرنامج الفرق تلقائيًا ويسجّله مع السبب.
+اترك الخانة فارغة للمنتجات الصحيحة.</p>
+<form class="row"><input type="hidden" name="branch" value="{{ br }}"><input name="q" value="{{ q }}" placeholder="ابحث عن منتج"><button class="btn light">بحث</button>
 <a class="btn gold" href="{{ url_for('stock_manage', branch=br, print=1) }}" target="_blank">{{ ic('print') }} طباعة ورقة الجرد</a></form></div>
 <form method="post" class="card"><input type="hidden" name="branch" value="{{ br }}">
 <table><tr><th>المنتج</th><th>النوع</th><th>في البرنامج</th><th>الكمية الحقيقية</th><th>الفرق</th></tr>
@@ -2143,4 +2207,4 @@ TEMPLATES["stock_manage.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card"><h2>التصحيحات (آخر 60 يوم)</h2>{% if can_cost and loss %}<p>قيمة النقص بسعر الشراء: <b style="color:#b3261e">{{ loss|money }}</b></p>{% endif %}
 <table><tr><th>الوقت</th><th>المنتج</th><th>الفرق</th><th>السبب</th><th>بواسطة</th></tr>
 {% for m in log %}<tr{% if m.cancelled %} style="color:#999"{% endif %}><td>{{ m.created_at[:16] }}</td><td>{{ m.name }}</td><td><b style="color:{{ '#b3261e' if m.qty<0 else '#145c32' }}">{{ '%+g'|format(m.qty) }}</b></td><td>{{ m.reason }}{% if m.cancelled %} <span class="tag">ملغاة</span>{% endif %}</td><td class="mut">{{ m.by_name or '' }}</td></tr>
-{% else %}<tr><td colspan="5" class="mut">ما كاين حتى تصحيح</td></tr>{% endfor %}</table></div>{% endif %}{% endblock %}"""
+{% else %}<tr><td colspan="5" class="mut">لا توجد تصحيحات</td></tr>{% endfor %}</table></div>{% endif %}{% endblock %}"""

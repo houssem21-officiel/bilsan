@@ -91,6 +91,10 @@
 "Autre",
 "Other"
 ],
+"أخّر الحصص التالية بنفس الفارق": [
+"Décaler les séances suivantes du même écart",
+"Shift the following sessions by the same gap"
+],
 "أخّر الحصص اللي من بعد بنفس الفرق": [
 "Décaler les séances suivantes du même écart",
 "Shift the following sessions by the same gap"
@@ -190,6 +194,10 @@
 "أضفه من زر": [
 "Ajoutez-le avec le bouton",
 "Add it with the button"
+],
+"أضفها أدناه": [
+"Ajoutez-la ci-dessous",
+"Add it below"
 ],
 "أضفهم من صفحة": [
 "Ajoutez-les depuis la page",
@@ -291,6 +299,10 @@
 "Vous affichez",
 "You are viewing"
 ],
+"أنت تعرض الأيام السابقة أيضًا": [
+"Vous voyez aussi les jours précédents",
+"You are also viewing previous days"
+],
 "أنثى": [
 "Femme",
 "Female"
@@ -307,13 +319,25 @@
 "ou le programme",
 "or the program"
 ],
+"أو التي لا تكفي أسبوعًا حسب استهلاك آخر": [
+"ou celles qui ne tiendront pas une semaine selon la consommation des derniers",
+"or those that won’t last a week based on usage over the last"
+],
 "أو تغيّر لون الجلد": [
 "ou changement de couleur de la peau",
 "or skin color change"
 ],
+"أو فلاشة": [
+"ou une clé USB",
+"or a USB stick"
+],
 "أو كلها": [
 "ou tous",
 "or all"
+],
+"أو مجلد": [
+"ou un dossier",
+"or a folder"
 ],
 "أوافق": [
 "J’accepte",
@@ -346,6 +370,10 @@
 "أيام": [
 "jours",
 "days"
+],
+"أيام الحجامة المسنونة القادمة": [
+"Prochains jours de hijama recommandés",
+"Upcoming recommended cupping days"
 ],
 "أيام الحضور": [
 "Jours de présence",
@@ -391,6 +419,10 @@
 "Où sont gardées les sauvegardes",
 "Where backups are stored"
 ],
+"أين تُحفظ النسخ التلقائية": [
+"Où sont enregistrées les sauvegardes automatiques",
+"Where automatic backups are saved"
+],
 "أُرسل": [
 "Envoyé",
 "Sent"
@@ -399,9 +431,17 @@
 "Envoyé à l’accueil pour encaissement",
 "Sent to reception for collection"
 ],
+"أُرسل الطلب إلى المديرة": [
+"La demande a été envoyée à la directrice",
+"The request was sent to the director"
+],
 "أُرسل الطلب للمديرة": [
 "La demande a été envoyée à la directrice",
 "Request sent to the director"
+],
+"أُرسل طلب الإلغاء إلى المديرة": [
+"La demande d’annulation a été envoyée à la directrice",
+"The cancellation request was sent to the director"
 ],
 "أُرسل طلب الإلغاء للمديرة": [
 "La demande d’annulation a été envoyée à la directrice",
@@ -434,6 +474,10 @@
 "أُلغيت الطلبية": [
 "La commande a été annulée",
 "The order was cancelled"
+],
+"أُلغيت في هذا اليوم": [
+"Annulées ce jour",
+"Cancelled on this day"
 ],
 "إبر": [
 "Aiguilles",
@@ -491,13 +535,33 @@
 "Si vous laissez la date vide",
 "If you leave the date empty"
 ],
+"إذا تركت التاريخ فارغًا": [
+"Si vous laissez la date vide",
+"If you leave the date empty"
+],
+"إذا تركتها فارغة تظهر نصائح جاهزة حسب نوع الخدمة": [
+"Si vous la laissez vide, des conseils prêts s’affichent selon le type de prestation",
+"If left empty, ready-made advice is shown based on the service type"
+],
+"إذا شعرتِ بألم شديد أو حرارة فاتصلي بالمركز": [
+"En cas de forte douleur ou de fièvre, appelez le centre",
+"If there is strong pain or fever, call the center"
+],
 "إذا طلبت الزبونة حاجة زايدة": [
+"Si la cliente demande quelque chose en plus",
+"If the client asks for something extra"
+],
+"إذا طلبت الزبونة شيئًا إضافيًا": [
 "Si la cliente demande quelque chose en plus",
 "If the client asks for something extra"
 ],
 "إذا عمل أحد اليوم سجّله": [
 "Si quelqu’un a travaillé aujourd’hui, enregistrez-le",
 "If someone worked today, record it"
+],
+"إذا غيّرتِ التاريخ تُعاد حسابها عند الحفظ": [
+"Si vous changez la date, elles seront recalculées à l’enregistrement",
+"If you change the date, they are recalculated when you save"
 ],
 "إذا كان أقل يبقى الباقي دينًا على الزبون": [
 "S’il est inférieur, le reste devient une dette du client",
@@ -510,6 +574,10 @@
 "إذا كان متصلًا": [
 "s’il est connecté",
 "if it is connected"
+],
+"إذا كانت الكمية في البرنامج لا تطابق الواقع": [
+"Si la quantité dans le programme ne correspond pas à la réalité",
+"If the quantity in the program doesn’t match reality"
 ],
 "إذا لم يُفعَّل": [
 "s’il n’est pas activé",
@@ -707,6 +775,14 @@
 "Annuler toutes les opérations de ce jour",
 "Cancel all operations of this day"
 ],
+"إلغاء كل عمليات هذا اليوم": [
+"Annuler toutes les opérations de ce jour",
+"Cancel all operations of this day"
+],
+"إلغاء كل عمليات يوم": [
+"Annuler toutes les opérations du",
+"Cancel all operations of"
+],
 "إلغاء مبلغ": [
 "Annuler un montant",
 "Cancel an amount"
@@ -731,9 +807,17 @@
 "Annuler ce montant",
 "Cancel this amount"
 ],
+"إلغاء هذا الموعد نهائيًا": [
+"Annuler ce rendez-vous définitivement",
+"Cancel this appointment permanently"
+],
 "إلغاء هذه الدفعة": [
 "Annuler ce paiement",
 "Cancel this payment"
+],
+"إلغاء هذه العملية": [
+"Annuler cette opération",
+"Cancel this operation"
 ],
 "إلغاء وصل": [
 "Annuler un reçu",
@@ -791,6 +875,10 @@
 "Créer les commandes",
 "Create the orders"
 ],
+"إنشاء مجلد هنا": [
+"Créer un dossier ici",
+"Create a folder here"
+],
 "إنهاء الدورة": [
 "Terminer la formation",
 "Finish the course"
@@ -843,9 +931,17 @@
 "Rechercher un produit",
 "Search a product"
 ],
+"ابحث عن منتج": [
+"Rechercher un produit",
+"Search a product"
+],
 "ابحث عن منتج أو امسح الباركود": [
 "Rechercher un produit ou scanner le code-barres",
 "Search a product or scan the barcode"
+],
+"اترك الخانة فارغة للمنتجات الصحيحة": [
+"Laissez vide pour les produits corrects",
+"Leave empty for correct products"
 ],
 "اتركها فارغة لعدم التغيير": [
 "Laissez vide pour ne pas changer",
@@ -911,6 +1007,10 @@
 "Choisissez le client, la date et l’heure",
 "Choose the client, date and time"
 ],
+"اختر الغرفة التي يذهب إليها الزبون": [
+"Choisissez la salle où va le client",
+"Choose the room the client goes to"
+],
 "اختر الغرفة اللي يروح ليها الزبون": [
 "Choisissez la salle où va le client",
 "Choose the room the client goes to"
@@ -918,6 +1018,10 @@
 "اختر الفرع لهذا المستخدم": [
 "Choisissez la branche de cet utilisateur",
 "Choose this user’s branch"
+],
+"اختر القسم الذي يذهب إليه الزبون": [
+"Choisissez le service où va le client",
+"Choose the department the client goes to"
 ],
 "اختر القسم اللي يروح ليه الزبون": [
 "Choisissez le service où va le client",
@@ -931,9 +1035,37 @@
 "Choisissez le stagiaire ou enregistrez-le",
 "Choose the trainee or register them"
 ],
+"اختر المواد التي استعملتها": [
+"Choisissez les produits que vous avez utilisés",
+"Choose the materials you used"
+],
+"اختر بنفسك المجلد الذي تُحفظ فيه النسخ": [
+"Choisissez vous-même le dossier des sauvegardes",
+"Choose the backup folder yourself"
+],
 "اختر خدمة أو منتجًا أو اكتب وصفًا": [
 "Choisissez une prestation, un produit ou écrivez une description",
 "Choose a service or product, or write a description"
+],
+"اختر سبب التصحيح": [
+"Choisissez le motif de la correction",
+"Choose the correction reason"
+],
+"اختر قرصًا": [
+"Choisissez un disque",
+"Choose a drive"
+],
+"اختر قرصًا أو مجلدًا أولًا": [
+"Choisissez d’abord un disque ou un dossier",
+"Choose a drive or folder first"
+],
+"اختر قرصًا من الأعلى": [
+"Choisissez un disque en haut",
+"Choose a drive above"
+],
+"اختر مادة": [
+"Choisir un produit",
+"Choose a material"
 ],
 "اختر ملفًا": [
 "Choisissez un fichier",
@@ -955,9 +1087,25 @@
 "Nous l’avons choisi dans la commande",
 "We picked it in the order"
 ],
+"اختيار": [
+"Choisir",
+"Choose"
+],
+"اختيار مجلد الحفظ": [
+"Choisir le dossier de sauvegarde",
+"Choose the backup folder"
+],
+"اختيار هذا المجلد": [
+"Choisir ce dossier",
+"Choose this folder"
+],
 "اختياري": [
 "facultatif",
 "optional"
+],
+"اذهب إلى": [
+"Allez à",
+"Go to"
 ],
 "استرجاع": [
 "Retour",
@@ -1111,6 +1259,10 @@
 "Le nom du fournisseur est obligatoire",
 "The supplier name is required"
 ],
+"اسم مجلد جديد": [
+"Nom du nouveau dossier",
+"New folder name"
+],
 "اشربي": [
 "Buvez",
 "Drink"
@@ -1167,6 +1319,10 @@
 "Saisissez seulement les quantités",
 "Enter quantities only"
 ],
+"اكتب الكمية التي وصلت فعلًا": [
+"Saisissez la quantité réellement arrivée",
+"Enter the quantity that actually arrived"
+],
 "اكتب الكمية الحقيقية": [
 "Saisissez la quantité réelle",
 "Enter the real quantity"
@@ -1195,6 +1351,10 @@
 "Saisissez le prix de vente",
 "Enter the sale price"
 ],
+"اكتب كلمة": [
+"Écrivez le mot",
+"Type the word"
+],
 "اكتب مبلغ التخفيض": [
 "Saisissez le montant de la remise",
 "Enter the discount amount"
@@ -1210,6 +1370,14 @@
 "اكتبوا الكمية اللي لقيتوها فعلًا": [
 "Écrivez la quantité réellement trouvée",
 "Write the quantity actually found"
+],
+"اكتبوا الكمية الموجودة فعلًا": [
+"Écrivez la quantité réellement trouvée",
+"Write the quantity actually found"
+],
+"اكتبي كلمة": [
+"Écrivez le mot",
+"Type the word"
 ],
 "الآن": [
 "Maintenant",
@@ -1271,6 +1439,10 @@
 "Services et personnel",
 "Departments and staff"
 ],
+"الأيام القمرية": [
+"Jours lunaires",
+"Lunar days"
+],
 "الأيام المدفوعة أعلاه": [
 "Les jours payés ci-dessus",
 "The paid days above"
@@ -1318,6 +1490,10 @@
 "الاحتفاظ": [
 "Conservation",
 "Retention"
+],
+"الاحمرار والانتفاخ الخفيف طبيعيان ويزولان خلال يوم أو يومين": [
+"Une rougeur et un léger gonflement sont normaux et disparaissent en un ou deux jours",
+"Redness and slight swelling are normal and go away in a day or two"
 ],
 "الاحمرار والانتفاخ الخفيف عاديين ويروحو في يوم ولا يومين": [
 "Une rougeur et un léger gonflement sont normaux et disparaissent en un ou deux jours",
@@ -1571,6 +1747,10 @@
 "Recommandation pour la prochaine séance",
 "Recommendation for the next session"
 ],
+"التوصية للجلسة القادمة": [
+"Recommandation pour la prochaine séance",
+"Recommendation for the next session"
+],
 "الثلاثاء": [
 "Mardi",
 "Tuesday"
@@ -1671,9 +1851,17 @@
 "Séance payée",
 "Session paid"
 ],
+"الحصة مدفوعة": [
+"Séance payée",
+"Session paid"
+],
 "الحصص": [
 "Séances",
 "Sessions"
+],
+"الحصص الفائتة": [
+"Séances manquées",
+"Missed sessions"
 ],
 "الحصص اللي فاتت": [
 "Séances manquées",
@@ -1686,6 +1874,10 @@
 "الحصص المدفوعة": [
 "Séances payées",
 "Paid sessions"
+],
+"الحصص المكتملة": [
+"Séances terminées",
+"Sessions completed"
 ],
 "الحصص المنجزة": [
 "Séances effectuées",
@@ -1843,6 +2035,10 @@
 "Bénéfice net",
 "Net profit"
 ],
+"الرجوع إلى اليوم فقط": [
+"Retour à aujourd’hui seulement",
+"Back to today only"
+],
 "الرجوع للرئيسية": [
 "Retour à l’accueil",
 "Back to home"
@@ -1879,6 +2075,10 @@
 "Clients",
 "Clients"
 ],
+"الزبائن الذين دفعوا": [
+"Clients ayant payé",
+"Clients who paid"
+],
 "الزبائن اللي خلّصو": [
 "Clients ayant payé",
 "Clients who paid"
@@ -1899,9 +2099,17 @@
 "La cliente est arrivée",
 "The client arrived"
 ],
+"الزبونة لم تحضر": [
+"La cliente n’est pas venue",
+"The client didn’t come"
+],
 "الزبونة ما جاتش": [
 "La cliente n’est pas venue",
 "The client didn’t come"
+],
+"الزبونة وصلت": [
+"La cliente est arrivée",
+"The client arrived"
 ],
 "الزيارات": [
 "Visites",
@@ -2008,6 +2216,10 @@
 "Month"
 ],
 "الشهر الفايت": [
+"Mois précédent",
+"Previous month"
+],
+"الشهر الماضي": [
 "Mois précédent",
 "Previous month"
 ],
@@ -2183,11 +2395,19 @@
 "Opération",
 "Operation"
 ],
+"العملية أُلغيت سابقًا أو تغيّرت": [
+"L’opération a déjà été annulée ou a changé",
+"The operation was already cancelled or changed"
+],
 "العملية الملغاة": [
 "L’opération annulée",
 "The cancelled operation"
 ],
 "العملية تبدّلت": [
+"L’opération a changé",
+"The operation changed"
+],
+"العملية تغيّرت": [
 "L’opération a changé",
 "The operation changed"
 ],
@@ -2271,6 +2491,10 @@
 "La décision arrive sur son ordinateur en quelques secondes",
 "The decision reaches their computer within seconds"
 ],
+"القرص": [
+"Disque",
+"Drive"
+],
 "القسم": [
 "Service",
 "Department"
@@ -2303,6 +2527,10 @@
 "Les quantités sont ajoutées au stock",
 "Quantities are added to stock"
 ],
+"الكميات كما هي": [
+"les quantités sont correctes",
+"the quantities are correct"
+],
 "الكميات كيما راهي": [
 "les quantités sont correctes",
 "the quantities are correct"
@@ -2327,6 +2555,10 @@
 "Quantité réelle",
 "Real quantity"
 ],
+"الكمية الحقيقية التي وجدتها": [
+"La quantité réelle que vous avez trouvée",
+"The real quantity you found"
+],
 "الكمية الحقيقية اللي لقيتها": [
 "La quantité réelle que vous avez trouvée",
 "The real quantity you found"
@@ -2342,6 +2574,10 @@
 "الكمية المطلوبة": [
 "Quantité demandée",
 "Quantity ordered"
+],
+"الكمية المقترحة تكفي شهرًا تقريبًا": [
+"La quantité proposée couvre environ un mois",
+"The suggested quantity covers about a month"
 ],
 "الكمية المقترحة تكفّي شهر تقريبًا": [
 "La quantité proposée couvre environ un mois",
@@ -2623,6 +2859,10 @@
 "Produits",
 "Products"
 ],
+"المنتجات التي تستعملها": [
+"Produits qu’elle utilise",
+"Products she uses"
+],
 "المنتجات اللي تستعملها": [
 "Produits qu’elle utilise",
 "Products she uses"
@@ -2675,6 +2915,14 @@
 "Produits",
 "Materials"
 ],
+"المواد التي تستعملها الغرف في العلاج": [
+"Les produits que les salles utilisent dans les soins",
+"Materials the rooms use in treatments"
+],
+"المواد التي قاربت على النفاد": [
+"Produits presque épuisés",
+"Materials running out"
+],
 "المواد اللي تستعملها الغرف في العلاج": [
 "Les produits que les salles utilisent dans les soins",
 "Materials the rooms use in treatments"
@@ -2698,6 +2946,10 @@
 "المواد المستعملة فيها": [
 "Produits utilisés dedans",
 "Materials used in it"
+],
+"المواد المستعملة محسوبة في المصاريف عند شرائها": [
+"Les produits utilisés sont inclus dans les dépenses lors de leur achat",
+"Materials used are included in expenses when purchased"
 ],
 "المواد المعتادة": [
 "Produits habituels",
@@ -2738,6 +2990,10 @@
 "الموعد الجديد": [
 "Nouveau rendez-vous",
 "New appointment"
+],
+"الموعد الفائت": [
+"Rendez-vous manqué",
+"Missed appointment"
 ],
 "الموعد اللي فات": [
 "Rendez-vous manqué",
@@ -2862,6 +3118,10 @@
 "امشي": [
 "Marchez",
 "Walk"
+],
+"املئيها في أول جلسة": [
+"Remplissez-la lors de la première séance",
+"Fill it in at the first session"
 ],
 "انتباه": [
 "Attention",
@@ -3002,6 +3262,10 @@
 "بدون مبلغ": [
 "Sans montant",
 "No amount"
+],
+"بدون مجلد ثانٍ": [
+"Sans second dossier",
+"No second folder"
 ],
 "بدّل سعر البيع إذا تبدّل": [
 "Changez le prix de vente s’il a changé",
@@ -3191,6 +3455,10 @@
 "Vérifiez internet et que l’application est lancée",
 "Check the internet and that the app is running"
 ],
+"تأكد من الكمية التي وصلت فعلًا وعدّل سعر البيع إن تغيّر": [
+"Vérifiez la quantité réellement arrivée et changez le prix de vente s’il a changé",
+"Check the quantity that actually arrived and change the sale price if it changed"
+],
 "تأكد من الكمية اللي وصلت فعلًا وبدّل سعر البيع إذا تبدّل": [
 "Vérifiez la quantité réellement arrivée et changez le prix de vente s’il a changé",
 "Check the quantity that actually arrived and change the sale price if it changed"
@@ -3259,7 +3527,15 @@
 "La demande d’annulation a été envoyée à la directrice",
 "The cancellation request was sent to the director"
 ],
+"تبقى الفروع والمستخدمون وكلمات السر والصلاحيات والإعدادات": [
+"Les branches, utilisateurs, mots de passe, permissions et paramètres sont conservés",
+"Branches, users, passwords, permissions and settings are kept"
+],
 "تبقى في ملفها للجلسات الجاية": [
+"Elle reste dans son dossier pour les prochaines séances",
+"It stays in her file for the next sessions"
+],
+"تبقى في ملفها للجلسات القادمة": [
 "Elle reste dans son dossier pour les prochaines séances",
 "It stays in her file for the next sessions"
 ],
@@ -3279,9 +3555,17 @@
 "Envoyée en salle",
 "Sent to the room"
 ],
+"تتحدث الحواسيب الأخرى تلقائيًا إلى هذه النسخة عند تشغيلها أو بعد": [
+"Les autres ordinateurs se mettent à jour d’eux-mêmes vers cette version au démarrage ou après",
+"Other computers update themselves to this version at startup or after"
+],
 "تتحدث القائمة تلقائيًا كل": [
 "La liste se met à jour automatiquement toutes les",
 "The list refreshes automatically every"
+],
+"تتحدث تلقائيًا عند وصول معلومة جديدة": [
+"Se met à jour toute seule à l’arrivée d’une nouvelle info",
+"Updates itself when new info arrives"
 ],
 "تتحدث وحدها كي توصل معلومة جديدة": [
 "Se met à jour toute seule à l’arrivée d’une nouvelle info",
@@ -3315,11 +3599,27 @@
 "cosmétique",
 "cosmetic"
 ],
+"تجنبي الأكل الثقيل ساعتين بعد الجلسة": [
+"Pas de repas lourd deux heures après la séance",
+"No heavy meal for two hours after the session"
+],
+"تجنبي الحمام الساخن والساونا": [
+"Pas de bain chaud ni de sauna",
+"No hot bath or sauna"
+],
+"تجنبي الرياضة والحمام والساونا مدة يومين": [
+"Pas de sport, de bain ni de sauna pendant deux jours",
+"No sport, bath or sauna for two days"
+],
 "تجنبي الشمس": [
 "Évitez le soleil",
 "Avoid the sun"
 ],
 "تجنبي الشمس أسبوعين وحطي واقي الشمس": [
+"Évitez le soleil deux semaines et mettez un écran solaire",
+"Avoid the sun for two weeks and apply sunscreen"
+],
+"تجنبي الشمس أسبوعين وضعي واقي الشمس": [
 "Évitez le soleil deux semaines et mettez un écran solaire",
 "Avoid the sun for two weeks and apply sunscreen"
 ],
@@ -3358,6 +3658,10 @@
 "تحديد غير المسجَّلين": [
 "Sélectionner les non enregistrés",
 "Select unregistered"
+],
+"تحدّد موعد الحصة القادمة": [
+"La prochaine séance est fixée",
+"The next session is set"
 ],
 "تحصيل": [
 "Encaissement",
@@ -3432,6 +3736,10 @@
 "Appointment reminders by SMS"
 ],
 "تذكير ثاني صباح نهار الموعد": [
+"Deuxième rappel le matin du rendez-vous",
+"Second reminder on the morning of the appointment"
+],
+"تذكير ثانٍ صباح يوم الموعد": [
 "Deuxième rappel le matin du rendez-vous",
 "Second reminder on the morning of the appointment"
 ],
@@ -3563,6 +3871,10 @@
 "Démarrer un ordinateur",
 "Start a computer"
 ],
+"تصبح": [
+"Devient",
+"Becomes"
+],
 "تصبغات": [
 "Taches pigmentaires",
 "Pigmentation"
@@ -3622,6 +3934,10 @@
 "تطور الحالة": [
 "Évolution de l’état",
 "Progress of the condition"
+],
+"تظهر النتيجة مع توالي الحصص": [
+"Le résultat apparaît au fil des séances",
+"Results show over the sessions"
 ],
 "تعاملوا مع قسم": [
 "Ont été traités par le service",
@@ -3687,6 +4003,10 @@
 "Échec de l’enregistrement",
 "Save failed"
 ],
+"تعذّر إنشاء المجلد": [
+"Impossible de créer le dossier",
+"Could not create the folder"
+],
 "تعذّر الإرسال": [
 "Échec de l’envoi",
 "Sending failed"
@@ -3702,6 +4022,10 @@
 "تعذّر الوصول إلى الحاسوب المركزي": [
 "Impossible d’atteindre l’ordinateur central",
 "Cannot reach the central computer"
+],
+"تعذّرت النسخة الاحتياطية قبل المسح": [
+"La sauvegarde avant effacement a échoué",
+"The backup before wiping failed"
 ],
 "تعرض للشمس مؤخرًا": [
 "Exposition récente au soleil",
@@ -3746,6 +4070,22 @@
 "تغيير كلمة سر حاسوب": [
 "Changer le mot de passe d’un ordinateur",
 "Change a computer’s password"
+],
+"تغيّر السعر": [
+"Le prix a changé",
+"The price changed"
+],
+"تغيّر السعر عند الاستلام": [
+"Le prix a changé à la réception",
+"The price changed on receipt"
+],
+"تغيّر المديرة أو الاستقبال نوع المواد في صفحة المنتجات": [
+"La directrice ou l’accueil changent le type de produit dans la page Produits",
+"The director or reception change the material type on the Products page"
+],
+"تغيّر سعر الشراء": [
+"Le prix d’achat a changé",
+"The purchase price changed"
 ],
 "تفاصيل الجلسة والملف": [
 "Détails de la séance et dossier",
@@ -4115,6 +4455,10 @@
 "Modifications du certificat enregistrées",
 "Certificate changes saved"
 ],
+"تم مسح كل البيانات": [
+"Toutes les données ont été effacées",
+"All data has been erased"
+],
 "تمت إضافة": [
 "Ajouté",
 "Added"
@@ -4247,13 +4591,61 @@
 "Compte pour plus d’un message",
 "Counts as more than one message"
 ],
+"تُحسب الأجرة تلقائيًا": [
+"Le salaire se calcule tout seul",
+"Pay is calculated automatically"
+],
+"تُحسب المواد بسعر الشراء المسجّل في المنتجات": [
+"Les produits sont comptés au prix d’achat enregistré dans Produits",
+"Materials are counted at the purchase price recorded in Products"
+],
+"تُخصم من المخزون وتُحسب على الحصة": [
+"Déduit du stock et compté sur la séance",
+"Deducted from stock and counted on the session"
+],
+"تُخصم من المخزون وتُحسب على الغرفة": [
+"Sortent du stock et sont comptés sur la salle",
+"Taken from stock and counted against the room"
+],
 "تُربط بها العمال والمواعيد": [
 "Les employés et les rendez-vous y sont liés",
 "Staff and appointments are linked to it"
 ],
+"تُرسَل إلى الغرفة": [
+"Envoyée à la salle",
+"Sent to the room"
+],
+"تُسجَّل الحصة بدون موعد": [
+"La séance est enregistrée sans rendez-vous",
+"The session is recorded without an appointment"
+],
+"تُسجَّل الخطة بالسعر العادي": [
+"Le plan est enregistré au prix normal",
+"The plan is saved at the normal price"
+],
+"تُصنع نسخة احتياطية تلقائيًا قبل المسح": [
+"Une sauvegarde est faite automatiquement avant l’effacement",
+"A backup is made automatically before wiping"
+],
+"تُضاف الكميات إلى المخزون": [
+"Les quantités sont ajoutées au stock",
+"Quantities are added to stock"
+],
 "تُضاف الكميات إلى مخزون الفرع": [
 "Les quantités sont ajoutées au stock de la branche",
 "Quantities are added to the branch stock"
+],
+"تُطبع للزبونة": [
+"Imprimées pour la cliente",
+"Printed for the client"
+],
+"تُملأ تلقائيًا": [
+"Se remplit toute seule",
+"Fills itself in"
+],
+"تُملأ هذه المواد تلقائيًا في كل حصة من هذه الخدمة": [
+"Chaque séance de cette prestation est remplie automatiquement avec ces produits",
+"Each session of this service is filled automatically with these materials"
 ],
 "ثبّت البرنامج العام": [
 "Installez le programme général",
@@ -4270,6 +4662,10 @@
 "ثم اضغط": [
 "Puis appuyez sur",
 "Then press"
+],
+"ثم اضغطي": [
+"puis appuyez sur",
+"then press"
 ],
 "ثم سجّل الدفع": [
 "Puis enregistrez le paiement",
@@ -4334,6 +4730,10 @@
 "جلسة ليزر": [
 "Séance laser",
 "Laser session"
+],
+"جمع البرنامج المواد التي بلغت حد التنبيه": [
+"Le programme a rassemblé les produits ayant atteint le seuil d’alerte",
+"The program gathered the items that reached the alert threshold"
 ],
 "جنسنغ": [
 "Ginseng",
@@ -4539,6 +4939,10 @@
 "séance décalée",
 "session shifted"
 ],
+"حصة فائتة لم تُسجَّل": [
+"séance passée non enregistrée",
+"past session not recorded"
+],
 "حصة فاتت وما تسجّلتش": [
 "séance passée non enregistrée",
 "past session not recorded"
@@ -4556,6 +4960,10 @@
 "Session from a package"
 ],
 "حصة من باقة مخلّصة": [
+"Séance d’un forfait payé",
+"Session from a paid package"
+],
+"حصة من باقة مدفوعة": [
 "Séance d’un forfait payé",
 "Session from a paid package"
 ],
@@ -4611,6 +5019,10 @@
 "Enregistrer la commande",
 "Save the order"
 ],
+"حفظ المكان": [
+"Enregistrer l’emplacement",
+"Save the location"
+],
 "حفظ الملاحظة": [
 "Enregistrer la note",
 "Save the note"
@@ -4659,6 +5071,10 @@
 "Établi à",
 "Issued at"
 ],
+"حُفظت نسخة احتياطية قبل المسح في صفحة": [
+"Une sauvegarde d’avant l’effacement est dans la page",
+"A pre-wipe backup was saved on the page"
+],
 "خالص": [
 "Pur",
 "Pure"
@@ -4670,6 +5086,10 @@
 "خدمة": [
 "Prestation",
 "Service"
+],
+"خدمة أخرى أو منتج": [
+"Autre prestation ou produit",
+"Another service or product"
 ],
 "خدمة أخرى ولا منتج": [
 "Autre prestation ou produit",
@@ -4710,6 +5130,10 @@
 "خطأ": [
 "Erreur",
 "Error"
+],
+"خطأ في العدّ": [
+"Erreur de comptage",
+"Counting error"
 ],
 "خطة جلسات": [
 "Plan de séances",
@@ -4775,6 +5199,10 @@
 "minutes sans utilisation",
 "minutes idle"
 ],
+"دقائق دون استعمال": [
+"minutes sans utilisation",
+"minutes idle"
+],
 "دقيقة": [
 "minute",
 "minute"
@@ -4815,6 +5243,14 @@
 "Nouvelle formation",
 "New course"
 ],
+"دون مكياج": [
+"Pas de maquillage",
+"No makeup"
+],
+"دون مورد": [
+"Sans fournisseur",
+"No supplier"
+],
 "دين": [
 "Dette",
 "Debt"
@@ -4834,6 +5270,10 @@
 "دُفعت": [
 "Payées",
 "Paid"
+],
+"دُفعت أو أُلغيت سابقًا": [
+"Déjà payé ou annulé",
+"Already paid or cancelled"
 ],
 "دُفعت يوم": [
 "Payée le",
@@ -4862,6 +5302,14 @@
 "راجع السجل": [
 "Consultez le journal",
 "Check the log"
+],
+"راجعي سعرها أو المواد المستعملة فيها": [
+"Vérifiez son prix ou les produits utilisés",
+"Check its price or the materials used"
+],
+"راجعي سعرها أو موادها": [
+"Vérifiez son prix ou ses produits",
+"Check its price or materials"
 ],
 "راك تشوف حتى الأيام السابقة": [
 "Vous voyez aussi les jours précédents",
@@ -4898,6 +5346,10 @@
 "رجوع": [
 "Retour",
 "Back"
+],
+"رجوع البرنامج من الصفر": [
+"Remise à zéro du programme",
+"Program reset to zero"
 ],
 "رد غير مفهوم من الحاسوب المركزي": [
 "Réponse incompréhensible de l’ordinateur central",
@@ -4938,6 +5390,10 @@
 "رسالة جماعية للزبائن": [
 "Message groupé aux clients",
 "Group message to clients"
+],
+"رسالة فورية عندما يطلب عامل تخفيضًا أو إلغاءً": [
+"Message instantané quand un employé demande une remise ou une annulation",
+"Instant message when staff request a discount or cancellation"
 ],
 "رسالة فورية كي يطلب عامل تخفيض أو إلغاء": [
 "Message instantané quand un employé demande une remise ou une annulation",
@@ -5071,6 +5527,10 @@
 "Groupe sanguin",
 "Blood type"
 ],
+"زيادة التركيز على الخدين": [
+"Insister davantage sur les joues",
+"Focus more on the cheeks"
+],
 "زيارة": [
 "Visite",
 "Visit"
@@ -5079,9 +5539,17 @@
 "Nouvelle visite",
 "New visit"
 ],
+"زيارة لم تكتمل": [
+"visite non terminée",
+"unfinished visit"
+],
 "زيارة ما كملتش": [
 "visite non terminée",
 "unfinished visit"
+],
+"زيارة من أيام سابقة لم تكتمل": [
+"visite des jours précédents non terminée",
+"unfinished visit from previous days"
 ],
 "زيارة من أيام سابقة ما كملتش": [
 "visite des jours précédents non terminée",
@@ -5119,6 +5587,10 @@
 "L’heure de cet ordinateur est fausse de",
 "This computer’s clock is off by"
 ],
+"ساعة هذا الحاسوب متأخرة أو متقدمة بـ": [
+"L’heure de cet ordinateur est fausse de",
+"This computer’s clock is off by"
+],
 "سبب الإلغاء": [
 "Motif d’annulation",
 "Cancellation reason"
@@ -5130,6 +5602,14 @@
 "سبب المغادرة": [
 "Motif du départ",
 "Reason for leaving"
+],
+"ستعود الصفحة تلقائيًا": [
+"La page revient toute seule",
+"The page comes back by itself"
+],
+"ستُمسح كل البيانات في كل الحواسيب": [
+"Toutes les données seront effacées sur tous les ordinateurs",
+"All data will be erased on all computers"
 ],
 "سجل الحضور خلال الشهر": [
 "Registre de présence du mois",
@@ -5258,6 +5738,10 @@
 "سكري": [
 "Diabète",
 "Diabetes"
+],
+"سلعة دخلت ولم تُسجَّل": [
+"Marchandise entrée non enregistrée",
+"Goods received but not recorded"
 ],
 "سلعة دخلت وما تسجّلتش": [
 "Marchandise entrée non enregistrée",
@@ -5683,6 +6167,22 @@
 "Compter l’argent",
 "Count the cash"
 ],
+"عدّل سعر البيع إن تغيّر": [
+"Changez le prix de vente s’il a changé",
+"Change the sale price if it changed"
+],
+"عدّله إن تغيّر": [
+"Modifiez-le s’il a changé",
+"Change it if it changed"
+],
+"عدّلها أو امسحها إن لم تستعملها": [
+"Changez-la ou videz-la si vous ne l’avez pas utilisée",
+"Change it or clear it if you didn’t use it"
+],
+"عدّلي الكمية أو المورد إن شئتِ": [
+"Changez la quantité ou le fournisseur si vous voulez",
+"Change the quantity or supplier if you wish"
+],
 "عرض": [
 "Afficher",
 "Show"
@@ -5751,6 +6251,10 @@
 "par rapport au mois précédent",
 "vs. last month"
 ],
+"على الشهر الماضي": [
+"par rapport au mois dernier",
+"vs. last month"
+],
 "على جلسات الليزر في": [
 "sur les séances laser à",
 "on laser sessions at"
@@ -5783,6 +6287,10 @@
 "Opérations du",
 "Operations of"
 ],
+"عمليات يوم": [
+"Opérations du",
+"Operations of"
+],
 "عملية": [
 "opération",
 "operation"
@@ -5794,6 +6302,10 @@
 "عملية تنتظر الإرسال": [
 "opération en attente d’envoi",
 "operation waiting to be sent"
+],
+"عملية من يوم": [
+"opérations du jour",
+"operations of day"
 ],
 "عمّريها في أول جلسة": [
 "Remplissez-la lors de la première séance",
@@ -5807,6 +6319,10 @@
 "À l’entrée de marchandise",
 "When stock comes in"
 ],
+"عند اختيار خدمة أدناه": [
+"quand vous choisissez une prestation ci-dessous",
+"when you choose a service below"
+],
 "عند الاستقبال": [
 "À l’accueil",
 "At reception"
@@ -5818,6 +6334,14 @@
 "عند الطوارئ": [
 "en cas d’urgence",
 "in an emergency"
+],
+"عند وصول السلعة": [
+"À l’arrivée de la marchandise",
+"When the goods arrive"
+],
+"عندما يختار العامل هذه الخدمة في": [
+"Quand l’employé choisit cette prestation dans",
+"When staff choose this service in"
 ],
 "عندما يدفع الزبون أقل من المستحق عند التحصيل": [
 "Quand le client paie moins que le dû à l’encaissement",
@@ -5951,9 +6475,21 @@
 "il suffit d’approuver",
 "just approve"
 ],
+"غيّر نوعه في صفحة المنتجات": [
+"Changez son type dans la page Produits",
+"Change its type on the Products page"
+],
+"غيّريه إذا رغبت الزبونة في وقت آخر": [
+"Changez-le si la cliente veut une autre heure",
+"Change it if the client wants another time"
+],
 "فائدة الحصة الصافية": [
 "Bénéfice net de la séance",
 "Session net profit"
+],
+"فائدة الحصة الواحدة": [
+"Bénéfice par séance",
+"Profit per session"
 ],
 "فائدة الحصة الوحدة": [
 "Bénéfice par séance",
@@ -6059,6 +6595,10 @@
 "Clé USB ou dossier",
 "USB stick or folder"
 ],
+"فلم يُمسح شيء": [
+"donc rien n’a été effacé",
+"so nothing was erased"
+],
 "فواتير الشراء": [
 "Factures d’achat",
 "Purchase invoices"
@@ -6110,6 +6650,10 @@
 "في غرفتها": [
 "dans sa salle",
 "in her room"
+],
+"في كل الفروع وكل الحواسيب": [
+"dans toutes les branches et sur tous les ordinateurs",
+"in all branches and on all computers"
 ],
 "في كل فرع له صلاحياته": [
 "Dans chaque branche ses permissions",
@@ -6167,9 +6711,25 @@
 "La veille et le matin",
 "The day before and in the morning"
 ],
+"قبل مسح كل البيانات": [
+"avant l’effacement de toutes les données",
+"before erasing all data"
+],
+"قبل يوم": [
+"La veille",
+"The day before"
+],
+"قبل يوم وفي الصباح": [
+"La veille et le matin",
+"The day before and in the morning"
+],
 "قد": [
 "déjà",
 "already"
+],
+"قد تكون أقل من المطلوبة": [
+"peut être inférieure à la commande",
+"may be less than ordered"
 ],
 "قرأت وفهمت ووافقت": [
 "J’ai lu, compris et accepté",
@@ -6275,6 +6835,10 @@
 "Toutes les prestations",
 "All services"
 ],
+"كل الصفحات تتحدث عندما تفعّل المديرة مهمة أو توقفها": [
+"Toutes les pages se mettent à jour quand la directrice active ou désactive une tâche",
+"All pages update when the director turns a task on or off"
+],
 "كل الصفحات تتحدث كي تشغّل المديرة أو توقف مهمة": [
 "Toutes les pages se mettent à jour quand la directrice active ou désactive une tâche",
 "All pages update when the director turns a task on or off"
@@ -6339,6 +6903,10 @@
 "Chaque séance est payée seule",
 "Each session is paid separately"
 ],
+"كل حصة تُدفع على حدة": [
+"Chaque séance est payée seule",
+"Each session is paid separately"
+],
 "كل حصة من هذه الخدمة تتعمّر فيها هاذ المواد وحدها": [
 "Chaque séance de cette prestation est remplie automatiquement avec ces produits",
 "Each session of this service is filled automatically with these materials"
@@ -6358,6 +6926,10 @@
 "كل شيء على ما يرام": [
 "Tout va bien",
 "All is well"
+],
+"كل شيء متوفر": [
+"Tout est disponible",
+"Everything is in stock"
 ],
 "كل عملية في البرنامج تُحفظ فورًا": [
 "Chaque opération du programme est enregistrée immédiatement",
@@ -6439,6 +7011,10 @@
 "Le mot de passe actuel est incorrect",
 "The current password is incorrect"
 ],
+"كلمة المرور غير صحيحة": [
+"Mot de passe incorrect",
+"Incorrect password"
+],
 "كلمة سر الحاسوب": [
 "Mot de passe de l’ordinateur",
 "Computer password"
@@ -6446,6 +7022,10 @@
 "كلمة سر جديدة": [
 "Nouveau mot de passe",
 "New password"
+],
+"كلمة مرور المديرة": [
+"Mot de passe de la directrice",
+"Director’s password"
 ],
 "كملو": [
 "Terminés",
@@ -6483,6 +7063,10 @@
 "pour les salariés mensuels",
 "for monthly-salaried staff"
 ],
+"لأي سؤال أو إذا شعرتِ بأي شيء غير عادي": [
+"Pour toute question ou si vous ressentez quelque chose d’inhabituel",
+"For any question or if you feel anything unusual"
+],
 "لأي سؤال ولا إذا حسّيتي بحاجة غير عادية": [
 "Pour toute question ou si vous ressentez quelque chose d’inhabituel",
 "For any question or if you feel anything unusual"
@@ -6507,13 +7091,53 @@
 "Je n’accepte pas la prise de photos avant et après, uniquement pour le suivi du traitement",
 "I do not agree to before and after photos, for treatment follow-up only"
 ],
+"لا تتحدث إذا كان العامل يكتب في خانة": [
+"Ne se met pas à jour si l’employé écrit dans un champ",
+"Does not refresh while staff are typing in a field"
+],
+"لا تحكّي المنطقة": [
+"Ne grattez pas la zone",
+"Don’t scratch the area"
+],
+"لا تستعملي مقشّرًا ولا منتجات قوية": [
+"N’utilisez ni gommage ni produits forts",
+"Don’t use scrubs or strong products"
+],
+"لا تقشّري البشرة ولا تحكّيها حتى يسقط التقشير من تلقاء نفسه": [
+"Ne pelez pas et ne grattez pas la peau, laissez-la peler seule",
+"Don’t peel or scratch the skin; let it peel on its own"
+],
+"لا تلمسي المنطقة ولا تدلكيها": [
+"Ne touchez pas et ne massez pas la zone",
+"Don’t touch or rub the area"
+],
+"لا توجد أي مادة من نوع": [
+"Aucun produit de type",
+"No material of type"
+],
+"لا توجد أي مشكلة": [
+"Aucun problème",
+"No problem"
+],
+"لا توجد بطاقة بشرة لهذه الزبونة": [
+"Pas de fiche peau pour cette cliente",
+"No skin card for this client"
+],
 "لا توجد تذكيرات مستحقة": [
 "Aucun rappel à envoyer",
 "No reminders due"
 ],
+"لا توجد تصحيحات": [
+"Aucune correction",
+"No corrections"
+],
 "لا توجد تنبيهات": [
 "Aucune alerte",
 "No alerts"
+],
+"لا توجد حصة فائتة بدون موعد جديد": [
+"Aucune séance manquée sans nouveau rendez-vous",
+"No missed session without a new appointment"
 ],
 "لا توجد حصص": [
 "Aucune séance",
@@ -6526,6 +7150,10 @@
 "لا توجد حصص غير مدفوعة أو المبلغ أقل من المدفوع": [
 "Aucune séance impayée ou le montant est inférieur au payé",
 "No unpaid sessions or the amount is less than paid"
+],
+"لا توجد حصص في هذه الفترة": [
+"Aucune séance sur cette période",
+"No session in this period"
 ],
 "لا توجد حصص منتهية في هذه الفترة": [
 "Aucune séance terminée dans cette période",
@@ -6567,13 +7195,25 @@
 "Aucune commande",
 "No orders"
 ],
+"لا توجد عمليات في هذا اليوم": [
+"Aucune opération ce jour",
+"No operations this day"
+],
 "لا توجد عمليات في هذه الفترة": [
 "Aucune opération sur cette période",
 "No operations in this period"
 ],
+"لا توجد عمليات ملغاة في هذا الشهر": [
+"Aucune opération annulée ce mois",
+"No cancelled operations this month"
+],
 "لا توجد قائمة انتظار لهذا المستخدم": [
 "Pas de file d’attente pour cet utilisateur",
 "No waiting list for this user"
+],
+"لا توجد مادة يجب شراؤها الآن": [
+"Aucun produit à acheter pour le moment",
+"Nothing needs to be bought right now"
 ],
 "لا توجد مبالغ معلقة": [
 "Aucun montant en attente",
@@ -6603,9 +7243,17 @@
 "Aucune sauvegarde pour le moment",
 "No backups yet"
 ],
+"لا توجد نصائح مكتوبة لهذه الخدمة": [
+"Aucun conseil écrit pour cette prestation",
+"No advice written for this service"
+],
 "لا تُعدّ هنا": [
 "Non compté ici",
 "Not counted here"
+],
+"لا شمع ولا ملقاط بين الجلسات": [
+"Pas de cire ni de pince entre les séances",
+"No waxing or tweezing between sessions"
 ],
 "لا شيء": [
 "Rien",
@@ -6631,6 +7279,14 @@
 "Pas de manque de stock",
 "No stock shortage"
 ],
+"لا يستطيع العامل منح تخفيض أو إلغاء مبلغ أو وصل بمفرده": [
+"L’employé ne peut ni faire de remise ni annuler un montant ou un reçu seul",
+"Staff cannot give a discount or cancel an amount or receipt alone"
+],
+"لا يمكن الحفظ في": [
+"Impossible d’enregistrer dans",
+"Cannot save to"
+],
 "لا يمكن حذف حصة مدفوعة": [
 "Impossible de supprimer une séance payée",
 "A paid session cannot be deleted"
@@ -6639,9 +7295,21 @@
 "Aucun",
 "None"
 ],
+"لا يوجد أي فرق": [
+"Aucune différence",
+"No difference"
+],
+"لا يوجد أي منتج من نوع": [
+"Aucun produit de type",
+"No product of type"
+],
 "لا يوجد استهلاك في هذه الفترة": [
 "Aucune consommation sur cette période",
 "No usage in this period"
+],
+"لا يوجد بعدُ أي منتج من نوع": [
+"Aucun produit de type",
+"No product yet of type"
 ],
 "لا يوجد تسجيل": [
 "Aucun enregistrement",
@@ -6695,17 +7363,37 @@
 "Son type doit être",
 "Its type must be"
 ],
+"لاسترجاع البيانات عند الخطأ": [
+"pour récupérer les données en cas d’erreur",
+"to recover the data in case of mistake"
+],
 "لاستعمالها في حدود ما يسمح به القانون": [
 "à utiliser dans les limites permises par la loi",
 "to be used within the limits allowed by law"
 ],
+"لتبقى المدة بين الحصص كما هي": [
+"pour garder le même écart entre les séances",
+"to keep the same gap between sessions"
+],
 "لتر ماء في النهار": [
+"litres d’eau par jour",
+"liters of water a day"
+],
+"لتر ماء في اليوم": [
 "litres d’eau par jour",
 "liters of water a day"
 ],
 "لتسجيل دين يجب أن يكون المبلغ مرتبطًا بزبون": [
 "Pour enregistrer une dette, le montant doit être lié à un client",
 "To record a debt, the amount must be linked to a client"
+],
+"لتظهر أو تختفي فورًا": [
+"pour qu’il apparaisse ou disparaisse immédiatement",
+"to show or hide it immediately"
+],
+"لتكون الأرقام صحيحة": [
+"pour que les chiffres soient justes",
+"for the figures to be accurate"
 ],
 "لرسالة التنبيه": [
 "pour le message d’alerte",
@@ -6715,9 +7403,21 @@
 "pour chaque prestation dans la page Prestations",
 "for each service on the Services page"
 ],
+"لكن يُرجى تصحيحها في": [
+"mais corrigez-la dans",
+"but fix it in"
+],
 "لكنه لا يرى الصندوق": [
 "mais il ne voit pas la caisse",
 "but cannot see the cash box"
+],
+"لكنها لا تدخل في الصندوق ولا في تقرير الشهر ولا في المخزون": [
+"mais elle n’entre ni dans la caisse, ni dans le rapport du mois, ni dans le stock",
+"but it doesn’t count in the cash box, the monthly report or the stock"
+],
+"لكي يظهر المنتج هنا": [
+"Pour qu’un produit apparaisse ici",
+"For a product to appear here"
 ],
 "للإلغاء اتصلوا بنا": [
 "Pour annuler, appelez-nous",
@@ -6734,6 +7434,10 @@
 "للبيع وللاستعمال": [
 "À vendre et à utiliser",
 "For sale and use"
+],
+"للتأكيد": [
+"pour confirmer",
+"to confirm"
 ],
 "للحاسوب": [
 "à l’ordinateur",
@@ -6771,6 +7475,10 @@
 "pour le jour",
 "for the day"
 ],
+"لم تحضر": [
+"Pas venue",
+"Didn’t come"
+],
 "لم تصل": [
 "Pas arrivée",
 "Not arrived"
@@ -6787,6 +7495,10 @@
 "Aucune sauvegarde depuis plus de deux jours",
 "No backup for more than two days"
 ],
+"لم نجد هذا المنتج": [
+"Nous n’avons pas trouvé ce produit",
+"We couldn’t find this product"
+],
 "لم يتصل بعد": [
 "Pas encore connecté",
 "Not connected yet"
@@ -6794,6 +7506,10 @@
 "لم يحضر": [
 "Absent",
 "No-show"
+],
+"لم يحضروا": [
+"Pas venus",
+"Didn’t come"
 ],
 "لم يعد ممكنًا": [
 "N’est plus possible",
@@ -6814,6 +7530,10 @@
 "لم يُكمل الدفع": [
 "Paiement incomplet",
 "Payment incomplete"
+],
+"لم يُمسح شيء": [
+"rien n’a été effacé",
+"nothing was erased"
 ],
 "لمرة واحدة": [
 "Une seule fois",
@@ -6890,6 +7610,10 @@
 "ما خرج من الصندوق": [
 "Sorti de la caisse",
 "Taken from the cash box"
+],
+"ما عليكِ إلا الموافقة": [
+"il suffit d’approuver",
+"just approve"
 ],
 "ما كاين حتى تصحيح": [
 "Aucune correction",
@@ -7007,6 +7731,10 @@
 "Montant de la remise",
 "Discount amount"
 ],
+"مبلغ غير مدفوع": [
+"montant non payé",
+"unpaid amount"
+],
 "مبلغ في الانتظار": [
 "Montant en attente",
 "Pending amount"
@@ -7014,6 +7742,10 @@
 "مبلغ ما تخلّصش": [
 "montant non payé",
 "unpaid amount"
+],
+"مبلغ من أيام سابقة لم يُدفع بعد": [
+"Montant de jours précédents pas encore payé",
+"Amount from previous days not yet paid"
 ],
 "مبلغ من أيام سابقة مازال ما تخلّصش": [
 "Montant de jours précédents pas encore payé",
@@ -7119,6 +7851,10 @@
 "conservées ici seulement",
 "kept here only"
 ],
+"محفوظة هنا فقط": [
+"conservées ici seulement",
+"kept here only"
+],
 "مختلطة": [
 "Mixte",
 "Combination"
@@ -7152,6 +7888,10 @@
 "Center director"
 ],
 "مرة على هاذ الحصة": [
+"fois pour cette séance",
+"times for this session"
+],
+"مرة في هذه الحصة": [
 "fois pour cette séance",
 "times for this session"
 ],
@@ -7215,6 +7955,30 @@
 "Inscrit",
 "Enrolled"
 ],
+"مسح": [
+"effacer",
+"erase"
+],
+"مسح العمال وحضورهم أيضًا": [
+"Effacer aussi les employés et leur présence",
+"Also erase staff and attendance"
+],
+"مسح المنتجات والخدمات والموردين أيضًا": [
+"Effacer aussi les produits, prestations et fournisseurs",
+"Also erase products, services and suppliers"
+],
+"مسح جميع البيانات": [
+"Effacer toutes les données",
+"Erase all data"
+],
+"مسح جميع البيانات والبدء من الصفر": [
+"Effacer toutes les données et repartir de zéro",
+"Erase all data and start from zero"
+],
+"مسح كل البيانات": [
+"Effacement de toutes les données",
+"Erase all data"
+],
 "مسمن": [
 "Prise de poids",
 "Weight gain"
@@ -7239,6 +8003,10 @@
 "Conforme",
 "Matches"
 ],
+"مطروحًا منها ما طُلب سابقًا": [
+"moins ce qui est déjà commandé",
+"minus what is already ordered"
+],
 "مطلق": [
 "Divorcé",
 "Divorced"
@@ -7251,9 +8019,17 @@
 "Avec l’annulation de la visite",
 "With the visit cancellation"
 ],
+"مع العمال": [
+"avec les employés",
+"with staff"
+],
 "مع الغيابات والمنح": [
 "Avec absences et primes",
 "With absences and bonuses"
+],
+"مع المنتجات والخدمات": [
+"avec les produits et prestations",
+"with products and services"
 ],
 "مع تطبيق": [
 "avec l’application",
@@ -7310,6 +8086,10 @@
 "مكان الميلاد": [
 "Lieu de naissance",
 "Place of birth"
+],
+"ملء البطاقة": [
+"Remplir la fiche",
+"Fill in the card"
 ],
 "ملاحظات": [
 "Notes",
@@ -7383,6 +8163,14 @@
 "Qui a reçu l’argent",
 "Who received the money"
 ],
+"من الشهر الهجري": [
+"du mois hégirien",
+"of the Hijri month"
+],
+"من الشهر الهجري هي أيام الحجامة المسنونة": [
+"du mois hégirien sont les jours de hijama recommandés",
+"of the Hijri month are the recommended cupping days"
+],
 "من الصندوق": [
 "de la caisse",
 "from the cash box"
@@ -7394,6 +8182,10 @@
 "من فاتورة المورد": [
 "de la facture du fournisseur",
 "from the supplier invoice"
+],
+"من يستطيع إدخال المشتريات": [
+"Qui peut saisir les achats",
+"Who can enter purchases"
 ],
 "من يقدر يدخل المشتريات": [
 "Qui peut saisir les achats",
@@ -7408,6 +8200,10 @@
 "New product"
 ],
 "منتج جديد أو سعر تبدّل يحتاج مراجعتك": [
+"Nouveau produit ou prix modifié à vérifier",
+"New product or changed price needs review"
+],
+"منتج جديد أو سعر تغيّر يحتاج مراجعتك": [
 "Nouveau produit ou prix modifié à vérifier",
 "New product or changed price needs review"
 ],
@@ -7436,6 +8232,10 @@
 "Branch products"
 ],
 "منتجات جديدة أو أسعار بدّلها العمال": [
+"Nouveaux produits ou prix modifiés par les employés",
+"New products or prices changed by staff"
+],
+"منتجات جديدة أو أسعار غيّرها العمال": [
 "Nouveaux produits ou prix modifiés par les employés",
 "New products or prices changed by staff"
 ],
@@ -7483,6 +8283,10 @@
 "dont en espèces",
 "of which cash"
 ],
+"مواد استُعملت ولم تُسجَّل": [
+"Produits utilisés non enregistrés",
+"Materials used but not recorded"
+],
 "مواد استُعملت وما تسجّلتش": [
 "Produits utilisés non enregistrés",
 "Materials used but not recorded"
@@ -7494,6 +8298,10 @@
 "مواد العمل المستعملة": [
 "Produits de travail utilisés",
 "Work materials used"
+],
+"مواد قاربت على النفاد": [
+"Produits presque épuisés",
+"Materials running out"
 ],
 "مواد قربت تكمل": [
 "Produits presque épuisés",
@@ -7528,6 +8336,10 @@
 "Multi-session appointments"
 ],
 "مواعيد فات وقتها والزبونة ما جاتش": [
+"Rendez-vous passés où la cliente n’est pas venue",
+"Past appointments where the client didn’t come"
+],
+"مواعيد فات وقتها ولم تحضر الزبونة": [
 "Rendez-vous passés où la cliente n’est pas venue",
 "Past appointments where the client didn’t come"
 ],
@@ -7583,6 +8395,10 @@
 "Votre prochain rendez-vous",
 "Your next appointment"
 ],
+"موعدك القادم": [
+"Votre prochain rendez-vous",
+"Your next appointment"
+],
 "موقوف": [
 "Suspendu",
 "Suspended"
@@ -7606,6 +8422,10 @@
 "مُسمن": [
 "Grossissant",
 "Fattening"
+],
+"مُلئت المواد المعتادة لهذه الخدمة تلقائيًا": [
+"Les produits habituels de cette prestation ont été remplis automatiquement",
+"This service’s usual materials were filled in automatically"
 ],
 "مُنحف": [
 "Amincissant",
@@ -7651,9 +8471,17 @@
 "Version du programme sur cet ordinateur",
 "Program version on this computer"
 ],
+"نسخة تلقائية كل كم ساعة": [
+"Sauvegarde automatique toutes les combien d’heures",
+"Automatic backup every how many hours"
+],
 "نسخة جديدة من البرنامج جاهزة في حاسوب المديرة": [
 "Une nouvelle version du programme est prête sur l’ordinateur de la directrice",
 "A new program version is ready on the director’s computer"
+],
+"نسخة قبل المسح": [
+"sauvegarde avant effacement",
+"pre-wipe backup"
 ],
 "نشط": [
 "Actif",
@@ -7799,6 +8627,10 @@
 "Cette personne est déjà inscrite à la formation",
 "This person is already enrolled in the course"
 ],
+"هذا الشهر": [
+"Ce mois",
+"This month"
+],
 "هذا العامل غادر مسبقًا": [
 "Cet employé est déjà parti",
 "This staff member has already left"
@@ -7831,6 +8663,18 @@
 "C’est un jour de repos",
 "This is a day off"
 ],
+"هذه التواريخ حسب الاقتراح": [
+"Ces dates suivent la proposition",
+"These dates follow the suggestion"
+],
+"هذه عمليات اليوم فقط": [
+"Ce sont les opérations d’aujourd’hui seulement",
+"These are today’s operations only"
+],
+"هذه عمليات ملغاة": [
+"Ce sont des opérations annulées",
+"These are cancelled operations"
+],
 "هربس": [
 "Herpès",
 "Herpes"
@@ -7842,6 +8686,10 @@
 "هكذا تبقى نسخة خارج المحل حتى لو ضاع الحاسوب": [
 "Ainsi une copie reste hors du local même si l’ordinateur est perdu",
 "So a copy stays outside the premises even if the computer is lost"
+],
+"هل أنت متأكدة": [
+"Êtes-vous sûre",
+"Are you sure"
 ],
 "هنا": [
 "Ici",
@@ -7859,6 +8707,14 @@
 "et j’assume la responsabilité de toute information fausse ou incomplète",
 "and I take responsibility for any false or incomplete information"
 ],
+"وأخرى صباح اليوم نفسه": [
+"et un le matin du jour",
+"and one on the morning of the day"
+],
+"وأنتِ توافقين أو ترفضين": [
+"et vous acceptez ou refusez",
+"and you accept or reject"
+],
 "وأنه لا يمكن ضمان نتيجة معينة": [
 "et qu’aucun résultat précis ne peut être garanti",
 "and that no specific result can be guaranteed"
@@ -7871,11 +8727,19 @@
 "et tout changement de prix est visible par la directrice",
 "and any price change is visible to the director"
 ],
+"وأي تغيير في السعر يظهر للمديرة": [
+"et tout changement de prix est visible par la directrice",
+"and any price change is visible to the director"
+],
 "وأُتيحت لي فرصة طرح أسئلتي": [
 "et j’ai eu l’occasion de poser mes questions",
 "and I had the opportunity to ask my questions"
 ],
 "وإذا وافقت المديرة يتبدّل السعر وحدو": [
+"et si la directrice accepte, le prix change tout seul",
+"and if the director agrees, the price changes by itself"
+],
+"وإذا وافقت المديرة يتغيّر السعر تلقائيًا": [
 "et si la directrice accepte, le prix change tout seul",
 "and if the director agrees, the price changes by itself"
 ],
@@ -7887,6 +8751,10 @@
 "une",
 "one"
 ],
+"واحدة قبل الموعد": [
+"un avant le rendez-vous",
+"one before the appointment"
+],
 "واضغط": [
 "et appuyez",
 "and press"
@@ -7895,13 +8763,25 @@
 "L’écran solaire est indispensable chaque jour",
 "Sunscreen is essential every day"
 ],
+"واقي الشمس ضروري كل يوم": [
+"L’écran solaire est indispensable chaque jour",
+"Sunscreen is essential every day"
+],
 "واقي الشمس كل نهار": [
+"Écran solaire chaque jour",
+"Sunscreen every day"
+],
+"واقي الشمس كل يوم": [
 "Écran solaire chaque jour",
 "Sunscreen every day"
 ],
 "والبدائل الممكنة": [
 "et les alternatives possibles",
 "and the possible alternatives"
+],
+"والبرنامج يبدأ من الصفر": [
+"et le programme repart de zéro",
+"and the program starts from zero"
 ],
 "والبرنامج يحسب الفرق وحدو ويسجّلو بالسبب": [
 "et le programme calcule l’écart tout seul et l’enregistre avec le motif",
@@ -7971,13 +8851,37 @@
 "et changez la quantité si nécessaire",
 "and change the quantity if needed"
 ],
+"وتتحدث شاشته تلقائيًا": [
+"et son écran se met à jour tout seul",
+"and its screen updates by itself"
+],
 "وتتحصّل في الاستقبال مع الحصة": [
 "et elle est encaissée à l’accueil avec la séance",
 "and it is collected at reception with the session"
 ],
+"وتجنبي حمام البخار والسباحة": [
+"et évitez le hammam et la piscine",
+"and avoid steam baths and swimming"
+],
+"وتراجعه المديرة ويمكنها تعديل سعره": [
+"et la directrice le vérifie et peut modifier son prix",
+"and the director reviews it and can change its price"
+],
+"وتضيف الغرفة ما طلبته": [
+"et la salle ajoute ce qu’elle demande",
+"and the room adds what she asks for"
+],
 "وتقدر تبدّل أي تاريخ": [
 "et vous pouvez changer n’importe quelle date",
 "and you can change any date"
+],
+"وتنقّل بين الأقراص والمجلدات": [
+"et parcourez les disques et dossiers",
+"and browse drives and folders"
+],
+"وتُحصَّل في الاستقبال مع الحصة": [
+"et elle est encaissée à l’accueil avec la séance",
+"and it is collected at reception with the session"
 ],
 "وثيقة الموافقة": [
 "Formulaire de consentement",
@@ -8026,6 +8930,10 @@
 "ورقة الحضور اليومية": [
 "Feuille de présence journalière",
 "Daily attendance sheet"
+],
+"ورقة واحدة": [
+"Une seule page",
+"One page"
 ],
 "ورقة وحدة": [
 "Une seule page",
@@ -8079,6 +8987,22 @@
 "et modifiez",
 "and edit"
 ],
+"وعدّل الكمية إذا لزم": [
+"et changez la quantité si nécessaire",
+"and change the quantity if needed"
+],
+"وعند انتهاء كل حصة": [
+"et à la fin de chaque séance",
+"and when each session ends"
+],
+"وعند موافقتها يُنفَّذ تلقائيًا": [
+"et quand elle accepte, c’est exécuté tout seul",
+"and when she approves, it is done automatically"
+],
+"وغيّر نوع المواد": [
+"et changez le type de produit",
+"and change the material type"
+],
 "وقت الإلغاء": [
 "Heure d’annulation",
 "Cancellation time"
@@ -8107,9 +9031,21 @@
 "ou ceux qui ne tiennent pas une semaine selon la consommation des derniers",
 "or those that won’t last a week based on the usage of the last"
 ],
+"ولا تدخل في الحسابات": [
+"et n’entre pas dans les comptes",
+"and isn’t counted"
+],
+"ولا تدخل في الصندوق ولا في التقارير": [
+"et n’entre ni dans la caisse ni dans les rapports",
+"and counts neither in the cash box nor the reports"
+],
 "ولا يرى إلا عمليات فرعه": [
 "et il ne voit que les opérations de sa branche",
 "and only sees their branch’s operations"
+],
+"ولم تأخذ موعدًا جديدًا بعد": [
+"et elle n’a pas encore pris de nouveau rendez-vous",
+"and she hasn’t taken a new appointment yet"
 ],
 "وما تدخلش في الحسابات": [
 "et n’entre pas dans les comptes",
@@ -8118,6 +9054,10 @@
 "وما تدخلش لا في الصندوق ولا في التقارير": [
 "et n’entrent ni dans la caisse ni dans les rapports",
 "and count neither in the cash box nor in the reports"
+],
+"وما على الغرفة إلا التأكيد": [
+"et la salle n’a qu’à confirmer",
+"and the room just confirms"
 ],
 "ومازال ما خداتش موعد جديد": [
 "et elle n’a pas encore pris de nouveau rendez-vous",
@@ -8131,9 +9071,21 @@
 "moins ce qui est déjà commandé",
 "minus what is already ordered"
 ],
+"وهكذا تصل الزبونة رسالتان": [
+"Ainsi la cliente reçoit deux messages",
+"So the client gets two messages"
+],
+"وهي محفوظة في": [
+"Elle est conservée dans",
+"It is kept in"
+],
 "ووحدة الصباح تاع النهار": [
 "et un le matin du jour",
 "and one on the morning of the day"
+],
+"ويحسب البرنامج الفرق تلقائيًا ويسجّله مع السبب": [
+"et le programme calcule l’écart tout seul et l’enregistre avec le motif",
+"and the program calculates the difference and records it with the reason"
 ],
 "ويدخل الصندوق": [
 "et entre dans la caisse",
@@ -8143,9 +9095,21 @@
 "et se connecte avec son propre mot de passe",
 "and logs in with their own password"
 ],
+"ويظهر الرد هنا": [
+"et la réponse apparaît ici",
+"and the answer shows here"
+],
 "ويقتطع كل التسبيقات التي لم تُقتطع بعد": [
 "et déduit toutes les avances non encore déduites",
 "and deducts all advances not yet deducted"
+],
+"ويمكنك تعديل أي تاريخ": [
+"et vous pouvez modifier n’importe quelle date",
+"and you can change any date"
+],
+"ويُصفّر كميات المخزون": [
+"et remet les quantités du stock à zéro",
+"and resets stock quantities to zero"
 ],
 "ويُوقف العامل فلا تُحسب له أجرة بعدها": [
 "et arrête l’employé, aucun salaire n’est compté ensuite",
@@ -8162,6 +9126,10 @@
 "يبقى المبلغ حتى توافق": [
 "Le montant reste jusqu’à ce que vous acceptiez",
 "The amount stays until you approve"
+],
+"يتحدث هذا الحاسوب تلقائيًا عند تشغيله أو بعد": [
+"Cet ordinateur se met à jour tout seul au démarrage ou après",
+"This computer updates itself at startup or after"
 ],
 "يتختار القسم تاعها وحدو": [
 "Son service est choisi automatiquement",
@@ -8183,9 +9151,17 @@
 "S’arrête une minute puis revient tout seul",
 "Stops for a minute and comes back by itself"
 ],
+"يجب أن يكون نوعه": [
+"son type doit être",
+"its type must be"
+],
 "يحتاج انتباهك": [
 "Demande votre attention",
 "Needs your attention"
+],
+"يحدد البرنامج تاريخ الحصة التالية تلقائيًا": [
+"Le programme fixe tout seul la date de la séance suivante",
+"The program sets the next session date by itself"
 ],
 "يحصّل": [
 "Encaisse",
@@ -8199,6 +9175,14 @@
 "Manuelle",
 "Manual"
 ],
+"يرسل طلبًا": [
+"Envoie une demande",
+"Sends a request"
+],
+"يسمح له بتسجيل المبلغ الذي دفعه للمورد كمصروف": [
+"Lui permet d’enregistrer comme dépense le montant payé au fournisseur",
+"Lets them record the amount paid to the supplier as an expense"
+],
 "يسمح له يسجّل المبلغ اللي خلّصه للمورد كمصروف": [
 "Lui permet d’enregistrer comme dépense le montant payé au fournisseur",
 "Lets them record the amount paid to the supplier as an expense"
@@ -8210,6 +9194,14 @@
 "يشهد": [
 "Atteste",
 "Certifies"
+],
+"يصل إلى المديرة": [
+"Arrive chez la directrice",
+"Reaches the director"
+],
+"يصل القرار إلى حاسوبه خلال ثوانٍ": [
+"La décision arrive sur son ordinateur en quelques secondes",
+"The decision reaches their computer within seconds"
 ],
 "يصل لحاسوبه في ثوانٍ": [
 "Arrive sur son ordinateur en quelques secondes",
@@ -8227,13 +9219,25 @@
 "C’est-à-dire",
 "That is"
 ],
+"يكفي": [
+"Suffit pour",
+"Lasts"
+],
 "يكفّي": [
 "Suffit pour",
 "Lasts"
 ],
+"يمسح كل الزبائن والمواعيد والزيارات والوصولات والمصاريف والمشتريات والسجلات": [
+"Efface tous les clients, rendez-vous, visites, reçus, dépenses, achats et journaux",
+"Erases all clients, appointments, visits, receipts, expenses, purchases and logs"
+],
 "يمكن الدفع على عدة أقساط": [
 "Le paiement peut se faire en plusieurs fois",
 "Payment can be made in several installments"
+],
+"يمكن للمديرة كتابتها في صفحة": [
+"La directrice peut l’écrire dans la page",
+"The director can write it on the page"
 ],
 "يمكنك تسجيل المتكونين وتحصيل المبالغ وطباعة الشهادات": [
 "Vous pouvez inscrire les stagiaires, encaisser et imprimer les certificats",
@@ -8247,6 +9251,14 @@
 "Vous pouvez corriger le montant si vous vous êtes trompé en comptant",
 "You can correct the amount if you miscounted"
 ],
+"يمكنك تعديله": [
+"Vous pouvez le changer",
+"You can change it"
+],
+"يملأ البرنامج عدد الحصص وتواريخها وسعرها تلقائيًا": [
+"le programme remplit le nombre de séances, leurs dates et leur prix automatiquement",
+"the program fills in the number of sessions, dates and price automatically"
+],
 "ينبّه البرنامج عندما تصل الكمية إليه": [
 "Le programme alerte quand la quantité l’atteint",
 "The program alerts when the quantity reaches it"
@@ -8254,6 +9266,10 @@
 "ينتظر الدفع": [
 "En attente de paiement",
 "Awaiting payment"
+],
+"يوجد": [
+"Il y a",
+"There are"
 ],
 "يوجد استرجاع في الانتظار": [
 "Une restauration est en attente",
@@ -8275,9 +9291,25 @@
 "Jour de paie",
 "Pay day"
 ],
+"يوم العملية": [
+"Jour de l’opération",
+"Operation day"
+],
 "يوم بداية العمل": [
 "Jour de début de travail",
 "Start day"
+],
+"يوم تجريبي": [
+"Jour de test",
+"Test day"
+],
+"يوم جديد": [
+"Nouveau jour",
+"New day"
+],
+"يوم حجامة مسنون": [
+"jour de hijama recommandé",
+"recommended cupping day"
 ],
 "يوم راحة": [
 "Jour de repos",
@@ -8295,6 +9327,10 @@
 "La moitié du salaire du jour est comptée",
 "Half the day’s pay is counted"
 ],
+"يُختار قسمها تلقائيًا": [
+"Son service est choisi automatiquement",
+"Its department is chosen automatically"
+],
 "يُخصم نصف يوم": [
 "Une demi-journée est déduite",
 "Half a day is deducted"
@@ -8302,6 +9338,10 @@
 "يُخصم يومًا": [
 "Un jour est déduit",
 "One day is deducted"
+],
+"يُرسل الإلغاء طلبًا إلى المديرة": [
+"L’annulation devient une demande à la directrice",
+"The cancellation becomes a request to the director"
 ],
 "يُسجَّل الباقي هنا دينًا عليه حتى يسدده": [
 "Le reste est enregistré ici comme dette jusqu’à son règlement",
@@ -8315,6 +9355,10 @@
 "Ajouté directement à la liste des produits",
 "Added directly to the product list"
 ],
+"يُعاد إرسال التذكير تلقائيًا للموعد الجديد": [
+"Le rappel par SMS est renvoyé automatiquement pour le nouveau rendez-vous",
+"The SMS reminder is resent automatically for the new appointment"
+],
 "يُقتطع من أجرة شهر": [
 "Déduit du salaire du mois",
 "Deducted from the pay of month"
@@ -8322,6 +9366,10 @@
 "يُقتطع من شهر": [
 "Déduit du mois",
 "Deducted from month"
+],
+"يُكتب تلقائيًا من الخدمة": [
+"Se remplit à partir de la prestation",
+"Filled in from the service"
 ],
 "يُنصح بمراجعة النص مع مختص قانوني": [
 "Il est conseillé de faire relire le texte par un juriste",
