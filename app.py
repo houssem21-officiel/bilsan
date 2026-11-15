@@ -5138,8 +5138,10 @@ def send_sms(con, phone, message):
     err = ""
     for u in urls:
         for body in bodies:
+            # بدون «User-Agent» واضح يرفض Cloudflare الطلب (HTTP 403 error code: 1010)
             req = urlreq.Request(u, data=json.dumps(body).encode("utf-8"), method="POST",
-                                 headers={"Content-Type": "application/json"})
+                                 headers={"Content-Type": "application/json", "Accept": "application/json",
+                                          "User-Agent": f"Mozilla/5.0 (Windows NT 10.0; Win64; x64) BilsanClinic/{APP_VERSION}"})
             if s.get("sms_user"):
                 tok = base64.b64encode(f"{s['sms_user'].strip()}:{s.get('sms_pass', '').strip()}".encode()).decode()
                 req.add_header("Authorization", "Basic " + tok)
@@ -5152,6 +5154,8 @@ def send_sms(con, phone, message):
                 except Exception:
                     detail = ""
                 err = f"HTTP {e.code} {detail}".strip()
+                if e.code == 403 and "1010" in detail:
+                    return False, "رفضت البوابة الاتصال (403/1010). حدّث البرنامج إلى آخر نسخة، وإن تكرر فجرّب انترنت أخرى"
                 if e.code == 401:
                     return False, "اسم المستخدم أو كلمة المرور خاطئة (انسخهما من تطبيق SMS Gateway)"
                 if e.code in (404, 405):
