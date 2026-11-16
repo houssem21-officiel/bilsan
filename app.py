@@ -379,6 +379,11 @@ def init_db():
             not con.execute("SELECT 1 FROM settings WHERE key='catalog_v1'").fetchone():
         catalog.apply_catalog(con)
         con.execute("INSERT INTO settings(key,value) VALUES('catalog_v1','1')")
+    # النسخة 22.4: إعادة إدخال كل المنتجات والخدمات الأصلية مرة واحدة (بعد مسحها)
+    if not sync.NODE and not os.environ.get("BILSAN_NO_CATALOG") and \
+            not con.execute("SELECT 1 FROM settings WHERE key='catalog_restore_1'").fetchone():
+        catalog.restore_catalog(con)
+        con.execute("INSERT INTO settings(key,value) VALUES('catalog_restore_1','1')")
     if not sync.NODE and not con.execute("SELECT 1 FROM posts").fetchone():
         names = {"reception": ["الاستقبال", "غرفة الحجامة"], "laser": ["غرفة الليزر"], "beauty": ["غرفة التجميل"]}
         for d in con.execute("SELECT * FROM departments ORDER BY branch_id, id").fetchall():
@@ -2014,7 +2019,7 @@ def products():
         sql += " AND COALESCE(usage,'sale') IN ('sale','both')"
     elif usage == "use":
         sql += " AND usage IN ('use','both')"
-    rows = db.execute(sql + " ORDER BY active DESC, category, name", args).fetchall()
+    rows = db.execute(sql + " ORDER BY active DESC, id", args).fetchall()
     counts = {k: db.execute(f"SELECT COUNT(*) FROM products WHERE active=1 AND {w}").fetchone()[0] for k, w in
               (("all", "1=1"), ("sale", "COALESCE(usage,'sale') IN ('sale','both')"), ("use", "usage IN ('use','both')"))}
     stock = {(r["product_id"], r["branch_id"]): r for r in db.execute("SELECT * FROM stock")}
@@ -2027,6 +2032,24 @@ def products():
     return render_template("products.html", rows=rows, branches=branches, show=show, stock=stock, edit=edit,
                            br=br, q=q, soon=soon, default_min=setting("default_min_qty"), review=review,
                            can_price=can_price, can_cost=can_cost, admin=admin, usage=usage, counts=counts)
+
+
+@app.route("/catalog/restore", methods=["POST"])
+@login_required("admin")
+def catalog_restore():
+    """زر «إعادة إدخال المنتجات والخدمات الأصلية» (المديرة فقط)."""
+    if sync.NODE:
+        abort(403)
+    db = get_db()
+    s_n, p_n, r_n = catalog.restore_catalog(db)
+    db.commit()
+    audit("إعادة إدخال القائمة الأصلية", f"خدمات مضافة {s_n}، منتجات مضافة {p_n}، أعيد تفعيل {r_n}")
+    db.commit()
+    if s_n or p_n or r_n:
+        flash(f"تمت إعادة الإدخال: {s_n} خدمة و{p_n} منتج جديد، وأعيد تفعيل {r_n}. الموجود من قبل بقي بسعره.", "ok")
+    else:
+        flash("كل المنتجات والخدمات الأصلية موجودة من قبل، لم يُضف شيء.", "ok")
+    return redirect(request.referrer or url_for("products"))
 
 
 @app.route("/api/products/quick", methods=["POST"])
@@ -2205,7 +2228,7 @@ def products_template():
     w.writerow(head)
     db = get_db()
     st = {(r["product_id"], r["branch_id"]): r for r in db.execute("SELECT * FROM stock")}
-    for p in db.execute("SELECT * FROM products WHERE active=1 ORDER BY category, name"):
+    for p in db.execute("SELECT * FROM products WHERE active=1 ORDER BY id"):
         row = [p["name"], p["category"] or "", f"{p['price']:g}", p["barcode"] or "", p["expiry"] or ""]
         for b in active_branches():
             x = st.get((p["id"], b["id"]))
@@ -4951,7 +4974,7 @@ def services():
         db.commit()
         return redirect(url_for("services"))
     rows = db.execute("""SELECT s.*, b.name AS branch FROM services s LEFT JOIN branches b ON b.id=s.branch_id
-        ORDER BY s.active DESC, s.dept, s.name""").fetchall()
+        ORDER BY s.active DESC, s.id""").fetchall()
     edit = db.execute("SELECT * FROM services WHERE id=?", (request.args.get("edit"),)).fetchone() \
         if request.args.get("edit") else None
     smats = {}

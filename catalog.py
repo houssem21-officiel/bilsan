@@ -83,3 +83,28 @@ def apply_catalog(con):
     for name, cat, price in PRODUCTS:
         if not con.execute("SELECT 1 FROM products WHERE name=?", (name,)).fetchone():
             con.execute("INSERT INTO products(name,category,price) VALUES(?,?,?)", (name, cat, price))
+
+
+def restore_catalog(con):
+    """يعيد إدخال كل الخدمات والمنتجات الأصلية بنفس ترتيب القائمة: يضيف الناقص بسعره الأصلي،
+    ويعيد تفعيل الموقوف منها. لا يغيّر الأسعار التي عدّلتها المديرة ولا يكرّر الموجود.
+    يرجع (عدد الخدمات المضافة، عدد المنتجات المضافة، عدد ما أعيد تفعيله)."""
+    added_s = added_p = react = 0
+    for name, kind, dept, price, br in SERVICES:
+        row = con.execute("SELECT id, active FROM services WHERE name=?", (name,)).fetchone()
+        if not row:
+            con.execute("INSERT INTO services(name,kind,dept,price,branch_id) VALUES(?,?,?,?,?)",
+                        (name, kind, dept, price, br))
+            added_s += 1
+        elif not row[1]:
+            con.execute("UPDATE services SET active=1 WHERE id=?", (row[0],))
+            react += 1
+    for name, cat, price in PRODUCTS:
+        row = con.execute("SELECT id, active FROM products WHERE name=?", (name,)).fetchone()
+        if not row:
+            con.execute("INSERT INTO products(name,category,price) VALUES(?,?,?)", (name, cat, price))
+            added_p += 1
+        elif not row[1]:
+            con.execute("UPDATE products SET active=1 WHERE id=?", (row[0],))
+            react += 1
+    return added_s, added_p, react

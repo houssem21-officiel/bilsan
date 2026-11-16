@@ -674,6 +674,7 @@ TEMPLATES["cashbox.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 
 TEMPLATES["products.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}المنتجات والمخزون{% if br %} — {{ branch_name(br) }}{% endif %}</h1>
+{% if admin %}{% if not NODE %}<form method="post" action="{{ url_for('catalog_restore') }}" class="noprint" style="margin:0 0 12px" onsubmit="return confirm('إعادة إدخال كل المنتجات والخدمات الأصلية بترتيبها وأسعارها الأصلية؟ الموجود من قبل لا يتكرر ولا يتغير سعره.')"><button class="btn light sm">{{ ic('sync') }}إعادة إدخال المنتجات والخدمات الأصلية</button></form>{% endif %}{% endif %}
 {% if review %}<div class="card" style="border:2px solid var(--gold,#e4ab74)"><h2>{{ ic('alert') }}منتجات جديدة أو أسعار غيّرها العمال ({{ review|length }})</h2>
 <p class="mut">راجع الاسم والسعر، ثم اضغط «تمت المراجعة».</p>
 <table><tr><th>المنتج</th><th>سعر البيع</th><th>سعر الشراء</th><th>من</th><th></th></tr>
@@ -840,6 +841,7 @@ TEMPLATES["branch_view.html"] = r"""{% extends "base.html" %}{% block body %}
 
 TEMPLATES["services.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}الخدمات والأسعار</h1>
+{% if not NODE %}<form method="post" action="{{ url_for('catalog_restore') }}" class="noprint" style="margin:0 0 12px" onsubmit="return confirm('إعادة إدخال كل المنتجات والخدمات الأصلية بترتيبها وأسعارها الأصلية؟ الموجود من قبل لا يتكرر ولا يتغير سعره.')"><button class="btn light sm">{{ ic('sync') }}إعادة إدخال المنتجات والخدمات الأصلية</button></form>{% endif %}
 <div class="card"><h2>{{ 'تعديل خدمة' if edit else 'خدمة جديدة' }}</h2>
 <form method="post" class="row">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
 <label>الاسم<input name="name" value="{{ edit.name if edit else '' }}" required></label>
