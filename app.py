@@ -7,6 +7,7 @@ import os, sys, re, csv, io, json, sqlite3, threading, time, base64, math
 from datetime import datetime, timedelta, date
 from functools import wraps
 from urllib import request as urlreq, error as urlerr
+from urllib.parse import urlsplit
 
 from flask import (Flask, g, request, redirect, url_for, session, flash,
                    render_template, abort, Response, send_file)
@@ -5746,6 +5747,32 @@ def sync_pull():
     out = sync.central_pull(get_db(), b, data.get("since") or "", data.get("img_ver"))
     out["ok"] = True
     return app.response_class(json.dumps(out, ensure_ascii=False), mimetype="application/json")
+
+
+@app.route("/node/central", methods=["POST"])
+def node_central():
+    """من صفحة الدخول في حاسوب الفرع: كتابة عنوان الحاسوب المركزي باليد أو البحث عنه تلقائيًا."""
+    if not sync.NODE:
+        abort(404)
+    port = urlsplit(sync.NODE["central_url"]).port or 80
+    ip = (request.form.get("ip") or "").strip().replace("http://", "").split("/")[0]
+    if ip:
+        if ":" in ip:
+            ip, port = ip.split(":", 1)[0], int(ip.split(":", 1)[1] or port)
+        if not sync._ping(ip, port, 3):
+            flash(f"لم يُعثر على البرنامج في {ip}. تأكدي أن البرنامج مفتوح في حاسوب المديرة وأن العنوان صحيح.", "err")
+            return redirect(url_for("login"))
+        sync.save_central_ip(ip)
+    else:
+        ip = sync.discover_central(port, force=True)
+        if not ip:
+            flash("لم يُعثر على الحاسوب المركزي في الشبكة. تأكدي أنه شغال والبرنامج مفتوح فيه، وأن الحاسوبين على نفس الراوتر، أو اكتبي عنوانه.", "err")
+            return redirect(url_for("login"))
+    sync._net["conn"] = None
+    ok, msg = sync.sync_now(connect)
+    flash((f"تم الربط بالحاسوب المركزي ({ip}). ادخلي الآن بكلمة سر الحاسوب." if ok
+           else f"وُجد الحاسوب المركزي ({ip}) لكن المزامنة فشلت: {msg}"), "ok" if ok else "err")
+    return redirect(url_for("login"))
 
 
 @app.route("/sync/now", methods=["GET", "POST"])

@@ -290,7 +290,10 @@ TEMPLATES["login.html"] = r"""{% extends "base.html" %}{% block body %}
 <div style="max-width:380px;margin:30px auto;text-align:center">
 <img class="brandlogo" src="{{ url_for('static', filename='logo.png') }}" alt="{{ center }}" style="width:230px">
 <div class="card" style="margin-top:18px">
-{% if NODE and node_status and node_status.first %}<div class="flash err">هذا حاسوب الفرع. في انتظار أول اتصال بالحاسوب المركزي لجلب المستخدمين والقوائم... {% if node_status.err %}({{ node_status.err }}){% endif %} <a href="{{ url_for('sync_now_route') }}">حاول الآن</a></div>{% endif %}
+{% if NODE and node_status and (node_status.first or not node_status.ok) %}<div class="flash err" style="text-align:right">هذا الحاسوب غير مربوط بعد بالحاسوب المركزي{% if node_status.first %}، فلا يمكن الدخول قبل الربط{% endif %}. {% if node_status.err %}<div class="mut" style="font-size:13px" dir="auto">{{ node_status.err[:160] }}</div>{% endif %}
+<form method="post" action="{{ url_for('node_central') }}" style="margin-top:8px"><button class="btn gold" style="width:100%">🔎 بحث تلقائي عن الحاسوب المركزي</button></form>
+<form method="post" action="{{ url_for('node_central') }}" class="row" style="margin-top:8px"><input name="ip" placeholder="192.168.1.10" dir="ltr" style="flex:1;text-align:center" required><button class="btn light">ربط</button></form>
+<div class="mut" style="font-size:13px">العنوان يظهر في حاسوب المديرة: الإدارة ← الحواسيب (تطبيق الهاتف للمديرة).</div></div>{% endif %}
 <form method="post" style="display:flex;flex-direction:column;gap:10px">
 {% if dev or (NODE and NODE.device) %}<div style="font-size:20px;font-weight:bold">{{ dev.full_name if dev else 'هذا الحاسوب' }}</div>
 <input name="password" type="password" placeholder="كلمة سر الحاسوب" required autofocus style="text-align:center;font-size:20px">

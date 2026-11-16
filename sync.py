@@ -374,17 +374,106 @@ _net = {"ip": None, "ip_at": 0.0, "conn": None}
 LAST_MS = [0]
 
 
+_CIP = os.path.join(BASE_DIR, "central_ip.txt")  # آخر عنوان معروف للحاسوب المركزي (أو مكتوب باليد)
+_scan_at = [0.0]
+FOUND_HOW = [""]
+
+
+def _ping(ip, port, timeout=0.8):
+    """هل هذا العنوان هو الحاسوب المركزي لبيلسان؟"""
+    try:
+        c = http.client.HTTPConnection(ip, port, timeout=timeout)
+        c.request("GET", "/app/ping")
+        r = c.getresponse()
+        ok = r.status == 200 and json.loads(r.read().decode("utf-8")).get("central") is True
+        c.close()
+        return ok
+    except Exception:
+        return False
+
+
+def local_prefixes():
+    ips = set()
+    for target in ("10.255.255.255", "192.168.255.255", "8.8.8.8"):
+        try:
+            s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+            s.connect((target, 1))
+            ips.add(s.getsockname()[0])
+            s.close()
+        except OSError:
+            pass
+    try:
+        ips.update(socket.gethostbyname_ex(socket.gethostname())[2])
+    except OSError:
+        pass
+    out = []
+    for ip in ips:
+        if ip.startswith("127.") or ip.startswith("169.254.") or not re.match(r"^\d+\.\d+\.\d+\.\d+$", ip):
+            continue
+        pre = ip.rsplit(".", 1)[0] + "."
+        if pre not in out:
+            out.append(pre)
+    return out
+
+
+def discover_central(port, force=False):
+    """يبحث في الشبكة المحلية عن الحاسوب المركزي (إذا لم يُعرف بالاسم bilsan-central)."""
+    if not force and time.time() - _scan_at[0] < 60:
+        return None
+    _scan_at[0] = time.time()
+    from concurrent.futures import ThreadPoolExecutor
+    cands = [p + str(i) for p in local_prefixes() for i in range(1, 255)]
+    if not cands:
+        return None
+    with ThreadPoolExecutor(64) as ex:
+        for ip, ok in zip(cands, ex.map(lambda h: _ping(h, port, 0.7), cands)):
+            if ok:
+                save_central_ip(ip)
+                return ip
+    return None
+
+
+def saved_central_ip():
+    try:
+        with open(_CIP, encoding="utf-8") as f:
+            return f.read().strip() or None
+    except OSError:
+        return None
+
+
+def save_central_ip(ip):
+    try:
+        with open(_CIP, "w", encoding="utf-8") as f:
+            f.write(ip)
+    except OSError:
+        pass
+    _net["ip"], _net["ip_at"] = ip, time.time()
+
+
 def _resolve(host):
     if re.match(r"^[0-9.]+$", host) or host in ("localhost",):
         return host
     if _net["ip"] and time.time() - _net["ip_at"] < 600:
         return _net["ip"]
+    port = urlsplit(NODE["central_url"]).port or 80
+    ip = None
     try:
         ip = socket.getaddrinfo(host, None, socket.AF_INET, socket.SOCK_STREAM)[0][4][0]
+        socket.create_connection((ip, port), 3).close()  # الاسم موجود لكن الحاسوب لا يرد؟ نبحث عنه
+        FOUND_HOW[0] = "name"
     except OSError:
         ip = None
     if not ip:
-        raise urlerr.URLError(f"getaddrinfo failed: {host}")
+        s = saved_central_ip()
+        if s and _ping(s, port, 2):
+            ip = s
+            FOUND_HOW[0] = "saved"
+    if not ip:
+        ip = discover_central(port)
+        if ip:
+            FOUND_HOW[0] = "scan"
+    if not ip:
+        raise urlerr.URLError(f"لم يُعثر على الحاسوب المركزي ({host}) في الشبكة")
     _net["ip"], _net["ip_at"] = ip, time.time()
     return ip
 
