@@ -6,7 +6,7 @@
   #define Variant "Setup"
 #endif
 #ifndef AppVer
-  #define AppVer "22.2"
+  #define AppVer "22.3"
 #endif
 #ifndef CfgDir
   #define CfgDir "..\build\cfg\" + Variant
@@ -57,7 +57,12 @@ Source: "..\dist\Bilsan\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdir
 ; ملف التحديث: الحواسيب الأخرى تأخذه من هنا وتتحدث وحدها
 Source: "..\dist\update\Bilsan-update-{#AppVer}.zip"; DestDir: "{#Data}\update"; Flags: ignoreversion
 #endif
+#if Variant == "Central" || Variant == "Setup"
 Source: "{#CfgDir}\*"; DestDir: "{#Data}"; Flags: onlyifdoesntexist; Check: IsFirstInstall
+#else
+; حاسوب فرع: ملف الربط node.json يوضع دائمًا إن لم يكن موجودًا (حتى لو كان البرنامج مثبتًا قبله بدون ربط)
+Source: "{#CfgDir}\*"; DestDir: "{#Data}"; Flags: onlyifdoesntexist
+#endif
 
 [Icons]
 Name: "{commondesktop}\Bilsan"; Filename: "{app}\Bilsan.exe"; IconFilename: "{app}\Bilsan.exe"; WorkingDir: "{#Data}"
@@ -84,8 +89,22 @@ end;
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
   Code: Integer;
+  D, Stamp: String;
 begin
   Exec(ExpandConstant('{sys}\taskkill.exe'), '/f /im Bilsan.exe', '', SW_HIDE, ewWaitUntilTerminated, Code);
   Sleep(800);
+#if Variant != "Central" && Variant != "Setup"
+  { كان البرنامج يعمل هنا وحده دون ربط: نحتفظ ببياناته القديمة جانبًا ويبدأ الحاسوب مربوطًا بالمركزي }
+  D := ExpandConstant('{#Data}');
+  if FileExists(D + '\bilsan.db') and not FileExists(D + '\node.json') then
+  begin
+    Stamp := GetDateTimeString('yyyymmdd-hhnn', '-', '-');
+    ForceDirectories(D + '\old-standalone-' + Stamp);
+    RenameFile(D + '\bilsan.db', D + '\old-standalone-' + Stamp + '\bilsan.db');
+    RenameFile(D + '\bilsan.db-wal', D + '\old-standalone-' + Stamp + '\bilsan.db-wal');
+    RenameFile(D + '\bilsan.db-shm', D + '\old-standalone-' + Stamp + '\bilsan.db-shm');
+    DeleteFile(D + '\pair.flag');
+  end;
+#endif
   Result := '';
 end;
