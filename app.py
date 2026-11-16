@@ -306,6 +306,7 @@ def init_db():
     add_col("appointments", "confirm_sent_at", "TEXT")
     add_col("appointments", "morning_sent_at", "TEXT")
     add_col("sms_log", "client_id", "INTEGER")
+    add_col("services", "category", "TEXT")
     add_col("services", "aftercare", "TEXT")
     add_col("users", "lang", "TEXT")
     add_col("stock_moves", "cancelled", "INTEGER DEFAULT 0")
@@ -384,6 +385,10 @@ def init_db():
             not con.execute("SELECT 1 FROM settings WHERE key='catalog_restore_1'").fetchone():
         catalog.restore_catalog(con)
         con.execute("INSERT INTO settings(key,value) VALUES('catalog_restore_1','1')")
+    if not sync.NODE and not os.environ.get("BILSAN_NO_CATALOG") and \
+            not con.execute("SELECT 1 FROM settings WHERE key='catalog_v2'").fetchone():
+        catalog.apply_catalog(con)  # يضيف الناقص (حتى بعد مسح البيانات) ويصنّف الكل
+        con.execute("INSERT INTO settings(key,value) VALUES('catalog_v2','1')")
     if not sync.NODE and not con.execute("SELECT 1 FROM posts").fetchone():
         names = {"reception": ["الاستقبال", "غرفة الحجامة"], "laser": ["غرفة الليزر"], "beauty": ["غرفة التجميل"]}
         for d in con.execute("SELECT * FROM departments ORDER BY branch_id, id").fetchall():
@@ -990,7 +995,7 @@ def services_for(branch_id, dept=None):
     if dept:
         q += " AND dept=?"
         args.append(dept)
-    return get_db().execute(q + " ORDER BY name", args).fetchall()
+    return get_db().execute(q + " ORDER BY COALESCE(category,'ي'), id", args).fetchall()
 
 
 @app.route("/appointments", methods=["GET", "POST"])
@@ -2019,7 +2024,7 @@ def products():
         sql += " AND COALESCE(usage,'sale') IN ('sale','both')"
     elif usage == "use":
         sql += " AND usage IN ('use','both')"
-    rows = db.execute(sql + " ORDER BY active DESC, id", args).fetchall()
+    rows = db.execute(sql + " ORDER BY active DESC, COALESCE(category,'ي'), id", args).fetchall()
     counts = {k: db.execute(f"SELECT COUNT(*) FROM products WHERE active=1 AND {w}").fetchone()[0] for k, w in
               (("all", "1=1"), ("sale", "COALESCE(usage,'sale') IN ('sale','both')"), ("use", "usage IN ('use','both')"))}
     stock = {(r["product_id"], r["branch_id"]): r for r in db.execute("SELECT * FROM stock")}
@@ -2228,7 +2233,7 @@ def products_template():
     w.writerow(head)
     db = get_db()
     st = {(r["product_id"], r["branch_id"]): r for r in db.execute("SELECT * FROM stock")}
-    for p in db.execute("SELECT * FROM products WHERE active=1 ORDER BY id"):
+    for p in db.execute("SELECT * FROM products WHERE active=1 ORDER BY COALESCE(category,'ي'), id"):
         row = [p["name"], p["category"] or "", f"{p['price']:g}", p["barcode"] or "", p["expiry"] or ""]
         for b in active_branches():
             x = st.get((p["id"], b["id"]))
@@ -4963,6 +4968,7 @@ def services():
                                  vals).lastrowid
             flash("تمت الإضافة", "ok")
         if vals[0]:
+            db.execute("UPDATE services SET category=? WHERE id=?", (request.form.get("category", "").strip() or None, pkg_sid))
             db.execute("UPDATE services SET pkg_sessions=?, pkg_interval=?, pkg_total=?, pkg_pay=? WHERE id=?",
                        (max(1, int(fnum(request.form.get("pkg_sessions"), 1))), int(fnum(request.form.get("pkg_interval"), 0)),
                         fnum(request.form.get("pkg_total")),
@@ -4974,14 +4980,15 @@ def services():
         db.commit()
         return redirect(url_for("services"))
     rows = db.execute("""SELECT s.*, b.name AS branch FROM services s LEFT JOIN branches b ON b.id=s.branch_id
-        ORDER BY s.active DESC, s.id""").fetchall()
+        ORDER BY s.active DESC, s.dept, COALESCE(s.category,'ي'), s.id""").fetchall()
     edit = db.execute("SELECT * FROM services WHERE id=?", (request.args.get("edit"),)).fetchone() \
         if request.args.get("edit") else None
     smats = {}
     for r in db.execute("""SELECT sm.service_id, sm.product_id, sm.qty, p.name, COALESCE(p.cost_price,0) AS unit
             FROM service_materials sm JOIN products p ON p.id=sm.product_id ORDER BY sm.id"""):
         smats.setdefault(r["service_id"], []).append(r)
-    return render_template("services.html", rows=rows, edit=edit, smats=smats, mat_products=work_materials(db))
+    return render_template("services.html", rows=rows, edit=edit, smats=smats, mat_products=work_materials(db),
+                           scats=[r[0] for r in db.execute("SELECT DISTINCT category FROM services WHERE COALESCE(category,'')<>'' ORDER BY category")])
 
 
 def work_materials(db, branch_id=None):

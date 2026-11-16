@@ -847,6 +847,8 @@ TEMPLATES["services.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>الاسم<input name="name" value="{{ edit.name if edit else '' }}" required></label>
 <label>النوع<select name="kind">{% for k,v in SERVICE_KINDS.items() %}<option value="{{ k }}" {{ 'selected' if edit and edit.kind==k }}>{{ v }}</option>{% endfor %}</select></label>
 <label>القسم<select name="dept">{% for k,v in DEPTS.items() %}<option value="{{ k }}" {{ 'selected' if edit and edit.dept==k }}>{{ v }}</option>{% endfor %}</select></label>
+<label>التصنيف<input name="category" list="scats" value="{{ edit.category or '' if edit else '' }}" placeholder="مثلاً: تنظيف البشرة"></label>
+<datalist id="scats">{% for c in scats %}<option value="{{ c }}">{% endfor %}</datalist>
 <label>السعر ({{ cur }})<input name="price" value="{{ '%g'|format(edit.price) if edit else '' }}" style="width:110px"></label>
 <label>المدة (دقيقة)<input name="duration" value="{{ edit.duration or 30 if edit else 30 }}" style="width:70px"></label>
 <label>الفرع<select name="branch_id"><option value="">كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if edit and edit.branch_id==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>
@@ -870,8 +872,8 @@ TEMPLATES["services.html"] = r"""{% extends "base.html" %}{% block body %}
 {% if not mat_products %}<span class="mut">لا يوجد أي منتج من نوع «مواد العمل» — غيّر نوعه في صفحة المنتجات.</span>{% endif %}
 <div style="flex-basis:100%"></div>
 <button class="btn">حفظ</button></form></div>
-<div class="card"><table><tr><th>الخدمة</th><th>النوع</th><th>القسم</th><th>الفرع</th><th>المدة</th><th>السعر</th><th>الباقة</th><th>المواد المعتادة</th><th></th></tr>
-{% for s in rows %}<tr class="{{ 'cx' if not s.active }}"><td>{{ item_ic(s.name) }}{{ s.name }}</td><td>{{ SERVICE_KINDS[s.kind] }}</td><td>{{ DEPTS[s.dept] }}</td><td>{{ s.branch or 'كل الفروع' }}</td><td class="mut">{{ s.duration or 30 }} د</td>
+<div class="card"><table><tr><th>الخدمة</th><th>التصنيف</th><th>النوع</th><th>القسم</th><th>الفرع</th><th>المدة</th><th>السعر</th><th>الباقة</th><th>المواد المعتادة</th><th></th></tr>
+{% for s in rows %}<tr class="{{ 'cx' if not s.active }}"><td>{{ item_ic(s.name) }}{{ s.name }}</td><td><span class="tag">{{ s.category or '—' }}</span></td><td>{{ SERVICE_KINDS[s.kind] }}</td><td>{{ DEPTS[s.dept] }}</td><td>{{ s.branch or 'كل الفروع' }}</td><td class="mut">{{ s.duration or 30 }} د</td>
 <td>{{ s.price|money }}{% if not s.price %} <span class="tag amber">حدد السعر</span>{% endif %}</td>
 <td class="mut">{% if (s.pkg_sessions or 1)>1 %}{{ s.pkg_sessions }} حصص{% if s.pkg_interval %} · كل {{ s.pkg_interval }} يوم{% endif %}{% if s.pkg_total %} · {{ s.pkg_total|money }}{% endif %} · {{ 'مسبقًا' if s.pkg_pay=='full' else 'بالحصة' }}{% endif %}</td>
 <td class="mut">{% set ms = smats.get(s.id, []) %}{% for m in ms %}{{ m.name }} ×{{ '%g'|format(m.qty) }}{{ '، ' if not loop.last }}{% endfor %}
