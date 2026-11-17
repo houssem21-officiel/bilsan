@@ -406,55 +406,120 @@ TEMPLATES["clients.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 {% else %}<tr><td colspan="5" class="mut">لا يوجد زبائن</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["client_view.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ page_icon() }}{{ c.name }}</h1>
-<div class="card"><form method="post" class="row">
+<style>
+.cf-head{display:flex;flex-wrap:wrap;gap:14px;align-items:center;justify-content:space-between}
+.cf-name{font-size:26px;font-weight:bold;color:var(--green,#173f36)}
+.cf-meta{color:#6b6257;font-size:15px}.cf-meta b{color:#2b2b2b}
+.cf-alert{background:#fdecea;border:1px solid #f3c1bc;color:#9b2c22;border-radius:10px;padding:10px 14px;margin-top:10px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}.chip{background:#efe2cf;border-radius:20px;padding:3px 12px;font-size:14px}
+.tl{position:relative;margin:10px 0 0;padding:0 26px 0 0}
+.tl:before{content:"";position:absolute;right:9px;top:6px;bottom:6px;width:3px;background:#e2d3bd;border-radius:3px}
+.tli{position:relative;margin:0 0 14px;background:#fff;border:1px solid #eadcc6;border-radius:12px;padding:12px 14px}
+.tli:before{content:"";position:absolute;right:-24px;top:16px;width:15px;height:15px;border-radius:50%;background:#e4ab74;border:3px solid #fbf7f0}
+.tli.d-reception:before{background:#2a6153}.tli.d-beauty:before{background:#c06c84}.tli.d-laser:before{background:#6c5ce7}
+.tli.d-sale:before{background:#e4ab74}.tli.d-note:before{background:#8a8a8a}.tli.miss{background:#fff6f5;border-color:#f3c1bc}
+.tli.cx{opacity:.55}.tli .top{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.tli .dt{font-weight:bold;color:#173f36}.tli .ttl{font-size:17px;font-weight:bold}
+.tli ul{margin:6px 0 0;padding-right:18px}.tli li{margin:2px 0}.tli .sub{color:#6b6257;font-size:14px;margin-top:4px}
+.tli .ph{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.tli .ph img{width:110px;height:85px;object-fit:cover;border-radius:8px;border:1px solid #e2d3bd}
+.no{background:#173f36;color:#fff;border-radius:20px;padding:2px 10px;font-size:13px}
+.fbar{display:flex;flex-wrap:wrap;gap:6px}.fbar button{border:1px solid #d9c7ad;background:#fbf7f0;border-radius:20px;padding:5px 14px;cursor:pointer;font-family:inherit;font-size:14px}
+.fbar button.on{background:#173f36;color:#fff;border-color:#173f36}
+@media print{.tli{break-inside:avoid}.fbar,.cf-actions{display:none!important}}
+</style>
+{% set DL = {'reception':'قسم العلاج','beauty':'قسم التجميل','laser':'قسم الليزر','sale':'منتجات','note':'ملاحظة','director':'المديرة'} %}
+<div class="card">
+<div class="cf-head"><div><div class="cf-name">{{ c.name }}</div>
+<div class="cf-meta">{% if c.phone %}<span dir="ltr">{{ c.phone }}</span> · {% endif %}{% if c.birth_date %}<b>{{ c.birth_date|age }}</b> سنة · {% endif %}{% if c.gender %}{{ c.gender }} · {% endif %}
+رقم الملف <b>{{ c.id|rid }}</b>{% if first %} · أول زيارة <b>{{ first[:10]|dmy }}</b>{% endif %} · عدد الحصص <b>{{ past|selectattr('no')|list|length }}</b></div></div>
+<div class="row cf-actions noprint">{% if perm('reception_visits') %}<a class="btn gold" href="{{ url_for('visit_new', client_id=c.id) }}">＋ إضافة حصة جديدة</a>{% endif %}
+<button class="btn light" type="button" onclick="window.print()">🖨 طباعة الملف</button></div></div>
+{% if c.chronic or c.allergies or c.medications or (skin and skin.contra) %}<div class="cf-alert">⚠
+{% if c.chronic %}<b>أمراض مزمنة:</b> {{ c.chronic }}. {% endif %}{% if c.allergies %}<b>حساسية:</b> {{ c.allergies }}. {% endif %}
+{% if c.medications %}<b>أدوية:</b> {{ c.medications }}. {% endif %}{% if skin and skin.contra %}<b>موانع:</b> {{ skin.contra }}{% endif %}</div>{% endif %}
+{% if c.notes %}<div class="sub mut" style="margin-top:8px">📝 {{ c.notes }}</div>{% endif %}
+{% if summ %}<div class="chips">{% for s in summ %}<span class="chip">{{ s.nm }} × {{ s.n }}</span>{% endfor %}</div>{% endif %}
+<p class="row noprint" style="margin-top:12px"><a class="btn light sm" href="{{ url_for('appointments', client_id=c.id) }}">＋ موعد</a>
+<a class="btn light sm" href="{{ url_for('plan_new', client_id=c.id) }}">＋ خطة حصص</a>
+{% if perm('pos') %}<a class="btn light sm" href="{{ url_for('pos', client_id=c.id) }}">بيع منتجات</a>{% endif %}
+{% if perm('direct_payment') %}<a class="btn light sm" href="{{ url_for('payment_new', client_id=c.id) }}">دفعة مباشرة</a>{% endif %}</p>
+<details class="noprint"><summary style="cursor:pointer;color:#2a6153">✎ تعديل معلومات الزبون</summary>
+<form method="post" class="row" style="margin-top:8px">
 <label>الاسم<input name="name" value="{{ c.name }}"></label><label>الهاتف<input name="phone" value="{{ c.phone or '' }}"></label>
-<label>تاريخ الميلاد{% if c.birth_date %} ({{ c.birth_date|age }} سنة){% endif %}<input type="date" name="birth_date" value="{{ c.birth_date or '' }}"></label>
+<label>تاريخ الميلاد<input type="date" name="birth_date" value="{{ c.birth_date or '' }}"></label>
 <label>الجنس<select name="gender"><option value="">—</option>{% for g in ('ذكر','أنثى') %}<option {{ 'selected' if c.gender==g }}>{{ g }}</option>{% endfor %}</select></label>
 <label>العنوان<input name="address" value="{{ c.address or '' }}"></label>
 <label>أمراض مزمنة<input name="chronic" value="{{ c.chronic or '' }}"></label>
 <label>حساسية<input name="allergies" value="{{ c.allergies or '' }}"></label>
 <label>أدوية يتناولها<input name="medications" value="{{ c.medications or '' }}"></label>
 <label style="flex:1">ملاحظات<input name="notes" value="{{ c.notes or '' }}"></label><button class="btn">حفظ</button></form>
-<p class="row">{% if perm('reception_visits') %}<a class="btn gold sm" href="{{ url_for('visit_new', client_id=c.id) }}">إرسال الزبون للعلاج (زيارة)</a>{% endif %}
-<a class="btn light sm" href="{{ url_for('appointments', client_id=c.id) }}">+ موعد</a>
-<a class="btn light sm" href="{{ url_for('plan_new', client_id=c.id) }}">+ خطة حصص</a>
-{% if perm('pos') %}<a class="btn light sm" href="{{ url_for('pos', client_id=c.id) }}">بيع منتجات</a>{% endif %}
-{% if perm('direct_payment') %}<a class="btn light sm" href="{{ url_for('payment_new', client_id=c.id) }}">دفعة مباشرة</a>{% endif %}</p></div>
-{% if perm('medical') %}{% set cid = c.id %}{% include "skin_card.html" %}{% endif %}
-{% if perm('medical') or perm('consent') %}<div class="card"><h2>الملف الطبي</h2>
-<div class="row" style="margin-bottom:10px">
-{% if perm('consent') %}<form class="row" action="{{ url_for('consent', cid=c.id) }}"><label>وثيقة الموافقة على<input name="procedure" list="procs2" style="width:240px" placeholder="اختر الإجراء"></label>
-<datalist id="procs2">{% for s in services %}<option value="{{ s.name }}">{% endfor %}</datalist><button class="btn light sm">طباعة وثيقة الموافقة</button></form>{% endif %}</div>
-{% if perm('medical') %}<form method="post" action="{{ url_for('client_note', cid=c.id) }}" class="row"><label style="flex:1">ملاحظة جديدة (جلسة، تطور الحالة، توصيات...)<textarea name="note" rows="2"></textarea></label><button class="btn">إضافة</button></form>
-<table style="margin-top:10px">{% for n in notes %}<tr><td style="width:130px" class="mut">{{ n.created_at[:16] }}<br>{{ n.by_name or '' }}</td><td>{{ n.note }}</td>
-{% if cu.role=='admin' %}<td><form method="post" action="{{ url_for('client_note', cid=c.id) }}"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ n.id }}"><button class="btn red sm">حذف</button></form></td>{% endif %}</tr>
-{% else %}<tr><td class="mut">لا توجد ملاحظات</td></tr>{% endfor %}</table>{% endif %}
-{% if can_photos %}<h2 style="margin-top:16px">صور قبل / بعد</h2>
-<form method="post" action="{{ url_for('client_photo', cid=c.id) }}" enctype="multipart/form-data" class="row">
-<label>الصور<input type="file" name="photo" accept="image/*" multiple capture="environment"></label>
-<label>النوع<select name="kind"><option value="before">قبل</option><option value="after">بعد</option><option value="other">أخرى</option></select></label>
-<label>ملاحظة<input name="note" placeholder="مثلاً: الجلسة 3 — الوجه"></label><button class="btn">رفع</button></form>
-<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:10px">{% for p in photos %}
-<div style="width:170px;text-align:center"><a href="{{ url_for('photo', phid=p.id) }}" target="_blank"><img src="{{ url_for('photo', phid=p.id) }}" style="width:170px;height:130px;object-fit:cover;border-radius:8px;border:1px solid #e2d3bd"></a>
-<div><span class="tag {{ '' if p.kind=='after' else 'amber' }}">{{ {'before':'قبل','after':'بعد','other':'أخرى'}[p.kind] }}</span> <span class="mut">{{ p.created_at[:10] }}</span></div><div class="mut">{{ p.note or '' }}</div>
-{% if cu.role=='admin' %}<form method="post" action="{{ url_for('client_photo', cid=c.id) }}"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ p.id }}"><button class="btn red sm">حذف</button></form>{% endif %}</div>
-{% else %}<span class="mut">لا توجد صور</span>{% endfor %}</div>{% endif %}</div>{% endif %}
+{% if perm('consent') %}<form class="row" action="{{ url_for('consent', cid=c.id) }}" style="margin-top:8px"><label>وثيقة الموافقة على<input name="procedure" list="procs2" style="width:240px" placeholder="اختر الإجراء"></label>
+<datalist id="procs2">{% for s in services %}<option value="{{ s.name }}">{% endfor %}</datalist><button class="btn light sm">طباعة وثيقة الموافقة</button></form>{% endif %}</details></div>
+
 {% if cdebts %}<div class="card" style="border-color:#c0392b"><h2>ديون على الزبون: {{ cdebts|sum(attribute='amount')|money }} {{ cur }}</h2>
-<table>{% for d in cdebts %}<tr><td>{{ d.created_at[:10] }}</td><td>{{ d.description }}</td><td><b>{{ d.amount|money }}</b></td></tr>{% endfor %}</table>
+<table>{% for d in cdebts %}<tr><td>{{ d.created_at[:10]|dmy }}</td><td>{{ d.description }}</td><td><b>{{ d.amount|money }}</b></td></tr>{% endfor %}</table>
 {% if can_collect %}<p><a class="btn gold sm" href="{{ url_for('debts', client_id=c.id) }}">تسديد</a></p>{% endif %}</div>{% endif %}
-<div class="card"><h2>الزيارات</h2><table><tr><th>#</th><th>التاريخ</th><th>الفرع</th><th>الطلب</th><th>المجموع</th><th>الحالة</th></tr>
-{% for v in cvisits %}<tr><td><a href="{{ url_for('visit_view', vid=v.id) }}">{{ v.id|rid }}</a></td><td>{{ v.created_at[:16] }}</td><td>{{ v.branch }}</td><td>{{ v.request or '' }}</td><td>{{ v.total|money }}</td><td>{{ VISIT_STATUS[v.status] }}</td></tr>
-{% else %}<tr><td colspan="6" class="mut">لا شيء</td></tr>{% endfor %}</table></div>
-<div class="card"><h2>خطط الحصص</h2><table><tr><th>الخطة</th><th>الحصص المنجزة</th><th>الحصص المدفوعة</th><th>الحالة</th></tr>
-{% for p in cplans %}<tr><td><a href="{{ url_for('plan_view', pid=p.id) }}">{{ p.title }}</a></td><td>{{ p.done }} / {{ p.n }}</td><td>{{ p.paid_n }} / {{ p.n }}</td><td>{{ PLAN_STATUS[p.status] }}</td></tr>
-{% else %}<tr><td colspan="4" class="mut">لا شيء</td></tr>{% endfor %}</table></div>
-<div class="card"><h2>المواعيد</h2><table><tr><th>التاريخ</th><th>الفرع</th><th>القسم</th><th>الخدمة</th><th>الحالة</th></tr>
-{% for a in appts %}<tr><td>{{ a.start_at or 'لم يُحدد' }}{% if a.session_no %} <span class="tag">حصة {{ a.session_no }}</span>{% endif %}</td><td>{{ a.branch }}</td><td>{{ DEPTS[a.dept] }}</td><td>{{ a.service or '-' }}</td><td>{{ APPT_STATUS[a.status] }}</td></tr>
-{% else %}<tr><td colspan="5" class="mut">لا شيء</td></tr>{% endfor %}</table></div>
-<div class="card"><h2>المدفوعات</h2><table><tr><th>الوصل</th><th>التاريخ</th><th>الفرع</th><th>البيان</th><th>المبلغ</th></tr>
-{% for p in pays %}<tr class="{{ 'cx' if p.cancelled }}"><td><a href="{{ url_for('receipt', pid=p.id) }}">{{ p.id|rid }}</a></td><td>{{ p.created_at[:16] }}</td><td>{{ p.branch }}</td><td>{{ p.description }}</td><td>{{ p.amount|money }}</td></tr>
-{% else %}<tr><td colspan="5" class="mut">لا شيء</td></tr>{% endfor %}</table></div>{% endblock %}"""
+
+<div class="card"><h2>الملف الطبي — كل ما قام به في المركز</h2>
+<div class="fbar noprint"><button class="on" data-f="">الكل</button><button data-f="reception">العلاج</button><button data-f="beauty">التجميل</button>
+<button data-f="laser">الليزر</button><button data-f="sale">المنتجات</button><button data-f="note">الملاحظات والصور</button></div>
+<div class="tl" id="tl">
+{% for e in past %}
+<div class="tli d-{{ e.dept }}{{ ' miss' if e.status=='noshow' }}{{ ' cx' if e.status=='cancelled' }}" data-d="{{ e.dept }}">
+<div class="top"><span class="dt">{{ e.at[:10]|dmy }}{% if e.at[11:16] %} <span class="mut" style="font-weight:normal">{{ e.at[11:16] }}</span>{% endif %}</span>
+{% if e.no %}<span class="no">الحصة {{ e.no }}</span>{% endif %}<span class="tag">{{ DL.get(e.dept, '') }}</span>{% if e.branch %}<span class="mut">{{ e.branch }}</span>{% endif %}
+{% if e.kind=='visit' and e.status not in ('paid','done') %}<span class="tag {{ 'red' if e.status=='cancelled' else 'amber' }}">{{ VISIT_STATUS[e.status] }}</span>{% endif %}
+{% if e.kind=='appt' %}<span class="tag {{ 'red' if e.status=='noshow' else ('amber' if e.status=='scheduled' else '') }}">{{ 'لم يحضر' if e.status=='noshow' else APPT_STATUS.get(e.status, e.status) }}</span>{% endif %}</div>
+{% if e.kind=='visit' %}
+<div class="ttl">{{ e.title }}</div>
+{% if e.svc and (e.svc|length > 1 or e.svc[0].session_no or (e.svc[0].qty and e.svc[0].qty != 1) or (e.svc[0].description and e.svc[0].sname and e.svc[0].description != e.svc[0].sname)) %}<ul>{% for i in e.svc %}<li>{{ i.sname or i.description }}{% if i.description and i.sname and i.description!=i.sname %} — {{ i.description }}{% endif %}{% if i.qty and i.qty!=1 %} × {{ i.qty|money }}{% endif %}
+{% if i.session_no %} <span class="tag">حصة {{ i.session_no }}{% if i.plan %} من «{{ i.plan }}»{% endif %}</span>{% endif %}</li>{% endfor %}</ul>{% endif %}
+{% if e.request and e.request!=e.title %}<div class="sub">الطلب: {{ e.request }}</div>{% endif %}
+{% if e.prods %}<div class="sub">🛍 منتجات: {% for i in e.prods %}{{ i.description }}{% if i.qty and i.qty!=1 %} ×{{ i.qty|money }}{% endif %}{{ '، ' if not loop.last }}{% endfor %}</div>{% endif %}
+{% if e.mats %}<div class="sub">🧴 المواد المستعملة: {% for m in e.mats %}{{ m.name }} ({{ m.q|money }}){{ '، ' if not loop.last }}{% endfor %}</div>{% endif %}
+{% for n in e.notes %}<div class="sub" style="color:#2b2b2b">📝 {{ n.note }}</div>{% endfor %}
+{% if e.who %}<div class="sub">نفّذها: {{ e.who }}</div>{% endif %}
+{% if e.photos %}<div class="ph">{% for p in e.photos %}<a href="{{ url_for('photo', phid=p.id) }}" target="_blank" title="{{ p.note or '' }}"><img src="{{ url_for('photo', phid=p.id) }}"></a>{% endfor %}</div>{% endif %}
+<div class="sub noprint">{% if cu.role=='admin' %}المبلغ: <b>{{ e.total|money }} {{ cur }}</b> · {% endif %}<a href="{{ url_for('visit_view', vid=e.vid) }}">تفاصيل الحصة</a></div>
+{% elif e.kind=='appt' %}
+<div class="ttl">{{ e.title }}{% if e.session_no %} <span class="tag">حصة {{ e.session_no }}{% if e.plan %} من «{{ e.plan }}»{% endif %}</span>{% endif %}</div>
+{% if e.note %}<div class="sub">{{ e.note }}</div>{% endif %}
+{% elif e.kind=='plan' %}
+<div class="ttl">بداية خطة حصص: {{ e.title }}</div><div class="sub">{{ e.n }} حصص · {{ PLAN_STATUS[e.status] }} · <a class="noprint" href="{{ url_for('plan_view', pid=e.pid) }}">عرض الخطة</a></div>
+{% if e.note %}<div class="sub">{{ e.note }}</div>{% endif %}
+{% elif e.kind=='sale' %}
+<div class="ttl">شراء منتجات</div>{% if e['items'] %}<ul>{% for i in e['items'] %}<li>{{ i.name }}{% if i.qty and i.qty!=1 %} × {{ i.qty|money }}{% endif %}</li>{% endfor %}</ul>{% else %}<div class="sub">{{ e.desc }}</div>{% endif %}
+{% if cu.role=='admin' %}<div class="sub">المبلغ: <b>{{ e.total|money }} {{ cur }}</b> · <a class="noprint" href="{{ url_for('receipt', pid=e.pay) }}">الوصل</a></div>{% endif %}
+{% elif e.kind=='note' %}
+<div>📝 {{ e.note }}</div>{% if e.who %}<div class="sub">كتبها: {{ e.who }}</div>{% endif %}
+{% if cu.role=='admin' %}<form method="post" action="{{ url_for('client_note', cid=c.id) }}" class="noprint" onsubmit="return confirm('حذف الملاحظة؟')"><input type="hidden" name="action" value="delete"><input type="hidden" name="id" value="{{ e.nid }}"><button class="btn red sm">حذف</button></form>{% endif %}
+{% elif e.kind=='photos' %}
+<div class="ttl">صور</div><div class="ph">{% for p in e.photos %}<a href="{{ url_for('photo', phid=p.id) }}" target="_blank"><img src="{{ url_for('photo', phid=p.id) }}"></a>{% endfor %}</div>
+{% elif e.kind=='skin' %}
+<div class="ttl">تحديث بطاقة البشرة</div>{% if e.who %}<div class="sub">{{ e.who }}</div>{% endif %}
+{% endif %}</div>
+{% else %}<p class="mut">لا شيء بعد. اضغطي «إضافة حصة جديدة» لتسجيل أول حصة.</p>{% endfor %}
+{% if future %}<h2 style="margin:18px 0 8px">القادم</h2>{% for e in future %}
+<div class="tli d-{{ e.dept }}" data-d="{{ e.dept }}"><div class="top"><span class="dt">{{ e.at[:10]|dmy }} <span class="mut" style="font-weight:normal">{{ e.at[11:16] }}</span></span>
+<span class="tag">{{ DL.get(e.dept, '') }}</span><span class="mut">{{ e.branch }}</span><span class="tag amber">موعد قادم</span></div>
+<div class="ttl">{{ e.title }}{% if e.session_no %} <span class="tag">حصة {{ e.session_no }}{% if e.plan %} من «{{ e.plan }}»{% endif %}</span>{% endif %}</div></div>{% endfor %}{% endif %}
+</div>
+<div class="noprint" style="border-top:1px dashed #d9c7ad;margin-top:10px;padding-top:12px">
+{% if perm('reception_visits') %}<p><a class="btn gold" href="{{ url_for('visit_new', client_id=c.id) }}">＋ إضافة حصة جديدة</a></p>{% endif %}
+{% if perm('medical') %}<form method="post" action="{{ url_for('client_note', cid=c.id) }}" class="row"><label style="flex:1">إضافة ملاحظة إلى الملف (تطور الحالة، توصيات...)<textarea name="note" rows="2"></textarea></label><button class="btn">إضافة</button></form>{% endif %}
+{% if can_photos %}<form method="post" action="{{ url_for('client_photo', cid=c.id) }}" enctype="multipart/form-data" class="row" style="margin-top:8px">
+<label>صور قبل / بعد<input type="file" name="photo" accept="image/*" multiple capture="environment"></label>
+<label>النوع<select name="kind"><option value="before">قبل</option><option value="after">بعد</option><option value="other">أخرى</option></select></label>
+<label>ملاحظة<input name="note" placeholder="مثلاً: الجلسة 3 — الوجه"></label><button class="btn">رفع</button></form>{% endif %}</div></div>
+
+{% if perm('medical') %}<details class="card noprint"><summary style="cursor:pointer;font-weight:bold">بطاقة البشرة</summary>{% set cid = c.id %}{% include "skin_card.html" %}</details>{% endif %}
+{% if cplans %}<div class="card noprint"><h2>خطط الحصص</h2><table><tr><th>الخطة</th><th>الحصص المنجزة</th><th>الحصص المدفوعة</th><th>الحالة</th></tr>
+{% for p in cplans %}<tr><td><a href="{{ url_for('plan_view', pid=p.id) }}">{{ p.title }}</a></td><td>{{ p.done }} / {{ p.n }}</td><td>{{ p.paid_n }} / {{ p.n }}</td><td>{{ PLAN_STATUS[p.status] }}</td></tr>{% endfor %}</table></div>{% endif %}
+{% if pays and cu.role=='admin' %}<details class="card noprint"><summary style="cursor:pointer;font-weight:bold">المدفوعات ({{ pays|length }})</summary><table><tr><th>الوصل</th><th>التاريخ</th><th>الفرع</th><th>البيان</th><th>المبلغ</th></tr>
+{% for p in pays %}<tr class="{{ 'cx' if p.cancelled }}"><td><a href="{{ url_for('receipt', pid=p.id) }}">{{ p.id|rid }}</a></td><td>{{ p.created_at[:16] }}</td><td>{{ p.branch }}</td><td>{{ p.description }}</td><td>{{ p.amount|money }}</td></tr>{% endfor %}</table></details>{% endif %}
+<script>(function(){var bs=document.querySelectorAll('.fbar button');bs.forEach(function(b){b.onclick=function(){bs.forEach(function(x){x.classList.remove('on')});b.classList.add('on');
+var f=b.dataset.f;document.querySelectorAll('#tl .tli').forEach(function(el){el.style.display=(!f||el.dataset.d==f)?'':'none'})}})})();</script>
+{% endblock %}"""
 
 TEMPLATES["appointments.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box, branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}المواعيد</h1>

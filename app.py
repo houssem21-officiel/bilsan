@@ -695,6 +695,12 @@ def age_filter(bd):
     return t.year - b.year - ((t.month, t.day) < (b.month, b.day))
 
 
+@app.template_filter("dmy")
+def dmy_filter(v):
+    v = (v or "")[:10]
+    return f"{v[8:10]}/{v[5:7]}/{v[0:4]}" if len(v) == 10 and v[4] == "-" else v
+
+
 @app.template_filter("rid")
 def rid_filter(v):
     """رقم الوصل/الزيارة للعرض: أرقام الفرع (السالبة) تظهر مثل 1-25."""
@@ -939,6 +945,94 @@ def clients():
     return render_template("clients.html", rows=rows, s=s)
 
 
+def client_timeline(db, cid):
+    """الملف الطبي الموحّد: كل ما قام به الزبون في المركز، حصة بعد حصة، من الأقدم إلى الأحدث."""
+    names = {r["id"]: r["full_name"] for r in db.execute("SELECT id, full_name FROM users")}
+    ev = []
+    photos = [dict(r) for r in db.execute(
+        "SELECT id,kind,note,created_at FROM client_photos WHERE client_id=? ORDER BY id", (cid,))] \
+        if can_see_photos() else []
+    notes = [dict(r) for r in db.execute(
+        "SELECT * FROM client_notes WHERE client_id=? ORDER BY id", (cid,))] if has_perm("medical") else []
+    used_ph, used_nt, appt_in_visit = set(), set(), set()
+    visits = db.execute("""SELECT v.*, b.name AS branch FROM visits v JOIN branches b ON b.id=v.branch_id
+        WHERE v.client_id=? ORDER BY v.created_at""", (cid,)).fetchall()
+    for v in visits:
+        items = db.execute("""SELECT i.*, s.name AS sname, s.category AS scat, a.session_no, pl.title AS plan
+            FROM visit_items i LEFT JOIN services s ON s.id=i.service_id
+            LEFT JOIN appointments a ON a.id=i.appt_id LEFT JOIN plans pl ON pl.id=a.plan_id
+            WHERE i.visit_id=? ORDER BY i.id""", (v["id"],)).fetchall()
+        for i in items:
+            if i["appt_id"]:
+                appt_in_visit.add(i["appt_id"])
+        if v["appointment_id"]:
+            appt_in_visit.add(v["appointment_id"])
+        mats = db.execute("""SELECT pr.name, -SUM(m.qty) AS q FROM stock_moves m JOIN products pr ON pr.id=m.product_id
+            WHERE m.visit_id=? AND m.qty<0 AND COALESCE(m.cancelled,0)=0 GROUP BY pr.name""", (v["id"],)).fetchall()
+        day = (v["created_at"] or "")[:10]
+        vn = [n for n in notes if n["visit_id"] == v["id"] or
+              (not n["visit_id"] and (n["created_at"] or "")[:10] == day and n["id"] not in used_nt)]
+        used_nt.update(n["id"] for n in vn)
+        vp = [ph for ph in photos if (ph["created_at"] or "")[:10] == day and ph["id"] not in used_ph]
+        used_ph.update(ph["id"] for ph in vp)
+        svc = [i for i in items if i["kind"] == "service"]
+        prods = [i for i in items if i["kind"] != "service"]
+        title = "، ".join((i["sname"] or i["description"] or "") for i in svc) or (v["request"] or "زيارة")
+        ev.append(dict(kind="visit", at=v["created_at"] or "", dept=v["target"], branch=v["branch"], title=title,
+                       status=v["status"], vid=v["id"], who=names.get(v["done_by"]) or "",
+                       request=v["request"] or "", svc=svc, prods=prods, mats=mats, notes=vn, photos=vp,
+                       total=sum((i["qty"] or 0) * (i["unit_price"] or 0) for i in items)))
+    for ap in db.execute("""SELECT a.*, s.name AS sname, b.name AS branch, pl.title AS plan FROM appointments a
+            LEFT JOIN services s ON s.id=a.service_id JOIN branches b ON b.id=a.branch_id
+            LEFT JOIN plans pl ON pl.id=a.plan_id WHERE a.client_id=?""", (cid,)):
+        if ap["id"] in appt_in_visit or (ap["status"] == "done" and not ap["start_at"]):
+            continue
+        st = "noshow" if (ap["missed"] or ap["status"] == "noshow") else ap["status"]
+        ev.append(dict(kind="appt", at=ap["start_at"] or ap["created_at"] or "", dept=ap["dept"], branch=ap["branch"],
+                       title=ap["sname"] or "موعد", status=st, session_no=ap["session_no"], plan=ap["plan"],
+                       note=ap["notes"] or "", aid=ap["id"]))
+    for pl in db.execute("""SELECT pl.*, s.name AS sname, (SELECT COUNT(*) FROM appointments a WHERE a.plan_id=pl.id) n
+            FROM plans pl LEFT JOIN services s ON s.id=pl.service_id WHERE pl.client_id=?""", (cid,)):
+        ev.append(dict(kind="plan", at=pl["created_at"] or "", dept=pl["dept"], title=pl["title"] or pl["sname"] or "",
+                       n=pl["n"], status=pl["status"], pid=pl["id"], note=pl["notes"] or ""))
+    for p in db.execute("""SELECT p.*, b.name AS branch FROM payments p JOIN branches b ON b.id=p.branch_id
+            WHERE p.client_id=? AND p.kind='product' AND p.cancelled=0""", (cid,)):
+        its = db.execute("""SELECT si.qty, pr.name FROM sale_items si JOIN products pr ON pr.id=si.product_id
+            WHERE si.payment_id=?""", (p["id"],)).fetchall()
+        ev.append(dict(kind="sale", at=p["created_at"] or "", dept="sale", branch=p["branch"],
+                       title="شراء منتجات", items=its or [], desc=p["description"] or "", total=p["amount"], pay=p["id"]))
+    for n in notes:
+        if n["id"] not in used_nt:
+            ev.append(dict(kind="note", at=n["created_at"] or "", dept="note", title="ملاحظة طبية", note=n["note"],
+                           who=names.get(n["created_by"]) or "", nid=n["id"]))
+    rest = [ph for ph in photos if ph["id"] not in used_ph]
+    for day in sorted({(ph["created_at"] or "")[:10] for ph in rest}):
+        ev.append(dict(kind="photos", at=day, dept="note", title="صور",
+                       photos=[ph for ph in rest if (ph["created_at"] or "")[:10] == day]))
+    sc = db.execute("SELECT updated_at, updated_by FROM skin_cards WHERE client_id=?", (cid,)).fetchone()
+    if sc and sc["updated_at"] and has_perm("medical"):
+        ev.append(dict(kind="skin", at=sc["updated_at"], dept="beauty", title="تحديث بطاقة البشرة",
+                       who=names.get(sc["updated_by"]) or ""))
+    ev.sort(key=lambda e: e["at"] or "")
+    today = center_today().isoformat()
+    past = [e for e in ev if not (e["kind"] == "appt" and e["status"] == "scheduled" and e["at"][:10] >= today)]
+    future = [e for e in ev if e not in past]
+    n = 0
+    for e in past:
+        if e["kind"] == "visit" and e["status"] != "cancelled":
+            n += 1
+            e["no"] = n
+    return past, future
+
+
+def client_summary(db, cid):
+    rows = db.execute("""SELECT COALESCE(s.name, i.description) AS nm, COUNT(*) AS n FROM visit_items i
+        JOIN visits v ON v.id=i.visit_id LEFT JOIN services s ON s.id=i.service_id
+        WHERE v.client_id=? AND i.kind='service' AND v.status<>'cancelled' GROUP BY nm ORDER BY n DESC""", (cid,)).fetchall()
+    first = db.execute("SELECT MIN(created_at) FROM visits WHERE client_id=? AND status<>'cancelled'", (cid,)).fetchone()[0]
+    return rows, first
+
+
 @app.route("/clients/<int(signed=True):cid>", methods=["GET", "POST"])
 @login_required()
 def client_view(cid):
@@ -973,7 +1067,10 @@ def client_view(cid):
         WHERE n.client_id=? ORDER BY n.id DESC""", (cid,)).fetchall() if has_perm("medical") else []
     photos = db.execute("SELECT id,kind,note,created_at FROM client_photos WHERE client_id=? ORDER BY id DESC",
                         (cid,)).fetchall() if can_see_photos() else []
+    past, future = client_timeline(db, cid)
+    summ, first = client_summary(db, cid)
     return render_template("client_view.html", c=c, appts=appts, pays=pays, cplans=cplans, cvisits=cvisits,
+                           past=past, future=future, summ=summ, first=first,
                            skin=skin_card(db, cid) if has_perm("medical") else None,
                            cdebts=cdebts, notes=notes, photos=photos, can_photos=can_see_photos(),
                            services=services_for(current_user()["branch_id"] or work_branch()))
