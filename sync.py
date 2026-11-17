@@ -25,7 +25,7 @@ SYNC_TABLES = ["branches", "departments", "posts", "users", "services", "product
                "appointments", "plans", "charges", "payments", "sale_items", "stock_moves",
                "employees", "attendance", "grants", "visits", "visit_items", "courses", "course_trainees",
                "client_notes", "client_photos", "perms", "audit", "cash_days", "expenses",
-               "suppliers", "purchases", "purchase_items", "approvals", "service_materials", "skin_cards", "cancelled_ops"]
+               "suppliers", "purchases", "purchase_items", "approvals", "service_materials", "skin_cards", "cancelled_ops", "course_days"]
 # جداول أضيفت للمزامنة في النسخة 19.5 (المشتريات): تحتاج تحويل البيانات القديمة مرة واحدة
 V2_TABLES = ["suppliers", "purchases", "purchase_items"]
 # جداول عامة يرسلها المركزي كاملة للفرع
@@ -43,6 +43,7 @@ VIA = {
     "grants": "employee_id IN (SELECT id FROM employees WHERE branch_id=?)",
     "visit_items": "visit_id IN (SELECT id FROM visits WHERE branch_id=?)",
     "course_trainees": "course_id IN (SELECT id FROM courses WHERE branch_id=?)",
+    "course_days": "trainee_id IN (SELECT t.id FROM course_trainees t JOIN courses c ON c.id=t.course_id WHERE c.branch_id=?)",
     "purchase_items": "purchase_id IN (SELECT id FROM purchases WHERE branch_id=?)",
 }
 # إعدادات لا تُنقل من المركزي إلى الفرع

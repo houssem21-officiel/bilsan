@@ -1488,6 +1488,7 @@ TEMPLATES["courses.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 <label>اسم الدورة<input name="name" required style="width:260px" placeholder="مثلاً: دورة الحجامة العلاجية"></label>
 {% if cu.role=='admin' %}<label>الفرع<select name="branch_id">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if (br or 1)==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
 <label>السعر ({{ cur }})<input name="price" style="width:110px"></label>
+<label>عدد الأيام<input name="days" value="1" style="width:70px"></label>
 <label>من<input type="date" name="start_date"></label><label>إلى<input type="date" name="end_date"></label>
 <label>عدد الساعات<input name="hours" style="width:80px"></label>
 <label>المكوّن(ة)<input name="trainer"></label>
@@ -1495,11 +1496,66 @@ TEMPLATES["courses.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 <button class="btn">إنشاء الدورة</button></form></div>
 {% else %}<div class="card mut">الدورات الجديدة وأسعارها تُنشئها المديرة. يمكنك تسجيل المتكونين وتحصيل المبالغ وطباعة الشهادات.</div>{% endif %}
 <div class="card">{% if cu.role=='admin' %}<form class="row" style="margin-bottom:10px">{{ branch_filter(br) }}<button class="btn light">عرض</button></form>{% endif %}
-<table><tr><th>الدورة</th>{% if not br %}<th>الفرع</th>{% endif %}<th>من</th><th>إلى</th><th>الساعات</th><th>المكوّن</th><th>المتكونون</th><th>السعر</th><th>الحالة</th></tr>
+<h2>الدورات</h2><table><tr><th>الدورة</th>{% if not br %}<th>الفرع</th>{% endif %}<th>من</th><th>إلى</th><th>الأيام</th><th>الساعات</th><th>المكوّن</th><th>المتكونون</th><th>السعر</th><th>الحالة</th></tr>
 {% for c in rows %}<tr class="{{ 'cx' if c.status=='cancelled' }}"><td><a href="{{ url_for('course_view', cid=c.id) }}">{{ item_ic('دورة') }}<b>{{ c.name }}</b></a></td>{% if not br %}<td>{{ c.branch }}</td>{% endif %}
-<td>{{ c.start_date or '' }}</td><td>{{ c.end_date or '' }}</td><td>{{ '%g'|format(c.hours) if c.hours else '' }}</td><td>{{ c.trainer or '' }}</td>
+<td>{{ c.start_date or '' }}</td><td>{{ c.end_date or '' }}</td><td>{{ c.days or 1 }}</td><td>{{ '%g'|format(c.hours) if c.hours else '' }}</td><td>{{ c.trainer or '' }}</td>
 <td>{{ c.n }}</td><td>{{ c.price|money }}</td><td><span class="tag {{ 'amber' if c.status=='open' else '' }}">{{ COURSE_STATUS[c.status] }}</span></td></tr>
-{% else %}<tr><td colspan="9" class="mut">لا توجد دورات بعد</td></tr>{% endfor %}</table></div>{% endblock %}"""
+{% else %}<tr><td colspan="10" class="mut">لا توجد دورات بعد</td></tr>{% endfor %}</table></div>
+<div class="card"><h2>ملفات المتكونين</h2>
+<p class="mut">كل متكوّن له ملف واحد: دوراته (مثلاً حجامة ثم ليزر)، أيامه، تسبيقاته ودفعاته، وشهادة واحدة لكل ما أكمله.</p>
+<form class="row" action="{{ url_for('trainee_open') }}"><label>فتح ملف متكوّن (الاسم أو الهاتف)<input name="q" required></label><button class="btn light">بحث</button></form>
+<table style="margin-top:8px"><tr><th>المتكوّن</th><th>الهاتف</th><th>الدورات</th><th>المجموع</th><th>المدفوع</th><th>الباقي</th></tr>
+{% for f in files %}<tr><td><a href="{{ url_for('trainee_file', client_id=f.cid) }}"><b>{{ f.name }}</b></a></td><td dir="ltr">{{ f.phone or '' }}</td>
+<td>{% for c in f.courses %}<span class="tag {{ '' if c.status=='completed' else 'amber' }}">{{ c.name }}</span> {% endfor %}</td>
+<td>{{ f.due|money }}</td><td>{{ f.paid|money }}</td><td>{% if f.due - f.paid > 0.001 %}<span class="tag amber">{{ (f.due - f.paid)|money }}</span>{% else %}<span class="tag">خالص</span>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="mut">لا يوجد متكونون بعد</td></tr>{% endfor %}</table></div>{% endblock %}"""
+
+TEMPLATES["trainee_file.html"] = r"""{% extends "base.html" %}{% block body %}
+<style>.tday{display:inline-flex;flex-direction:column;gap:4px;border:1px solid #eadcc6;border-radius:10px;padding:8px;margin:4px;min-width:150px;background:#fff}
+.tday.p{border-color:#2a6153;background:#eef6f2}.tday.a{border-color:#f3c1bc;background:#fff6f5}.tday b{color:#173f36}
+.money3{display:flex;gap:10px;flex-wrap:wrap}.money3>div{flex:1;min-width:120px;background:#fff;border:1px solid #eadcc6;border-radius:12px;padding:10px;text-align:center}
+.money3 .n{font-size:22px;font-weight:bold}</style>
+<h1>{{ page_icon() }}ملف المتكوّن: {{ cl.name }}</h1>
+<div class="card">
+<div class="row" style="justify-content:space-between"><div class="mut">{% if cl.phone %}<span dir="ltr">{{ cl.phone }}</span> · {% endif %}{{ ens|rejectattr('status','equalto','withdrawn')|list|length }} دورة · {{ total_days }} أيام</div>
+<div class="row">{% if done %}<a class="btn gold" href="{{ url_for('trainee_certificate', client_id=cl.id) }}">🎓 الشهادة ({{ done|map(attribute='cname')|join(' + ') }})</a>{% endif %}
+<a class="btn light sm" href="{{ url_for('client_view', cid=cl.id) }}">ملف الزبون</a></div></div>
+<div class="money3" style="margin-top:12px"><div><div class="mut">المجموع</div><div class="n">{{ due|money }}</div></div>
+<div><div class="mut">المدفوع</div><div class="n" style="color:#2a6153">{{ paid|money }}</div></div>
+<div style="{{ 'border-color:#e4ab74' if due-paid>0.001 }}"><div class="mut">الباقي</div><div class="n" style="color:{{ '#b3261e' if due-paid>0.001 else '#2a6153' }}">{{ (due-paid)|money }}</div></div></div>
+{% if due - paid > 0.001 %}<form method="post" class="row" style="margin-top:12px"><input type="hidden" name="action" value="pay">
+<label>دفعة / تسبيق ({{ cur }})<input name="amount" required style="width:120px"></label>
+<label>طريقة الدفع<select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
+<label>البيان (اختياري)<input name="note" placeholder="مثلاً: دفعة اليوم 2" style="width:200px"></label><button class="btn gold">تسجيل الدفعة وطباعة الوصل</button></form>{% endif %}</div>
+
+{% for t in ens %}<div class="card {{ 'cx' if t.status=='withdrawn' }}">
+<div class="row" style="justify-content:space-between"><h2 style="margin:0">{{ loop.index }}. {{ t.cname }}</h2>
+<div class="row"><span class="mut">{{ t.branch }}</span>
+<form method="post"><input type="hidden" name="action" value="status"><input type="hidden" name="tid" value="{{ t.id }}">
+<select name="status" onchange="this.form.submit()">{% for k,v in TRAINEE_STATUS.items() %}<option value="{{ k }}" {{ 'selected' if t.status==k }}>{{ v }}</option>{% endfor %}</select></form></div></div>
+<div class="mut" style="margin:6px 0">السعر: {% if not locked %}<form method="post" style="display:inline-flex;gap:3px"><input type="hidden" name="action" value="price"><input type="hidden" name="tid" value="{{ t.id }}"><input name="price" value="{{ '%g'|format(t.price) }}" style="width:90px"><button class="btn light sm">✓</button></form>{% else %}<b>{{ t.price|money }}</b>{% endif %} {{ cur }}
+· المدفوع منه: <b>{{ t.paid|money }}</b>{% if t.price - t.paid > 0.001 and t.status!='withdrawn' %} · الباقي: <span class="tag amber">{{ (t.price - t.paid)|money }}</span>{% endif %}
+· سُجّل في {{ (t.enrolled_at or '')[:10]|dmy }}</div>
+<div>{% for d in t.daylist %}<form method="post" class="tday {{ 'p' if d.status=='present' else ('a' if d.status=='absent' else '') }}">
+<input type="hidden" name="action" value="day"><input type="hidden" name="tid" value="{{ t.id }}"><input type="hidden" name="did" value="{{ d.id }}">
+<b>اليوم {{ d.day_no }}</b><input type="date" name="day_date" value="{{ d.day_date or '' }}">
+<select name="status"><option value="">—</option><option value="present" {{ 'selected' if d.status=='present' }}>حضر</option><option value="absent" {{ 'selected' if d.status=='absent' }}>غاب</option></select>
+<input name="note" value="{{ d.note or '' }}" placeholder="ملاحظة"><button class="btn sm">حفظ</button></form>{% endfor %}
+{% if t.status!='withdrawn' %}<form method="post" style="display:inline"><input type="hidden" name="action" value="add_day"><input type="hidden" name="tid" value="{{ t.id }}"><button class="btn light sm">＋ يوم</button></form>{% endif %}</div>
+</div>{% else %}<div class="card mut">لم يُسجَّل في أي دورة بعد.</div>{% endfor %}
+
+<div class="card"><h2>＋ إضافة دورة</h2>
+<p class="mut">مثلاً: أكمل الحجامة (يومان) ويريد الليزر (يوم): تُضاف هنا بسعرها، ويصبح المجموع والأيام محسوبين معًا.</p>
+<form method="post" class="row"><input type="hidden" name="action" value="enroll">
+<label>الدورة<select name="course_id" required><option value="">— اختاري —</option>{% for co in open_courses %}<option value="{{ co.id }}">{{ co.name }} — {{ co.days or 1 }} يوم — {{ co.price|money }} {{ cur }} ({{ co.branch }})</option>{% endfor %}</select></label>
+{% if not locked %}<label>السعر لهذا المتكوّن (اختياري)<input name="price" style="width:110px"></label>{% endif %}
+<label>تسبيق الآن ({{ cur }})<input name="advance" style="width:110px" placeholder="0"></label>
+<label>طريقة الدفع<select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
+<button class="btn">تسجيل</button></form></div>
+
+<div class="card"><h2>الدفعات والتسبيقات</h2><table><tr><th>الوصل</th><th>التاريخ</th><th>البيان</th><th>المبلغ</th><th>قبضها</th></tr>
+{% for p in pays %}<tr><td><a href="{{ url_for('receipt', pid=p.id) }}">{{ p.id|rid }}</a></td><td>{{ p.created_at[:16] }}</td><td>{{ p.description }}</td><td><b>{{ p.amount|money }}</b></td><td>{{ p.by_name or '' }}</td></tr>
+{% else %}<tr><td colspan="5" class="mut">لا توجد دفعات بعد</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
 TEMPLATES["course_view.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box with context %}{% block body %}
 <h1>{{ page_icon() }}{{ c.name }}</h1>
@@ -1519,14 +1575,14 @@ TEMPLATES["course_view.html"] = r"""{% extends "base.html" %}{% from "macros.htm
 <div class="card"><h2>المتكونون</h2>
 <table><tr><th>الاسم</th><th>الهاتف</th><th>السعر</th><th>المدفوع</th><th>الباقي</th><th>دفع</th><th>الحالة</th><th>الشهادة</th></tr>
 {% for t in rows %}{% set rest = t.price - t.paid %}<tr class="{{ 'cx' if t.status=='withdrawn' }}">
-<td><a href="{{ url_for('client_view', cid=t.client_id) }}">{{ t.name }}</a></td><td>{{ t.phone or '' }}</td>
+<td><a href="{{ url_for('trainee_file', client_id=t.client_id) }}"><b>{{ t.name }}</b></a></td><td>{{ t.phone or '' }}</td>
 <td>{% if not locked %}<form method="post" style="display:inline-flex;gap:3px"><input type="hidden" name="action" value="price"><input type="hidden" name="tid" value="{{ t.id }}"><input name="price" value="{{ '%g'|format(t.price) }}" style="width:80px"><button class="btn light sm">✓</button></form>{% else %}{{ t.price|money }}{% endif %}</td>
 <td>{{ t.paid|money }}</td><td>{% if rest > 0 %}<span class="tag amber">{{ rest|money }}</span>{% else %}<span class="tag">خالص</span>{% endif %}</td>
 <td>{% if rest > 0 and t.status!='withdrawn' %}<form method="post" style="display:inline-flex;gap:3px"><input type="hidden" name="action" value="pay"><input type="hidden" name="tid" value="{{ t.id }}">
 <input name="amount" value="{{ '%g'|format(rest) }}" style="width:85px"><select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select><button class="btn sm">دفع</button></form>{% endif %}</td>
 <td><form method="post"><input type="hidden" name="action" value="status"><input type="hidden" name="tid" value="{{ t.id }}">
 <select name="status" onchange="this.form.submit()">{% for k,v in TRAINEE_STATUS.items() %}<option value="{{ k }}" {{ 'selected' if t.status==k }}>{{ v }}</option>{% endfor %}</select></form></td>
-<td>{% if t.status=='completed' %}<a class="btn gold sm" href="{{ url_for('certificate', tid=t.id) }}">الشهادة</a>{% if t.cert_printed_at %} <span class="mut">طُبعت</span>{% endif %}{% else %}<span class="mut">بعد إكمال الدورة</span>{% endif %}</td></tr>
+<td>{% if t.status=='completed' %}<a class="btn gold sm" href="{{ url_for('trainee_certificate', client_id=t.client_id) }}">الشهادة</a>{% if t.cert_printed_at %} <span class="mut">طُبعت</span>{% endif %}{% else %}<span class="mut">بعد إكمال الدورة</span>{% endif %}</td></tr>
 {% else %}<tr><td colspan="8" class="mut">لا يوجد متكونون بعد</td></tr>{% endfor %}</table>
 <p class="mut">يمكن الدفع على عدة أقساط: اكتب المبلغ المدفوع الآن. كل دفعة تدخل الصندوق بوصل.</p>
 {% if c.status=='open' %}<form method="post" onsubmit="return confirm('إنهاء الدورة؟ كل المسجّلين يصبحون «أكمل الدورة»')"><input type="hidden" name="action" value="finish"><button class="btn gold">إنهاء الدورة (كل المسجّلين أكملوا)</button></form>{% endif %}</div>
@@ -1534,6 +1590,7 @@ TEMPLATES["course_view.html"] = r"""{% extends "base.html" %}{% from "macros.htm
 {% if not locked %}<div class="card"><h2>تعديل الدورة</h2><form method="post" class="row"><input type="hidden" name="action" value="edit">
 <label>الاسم<input name="name" value="{{ c.name }}" style="width:240px"></label><label>السعر<input name="price" value="{{ '%g'|format(c.price) }}" style="width:100px"></label>
 <label>من<input type="date" name="start_date" value="{{ c.start_date or '' }}"></label><label>إلى<input type="date" name="end_date" value="{{ c.end_date or '' }}"></label>
+<label>الأيام<input name="days" value="{{ c.days or 1 }}" style="width:60px"></label>
 <label>الساعات<input name="hours" value="{{ '%g'|format(c.hours) if c.hours else '' }}" style="width:70px"></label><label>المكوّن<input name="trainer" value="{{ c.trainer or '' }}"></label>
 <label>الحالة<select name="status">{% for k,v in COURSE_STATUS.items() %}<option value="{{ k }}" {{ 'selected' if c.status==k }}>{{ v }}</option>{% endfor %}</select></label>
 <label>ملاحظات<input name="notes" value="{{ c.notes or '' }}"></label><button class="btn light">حفظ</button></form></div>{% endif %}

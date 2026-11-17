@@ -138,6 +138,8 @@ CREATE TABLE IF NOT EXISTS purchase_items(id INTEGER PRIMARY KEY, purchase_id IN
     qty REAL, unit_cost REAL);
 CREATE TABLE IF NOT EXISTS cancelled_ops(id INTEGER PRIMARY KEY, kind TEXT, ref_id INTEGER, branch_id INTEGER, day TEXT,
     summary TEXT, amount REAL DEFAULT 0, reason TEXT, requested_by INTEGER, done_by INTEGER, created_at TEXT, data TEXT);
+CREATE TABLE IF NOT EXISTS course_days(id INTEGER PRIMARY KEY, trainee_id INTEGER, day_no INTEGER, day_date TEXT,
+    status TEXT, note TEXT, created_by INTEGER, created_at TEXT);
 CREATE TABLE IF NOT EXISTS skin_cards(id INTEGER PRIMARY KEY, client_id INTEGER, skin_type TEXT, phototype TEXT,
     concerns TEXT, contra TEXT, sensitivities TEXT, routine TEXT, notes TEXT, updated_by INTEGER, updated_at TEXT);
 CREATE TABLE IF NOT EXISTS service_materials(id INTEGER PRIMARY KEY, service_id INTEGER, product_id INTEGER, qty REAL DEFAULT 1);
@@ -307,6 +309,7 @@ def init_db():
     add_col("appointments", "morning_sent_at", "TEXT")
     add_col("sms_log", "client_id", "INTEGER")
     add_col("services", "category", "TEXT")
+    add_col("courses", "days", "INTEGER")
     add_col("services", "aftercare", "TEXT")
     add_col("users", "lang", "TEXT")
     add_col("stock_moves", "cancelled", "INTEGER DEFAULT 0")
@@ -3152,11 +3155,42 @@ def course_or_404(cid):
     return c
 
 
+def trainee_alloc(db, client_id):
+    """ملف المتكوّن: كل دفعاته (تسبيقات ودفعات) توزَّع على دوراته بالترتيب، الأقدم أولًا."""
+    ens = db.execute("""SELECT t.id, t.price, t.status FROM course_trainees t WHERE t.client_id=?
+        ORDER BY t.enrolled_at, t.id""", (client_id,)).fetchall()
+    ids = [e["id"] for e in ens]
+    if not ids:
+        return {}, 0, 0
+    q = ",".join("?" * len(ids))
+    paid_total = db.execute(f"SELECT COALESCE(SUM(amount),0) FROM payments WHERE cancelled=0 AND enroll_id IN ({q})",
+                            ids).fetchone()[0]
+    left, out, due = paid_total, {}, 0
+    active = [e for e in ens if e["status"] != "withdrawn"]
+    for e in active:
+        take = min(left, e["price"] or 0)
+        out[e["id"]] = take
+        left -= take
+        due += e["price"] or 0
+    if left > 0 and active:  # زيادة (مثلاً بعد تخفيض السعر): تظهر على آخر دورة
+        out[active[-1]["id"]] += left
+    for e in ens:
+        out.setdefault(e["id"], 0)
+    return out, due, paid_total
+
+
 def trainees_of(cid):
-    return get_db().execute("""SELECT t.*, c.name, c.phone, c.birth_date, c.gender,
-        (SELECT COALESCE(SUM(amount),0) FROM payments p WHERE p.enroll_id=t.id AND p.cancelled=0) AS paid
-        FROM course_trainees t JOIN clients c ON c.id=t.client_id WHERE t.course_id=? ORDER BY c.name""",
-                            (cid,)).fetchall()
+    db = get_db()
+    rows = [dict(r) for r in db.execute("""SELECT t.*, c.name, c.phone, c.birth_date, c.gender
+        FROM course_trainees t JOIN clients c ON c.id=t.client_id WHERE t.course_id=? ORDER BY c.name""", (cid,))]
+    for r in rows:
+        r["paid"] = trainee_alloc(db, r["client_id"])[0].get(r["id"], 0)
+    return rows
+
+
+def make_course_days(db, tid, n):
+    for k in range(1, (n or 1) + 1):
+        db.execute("INSERT INTO course_days(trainee_id,day_no,created_at) VALUES(?,?,?)", (tid, k, now_str()))
 
 
 @app.route("/courses", methods=["GET", "POST"])
@@ -3172,11 +3206,12 @@ def courses():
         if not name:
             flash("اكتب اسم الدورة", "err")
             return redirect(url_for("courses"))
-        cid = db.execute("""INSERT INTO courses(branch_id,name,price,start_date,end_date,hours,trainer,notes,created_by,created_at)
-            VALUES(?,?,?,?,?,?,?,?,?,?)""", (u["branch_id"] or int(f.get("branch_id") or work_branch()), name,
+        cid = db.execute("""INSERT INTO courses(branch_id,name,price,start_date,end_date,hours,trainer,notes,created_by,created_at,days)
+            VALUES(?,?,?,?,?,?,?,?,?,?,?)""", (u["branch_id"] or int(f.get("branch_id") or work_branch()), name,
                                              fnum(f.get("price")), f.get("start_date") or None, f.get("end_date") or None,
                                              fnum(f.get("hours")) or None, f.get("trainer", "").strip(),
-                                             f.get("notes", "").strip(), u["id"], now_str())).lastrowid
+                                             f.get("notes", "").strip(), u["id"], now_str(),
+                                             int(fnum(f.get("days")) or 1))).lastrowid
         db.commit()
         flash("تم إنشاء الدورة. سجّل المتكونين فيها.", "ok")
         return redirect(url_for("course_view", cid=cid))
@@ -3188,7 +3223,17 @@ def courses():
         q += " AND co.branch_id=?"
         args.append(br)
     rows = db.execute(q + " ORDER BY co.status='finished', co.start_date DESC, co.id DESC", args).fetchall()
-    return render_template("courses.html", rows=rows, br=br)
+    files = []
+    fq = """SELECT DISTINCT t.client_id, c.name, c.phone FROM course_trainees t JOIN clients c ON c.id=t.client_id
+        JOIN courses co ON co.id=t.course_id WHERE 1=1"""
+    if br:
+        fq += " AND co.branch_id=?"
+    for r in db.execute(fq + " ORDER BY c.name", [br] if br else []):
+        _, due, paid = trainee_alloc(db, r["client_id"])
+        cs = db.execute("""SELECT co.name, t.status FROM course_trainees t JOIN courses co ON co.id=t.course_id
+            WHERE t.client_id=? AND t.status<>'withdrawn' ORDER BY t.enrolled_at""", (r["client_id"],)).fetchall()
+        files.append(dict(cid=r["client_id"], name=r["name"], phone=r["phone"], courses=cs, due=due, paid=paid))
+    return render_template("courses.html", rows=rows, br=br, files=files)
 
 
 @app.route("/courses/<int(signed=True):cid>", methods=["GET", "POST"])
@@ -3203,6 +3248,7 @@ def course_view(cid):
         if act == "edit":
             if price_locked(u):
                 abort(403)
+            db.execute("UPDATE courses SET days=? WHERE id=?", (int(fnum(f.get("days")) or 1), cid))
             db.execute("""UPDATE courses SET name=?,price=?,start_date=?,end_date=?,hours=?,trainer=?,notes=?,status=?
                 WHERE id=?""", (f.get("name", "").strip() or c["name"], fnum(f.get("price")), f.get("start_date") or None,
                                 f.get("end_date") or None, fnum(f.get("hours")) or None, f.get("trainer", "").strip(),
@@ -3217,8 +3263,9 @@ def course_view(cid):
                 flash("هذا الشخص مسجّل في الدورة مسبقًا", "err")
             else:
                 price = c["price"] if price_locked(u) or not f.get("price") else fnum(f.get("price"))
-                db.execute("""INSERT INTO course_trainees(course_id,client_id,price,enrolled_at,created_by)
-                    VALUES(?,?,?,?,?)""", (cid, int(cl), price, now_str(), u["id"]))
+                tid = db.execute("""INSERT INTO course_trainees(course_id,client_id,price,enrolled_at,created_by)
+                    VALUES(?,?,?,?,?)""", (cid, int(cl), price, now_str(), u["id"])).lastrowid
+                make_course_days(db, tid, c["days"])
                 flash("تم التسجيل في الدورة", "ok")
         elif act == "pay":
             t = db.execute("SELECT t.*, (SELECT COALESCE(SUM(amount),0) FROM payments p WHERE p.enroll_id=t.id AND p.cancelled=0) AS paid "
@@ -3226,8 +3273,8 @@ def course_view(cid):
             amount = fnum(f.get("amount"))
             if not t or amount <= 0:
                 flash("أدخل المبلغ المدفوع", "err")
-            elif amount > round(t["price"] - t["paid"], 2) + 0.001:
-                flash(f"المبلغ أكبر من الباقي ({t['price'] - t['paid']:g})", "err")
+            elif amount > round(trainee_alloc(db, t["client_id"])[1] - trainee_alloc(db, t["client_id"])[2], 2) + 0.001:
+                flash("المبلغ أكبر من الباقي على المتكوّن", "err")
             else:
                 pid = make_payment(db, c["branch_id"], t["client_id"], amount, f.get("method", "cash"), "course",
                                    f"دورة: {c['name']}", u["id"])
@@ -3257,6 +3304,183 @@ def course_view(cid):
     if request.args.get("client_id"):
         sel_client = db.execute("SELECT id,name,phone FROM clients WHERE id=?", (request.args["client_id"],)).fetchone()
     return render_template("course_view.html", c=c, rows=rows, tot=tot, sel_client=sel_client)
+
+
+@app.route("/trainees/<int(signed=True):client_id>", methods=["GET", "POST"])
+@perm_required("courses")
+def trainee_file(client_id):
+    """ملف المتكوّن: كل دوراته (حجامة ثم ليزر...) وأيامها ودفعاته في مكان واحد."""
+    db = get_db()
+    u = current_user()
+    cl = db.execute("SELECT * FROM clients WHERE id=?", (client_id,)).fetchone() or abort(404)
+    if request.method == "POST":
+        f = request.form
+        act = f.get("action")
+        tid = f.get("tid")
+        own = db.execute("SELECT t.*, co.days, co.name AS cname, co.branch_id FROM course_trainees t JOIN courses co ON co.id=t.course_id "
+                         "WHERE t.id=? AND t.client_id=?", (tid, client_id)).fetchone() if tid else None
+        if act == "enroll":
+            co = db.execute("SELECT * FROM courses WHERE id=?", (f.get("course_id"),)).fetchone()
+            if not co:
+                flash("اختاري الدورة", "err")
+                return redirect(url_for("trainee_file", client_id=client_id))
+            if db.execute("SELECT 1 FROM course_trainees WHERE course_id=? AND client_id=? AND status<>'withdrawn'",
+                          (co["id"], client_id)).fetchone():
+                flash("مسجّل في هذه الدورة مسبقًا", "err")
+                return redirect(url_for("trainee_file", client_id=client_id))
+            price = co["price"] if price_locked(u) or not f.get("price") else fnum(f.get("price"))
+            tid = db.execute("""INSERT INTO course_trainees(course_id,client_id,price,enrolled_at,created_by)
+                VALUES(?,?,?,?,?)""", (co["id"], client_id, price, now_str(), u["id"])).lastrowid
+            make_course_days(db, tid, co["days"])
+            adv = fnum(f.get("advance"))
+            audit("تسجيل في دورة", f"{cl['name']}: {co['name']} ({price:g})")
+            if adv > 0:
+                if adv > price + 0.001:
+                    db.commit()
+                    flash("سُجّل في الدورة، لكن التسبيق أكبر من سعرها فلم يُسجَّل", "err")
+                    return redirect(url_for("trainee_file", client_id=client_id))
+                pid = make_payment(db, co["branch_id"], client_id, adv, f.get("method", "cash"), "course",
+                                   f"تسبيق دورة: {co['name']}", u["id"])
+                db.execute("UPDATE payments SET enroll_id=? WHERE id=?", (tid, pid))
+                db.commit()
+                flash(f"تم التسجيل في «{co['name']}» وتسجيل التسبيق", "ok")
+                return redirect(url_for("receipt", pid=pid))
+            db.commit()
+            flash(f"تم التسجيل في «{co['name']}»", "ok")
+        elif act == "pay":
+            alloc, due, paid = trainee_alloc(db, client_id)
+            amount = fnum(f.get("amount"))
+            rest = round(due - paid, 2)
+            if amount <= 0:
+                flash("اكتبي المبلغ", "err")
+            elif amount > rest + 0.001:
+                flash(f"المبلغ أكبر من الباقي ({rest:g})", "err")
+            else:
+                ens = db.execute("""SELECT t.id, t.price, co.name, co.branch_id FROM course_trainees t JOIN courses co ON co.id=t.course_id
+                    WHERE t.client_id=? AND t.status<>'withdrawn' ORDER BY t.enrolled_at, t.id""", (client_id,)).fetchall()
+                target = next((e for e in ens if alloc.get(e["id"], 0) < (e["price"] or 0) - 0.001), ens[-1])
+                label = (f.get("note") or "").strip() or "دفعة"
+                pid = make_payment(db, target["branch_id"], client_id, amount, f.get("method", "cash"), "course",
+                                   f"دورة: {'، '.join(e['name'] for e in ens)} — {label}", u["id"])
+                db.execute("UPDATE payments SET enroll_id=? WHERE id=?", (target["id"], pid))
+                db.commit()
+                flash("تم تسجيل الدفعة", "ok")
+                return redirect(url_for("receipt", pid=pid))
+        elif act == "day" and own:
+            st = f.get("status") if f.get("status") in ("present", "absent", "") else ""
+            db.execute("UPDATE course_days SET day_date=?, status=?, note=? WHERE id=? AND trainee_id=?",
+                       (f.get("day_date") or None, st or None, (f.get("note") or "").strip() or None, f.get("did"), own["id"]))
+            days = db.execute("SELECT status FROM course_days WHERE trainee_id=?", (own["id"],)).fetchall()
+            if days and all(d["status"] == "present" for d in days) and own["status"] == "enrolled":
+                db.execute("UPDATE course_trainees SET status='completed', completed_at=? WHERE id=?", (now_str(), own["id"]))
+                flash(f"حضر كل أيام «{own['cname']}»: أكمل الدورة", "ok")
+        elif act == "add_day" and own:
+            n = db.execute("SELECT COALESCE(MAX(day_no),0) FROM course_days WHERE trainee_id=?", (own["id"],)).fetchone()[0]
+            db.execute("INSERT INTO course_days(trainee_id,day_no,created_at) VALUES(?,?,?)", (own["id"], n + 1, now_str()))
+        elif act == "del_day" and own:
+            db.execute("DELETE FROM course_days WHERE id=? AND trainee_id=? AND status IS NULL", (f.get("did"), own["id"]))
+        elif act == "status" and own and f.get("status") in TRAINEE_STATUS:
+            st = f.get("status")
+            db.execute("UPDATE course_trainees SET status=?, completed_at=? WHERE id=?",
+                       (st, now_str() if st == "completed" else None, own["id"]))
+        elif act == "price" and own and not price_locked(u):
+            db.execute("UPDATE course_trainees SET price=? WHERE id=?", (fnum(f.get("price")), own["id"]))
+            audit("تعديل سعر دورة لمتكوّن", f"{cl['name']}: {own['cname']} → {fnum(f.get('price')):g}")
+        db.commit()
+        return redirect(url_for("trainee_file", client_id=client_id))
+    alloc, due, paid = trainee_alloc(db, client_id)
+    ens = []
+    for t in db.execute("""SELECT t.*, co.name AS cname, co.days, co.hours, co.trainer, b.name AS branch, co.branch_id
+            FROM course_trainees t JOIN courses co ON co.id=t.course_id JOIN branches b ON b.id=co.branch_id
+            WHERE t.client_id=? ORDER BY t.enrolled_at, t.id""", (client_id,)):
+        t = dict(t)
+        t["paid"] = alloc.get(t["id"], 0)
+        t["daylist"] = db.execute("SELECT * FROM course_days WHERE trainee_id=? ORDER BY day_no", (t["id"],)).fetchall()
+        if not t["daylist"] and t["status"] == "enrolled":  # تسجيل قديم قبل نظام الأيام
+            make_course_days(db, t["id"], t["days"])
+            db.commit()
+            t["daylist"] = db.execute("SELECT * FROM course_days WHERE trainee_id=? ORDER BY day_no", (t["id"],)).fetchall()
+        ens.append(t)
+    pays = db.execute(f"""SELECT p.*, us.full_name AS by_name FROM payments p LEFT JOIN users us ON us.id=p.received_by
+        WHERE p.cancelled=0 AND p.enroll_id IN (SELECT id FROM course_trainees WHERE client_id=?) ORDER BY p.id""",
+                      (client_id,)).fetchall()
+    open_courses = db.execute("SELECT co.*, b.name AS branch FROM courses co JOIN branches b ON b.id=co.branch_id "
+                              "WHERE co.status='open' ORDER BY co.name").fetchall()
+    total_days = sum(len(t["daylist"]) for t in ens if t["status"] != "withdrawn")
+    return render_template("trainee_file.html", cl=cl, ens=ens, pays=pays, due=due, paid=paid,
+                           open_courses=open_courses, total_days=total_days,
+                           done=[t for t in ens if t["status"] == "completed"])
+
+
+@app.route("/trainees/open")
+@perm_required("courses")
+def trainee_open():
+    s = request.args.get("q", "").strip()
+    db = get_db()
+    r = db.execute("""SELECT id FROM clients WHERE name LIKE ? OR phone LIKE ?
+        ORDER BY (id IN (SELECT client_id FROM course_trainees)) DESC, name LIMIT 1""", (f"%{s}%", f"%{s}%")).fetchone()
+    if not r:
+        flash("لم يُعثر على هذا الشخص. سجّليه أولًا كزبون ثم افتحي ملفه.", "err")
+        return redirect(url_for("courses"))
+    return redirect(url_for("trainee_file", client_id=r["id"]))
+
+
+def joined(names):
+    names = [n for n in names if n]
+    return names[0] if len(names) == 1 else "، ".join(names[:-1]) + " و" + names[-1] if names else ""
+
+
+@app.route("/trainees/<int(signed=True):client_id>/certificate", methods=["GET", "POST"])
+@perm_required("courses")
+def trainee_certificate(client_id):
+    """شهادة واحدة لكل الدورات التي أكملها المتكوّن (مثلاً الحجامة والليزر)."""
+    db = get_db()
+    rows = db.execute("""SELECT t.*, co.name AS cname, co.hours, co.trainer, co.start_date, co.end_date, co.branch_id,
+        b.name AS branch, c.name, c.birth_date, c.gender FROM course_trainees t JOIN courses co ON co.id=t.course_id
+        JOIN branches b ON b.id=co.branch_id JOIN clients c ON c.id=t.client_id
+        WHERE t.client_id=? AND t.status='completed' ORDER BY t.enrolled_at, t.id""", (client_id,)).fetchall()
+    if not rows:
+        flash("لا توجد دورة مكتملة بعد لهذا المتكوّن", "err")
+        return redirect(url_for("trainee_file", client_id=client_id))
+    last = rows[-1]
+    if request.method == "POST":
+        act = request.form.get("action")
+        if act == "reset":
+            db.execute("UPDATE course_trainees SET cert_title=NULL, cert_body=NULL, cert_footer=NULL WHERE id=?", (last["id"],))
+            flash("رجع نص الشهادة إلى النص الافتراضي", "ok")
+        elif act == "printed":
+            db.execute(f"UPDATE course_trainees SET cert_printed_at=? WHERE id IN ({','.join('?' * len(rows))})",
+                       [now_str()] + [r["id"] for r in rows])
+            db.commit()
+            return {"ok": True}
+        else:
+            db.execute("UPDATE course_trainees SET cert_title=?, cert_body=?, cert_footer=? WHERE id=?",
+                       (request.form.get("title", "").strip(), request.form.get("body", "").strip(),
+                        request.form.get("footer", "").strip(), last["id"]))
+            flash("تم حفظ تعديلات الشهادة", "ok")
+        db.commit()
+        return redirect(url_for("trainee_certificate", client_id=client_id))
+    dates = []
+    for r in rows:
+        ds = [d["day_date"] for d in db.execute("SELECT day_date FROM course_days WHERE trainee_id=? AND day_date IS NOT NULL", (r["id"],))]
+        dates += ds or [x for x in (r["start_date"], r["end_date"], (r["enrolled_at"] or "")[:10], (r["completed_at"] or "")[:10]) if x]
+    dates = sorted(d[:10] for d in dates if d)
+    hours = sum(r["hours"] or 0 for r in rows)
+    trainers = []
+    for r in rows:
+        if r["trainer"] and r["trainer"] not in trainers:
+            trainers.append(r["trainer"])
+    c = dict(id=last["course_id"], name=joined([r["cname"] for r in rows]), start_date=dates[0] if dates else None,
+             end_date=dates[-1] if dates else None, hours=hours or None, trainer=" و".join(trainers) or None,
+             branch=last["branch"])
+    t = dict(last)
+    t["completed_at"] = max(r["completed_at"] or "" for r in rows) or None
+    _, t["price"], t["paid"] = trainee_alloc(db, client_id)
+    txt = cert_texts(c, t)
+    return render_template("certificate.html", c=c, t=t, txt=txt,
+                           stamp=setting("stamp_img"), signature=setting("signature_img"),
+                           signer=setting("cert_signer") or DEFAULT_SETTINGS["cert_signer"],
+                           cert_no=f"{(t['completed_at'] or now_str())[:4]}/{rid_filter(t['id'])}")
 
 
 def fmt_date(d):
@@ -4556,7 +4780,7 @@ def backup_mkdir():
 
 # ---------------------------------------------------------------- مسح كل البيانات (الرجوع من الصفر)
 RESET_ALWAYS = ["visit_items", "visits", "sale_items", "charges", "payments", "appointments", "plans", "client_notes",
-                "client_photos", "skin_cards", "clients", "course_trainees", "courses", "expenses", "purchase_items",
+                "client_photos", "skin_cards", "clients", "course_days", "course_trainees", "courses", "expenses", "purchase_items",
                 "purchases", "stock_moves", "approvals", "cancelled_ops", "cash_days", "sms_log", "audit"]
 RESET_STAFF = ["grants", "attendance", "employees"]
 RESET_CATALOG = ["service_materials", "stock", "products", "services", "suppliers"]
