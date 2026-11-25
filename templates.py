@@ -1734,19 +1734,29 @@ TEMPLATES["course_view.html"] = r"""{% extends "base.html" %}{% from "macros.htm
 <div><span class="tag amber">{{ COURSE_STATUS[c.status] }}</span></div></div>
 <div class="stat"><div class="l">سعر الدورة</div><div class="n">{{ c.price|money }} {{ cur }}</div></div>
 <div class="stat"><div class="l">المتكونون</div><div class="n">{{ rows|rejectattr('status','equalto','withdrawn')|list|length }}</div><div class="mut">أكملوا: {{ rows|selectattr('status','equalto','completed')|list|length }}</div></div>
-<div class="stat"><div class="l">المحصّل / الباقي</div><div class="n" style="font-size:20px">{{ tot.paid|money }} / {{ (tot.price - tot.paid)|money }}</div></div></div>
+<div class="stat"><div class="l">المحصّل</div><div class="n" style="color:#1d7a3a">{{ tot.paid|money }} {{ cur }}</div><div class="mut">من أصل {{ tot.price|money }}</div></div>
+<div class="stat"><div class="l">الباقي على المتكونين</div><div class="n" style="color:{{ '#b5541c' if tot.price - tot.paid > 0.001 else '#1d7a3a' }}">{{ (tot.price - tot.paid)|money }} {{ cur }}</div></div></div>
 
 <div class="card"><h2>تسجيل متكوّن</h2>
-<form method="post" class="row"><input type="hidden" name="action" value="enroll">{{ client_picker(sel_client, True) }}
-{% if not locked %}<label>السعر لهذا المتكوّن<input name="price" placeholder="{{ '%g'|format(c.price) }}" style="width:110px"></label>{% endif %}
-<button class="btn">تسجيل</button></form></div>
+<form method="post" id="enf"><input type="hidden" name="action" value="enroll"><div class="row">{{ client_picker(sel_client, True) }}</div>
+<p style="margin:12px 0 6px"><b>ماذا سيتكوّن؟</b> <span class="mut">اختر تكوينًا واحدًا أو أكثر، ولكل تكوين سعره.</span></p>
+<table class="enc"><tr><th></th><th>التكوين</th><th>المدة</th><th>السعر</th></tr>
+{% for k in choices %}<tr><td><input type="checkbox" name="course_ids" value="{{ k.id }}" {{ 'checked' if k.id==c.id }} style="width:auto" onchange="enTot()"></td>
+<td><b>{{ k.name }}</b>{% if k.id==c.id %} <span class="mut">(هذه الدورة)</span>{% endif %}</td>
+<td class="mut">{{ k.days or 1 }} يوم{% if k.start_date %} · من {{ k.start_date }}{% endif %}</td>
+<td>{% if not locked %}<input name="price_{{ k.id }}" value="{{ '%g'|format(k.price) }}" style="width:100px" oninput="enTot()">{% else %}<span data-p="{{ k.price }}">{{ k.price|money }}</span>{% endif %}</td></tr>{% endfor %}
+<tr><td></td><td><b>المجموع</b></td><td></td><td><b id="entot">0</b> {{ cur }}</td></tr></table>
+<div class="row" style="margin-top:10px"><label>تسبيق الآن (اختياري)<input name="advance" placeholder="0" style="width:110px"></label>
+<label>طريقة الدفع<select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>
+<button class="btn">تسجيل</button></div></form>
+<script>function enTot(){let t=0;document.querySelectorAll('#enf .enc tr').forEach(r=>{const cb=r.querySelector('input[type=checkbox]');if(!cb||!cb.checked)return;const i=r.querySelector('input[name^=price_]'),sp=r.querySelector('[data-p]');t+=parseFloat(((i&&i.value)||(sp&&sp.dataset.p)||'0').replace(',','.'))||0});document.getElementById('entot').textContent=t.toLocaleString('fr-FR')}enTot()</script></div>
 {{ new_client_box(request.path) }}
 
 <div class="card"><h2>المتكونون</h2>
 <table><tr><th>الاسم</th><th>الهاتف</th><th>السعر</th><th>المدفوع</th><th>الباقي</th><th>دفع</th><th>الحالة</th><th>الشهادة</th></tr>
 {% for t in rows %}{% set rest = t.price - t.paid %}<tr class="{{ 'cx' if t.status=='withdrawn' }}">
 <td><a href="{{ url_for('trainee_file', client_id=t.client_id) }}"><b>{{ t.name }}</b></a></td><td>{{ t.phone or '' }}</td>
-<td>{% if not locked %}<form method="post" style="display:inline-flex;gap:3px"><input type="hidden" name="action" value="price"><input type="hidden" name="tid" value="{{ t.id }}"><input name="price" value="{{ '%g'|format(t.price) }}" style="width:80px"><button class="btn light sm">✓</button></form>{% else %}{{ t.price|money }}{% endif %}</td>
+<td>{% if not locked %}<form method="post" style="display:inline-flex;gap:3px"><input type="hidden" name="action" value="price"><input type="hidden" name="tid" value="{{ t.id }}"><input name="price" value="{{ '%g'|format(t.price) }}" style="width:80px"><button class="btn light sm" title="حفظ السعر الجديد">حفظ</button></form>{% else %}{{ t.price|money }}{% endif %}</td>
 <td>{{ t.paid|money }}</td><td>{% if rest > 0 %}<span class="tag amber">{{ rest|money }}</span>{% else %}<span class="tag">خالص</span>{% endif %}</td>
 <td>{% if rest > 0 and t.status!='withdrawn' %}<form method="post" style="display:inline-flex;gap:3px"><input type="hidden" name="action" value="pay"><input type="hidden" name="tid" value="{{ t.id }}">
 <input name="amount" value="{{ '%g'|format(rest) }}" style="width:85px"><select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select><button class="btn sm">دفع</button></form>{% endif %}</td>

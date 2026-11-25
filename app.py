@@ -3592,16 +3592,47 @@ def course_view(cid):
             flash("تم حفظ الدورة", "ok")
         elif act == "enroll":
             cl = f.get("client_id")
-            if not cl:
+            # يختار له ما سيتكوّن فيه: هذه الدورة و/أو دورات أخرى جارية، ولكل تكوين سعره
+            picked = [int(x) for x in f.getlist("course_ids") if str(x).lstrip("-").isdigit()] or [cid]
+            if not cl or not db.execute("SELECT 1 FROM clients WHERE id=?", (cl,)).fetchone():
                 flash("اختر المتكوّن أو سجّله", "err")
-            elif db.execute("SELECT 1 FROM course_trainees WHERE course_id=? AND client_id=?", (cid, cl)).fetchone():
-                flash("هذا الشخص مسجّل في الدورة مسبقًا", "err")
             else:
-                price = c["price"] if price_locked(u) or not f.get("price") else fnum(f.get("price"))
-                tid = db.execute("""INSERT INTO course_trainees(course_id,client_id,price,enrolled_at,created_by)
-                    VALUES(?,?,?,?,?)""", (cid, int(cl), price, now_str(), u["id"])).lastrowid
-                make_course_days(db, tid, c["days"])
-                flash("تم التسجيل في الدورة", "ok")
+                cname = db.execute("SELECT name FROM clients WHERE id=?", (cl,)).fetchone()[0]
+                done, skipped, first_tid, total = [], [], None, 0
+                for kid in picked:
+                    co = db.execute("SELECT * FROM courses WHERE id=?", (kid,)).fetchone()
+                    if not co or (u["role"] != "admin" and co["branch_id"] != u["branch_id"]):
+                        continue
+                    if db.execute("SELECT 1 FROM course_trainees WHERE course_id=? AND client_id=? AND status<>'withdrawn'",
+                                  (kid, cl)).fetchone():
+                        skipped.append(co["name"])
+                        continue
+                    given = f.get(f"price_{kid}") or (f.get("price") if kid == cid else "") or ""
+                    price = co["price"] if price_locked(u) or not str(given).strip() else fnum(given)
+                    tid = db.execute("""INSERT INTO course_trainees(course_id,client_id,price,enrolled_at,created_by)
+                        VALUES(?,?,?,?,?)""", (kid, int(cl), price, now_str(), u["id"])).lastrowid
+                    make_course_days(db, tid, co["days"])
+                    audit("تسجيل في دورة", f"{cname}: {co['name']} ({price:g})")
+                    first_tid = first_tid or (tid, co)
+                    done.append(co["name"])
+                    total += price
+                if skipped:
+                    flash("مسجّل مسبقًا في: " + "، ".join(skipped), "err")
+                if done:
+                    adv = fnum(f.get("advance"))
+                    if adv > 0 and first_tid:
+                        _, due, paid = trainee_alloc(db, int(cl))
+                        if adv > round(due - paid, 2) + 0.001:
+                            db.commit()
+                            flash(f"تم التسجيل في: {'، '.join(done)}. لكن التسبيق أكبر من الباقي فلم يُسجَّل", "err")
+                            return redirect(url_for("course_view", cid=cid))
+                        pid = make_payment(db, first_tid[1]["branch_id"], int(cl), adv, f.get("method", "cash"), "course",
+                                           f"تسبيق دورة: {'، '.join(done)}", u["id"])
+                        db.execute("UPDATE payments SET enroll_id=? WHERE id=?", (first_tid[0], pid))
+                        db.commit()
+                        flash(f"تم التسجيل في: {'، '.join(done)} (المجموع {total:g}) وتسجيل التسبيق", "ok")
+                        return redirect(url_for("receipt", pid=pid))
+                    flash(f"تم التسجيل في: {'، '.join(done)} (المجموع {total:g})", "ok")
         elif act == "pay":
             t = db.execute("SELECT t.*, (SELECT COALESCE(SUM(amount),0) FROM payments p WHERE p.enroll_id=t.id AND p.cancelled=0) AS paid "
                            "FROM course_trainees t WHERE t.id=? AND t.course_id=?", (f.get("tid"), cid)).fetchone()
@@ -3638,7 +3669,10 @@ def course_view(cid):
     sel_client = None
     if request.args.get("client_id"):
         sel_client = db.execute("SELECT id,name,phone FROM clients WHERE id=?", (request.args["client_id"],)).fetchone()
-    return render_template("course_view.html", c=c, rows=rows, tot=tot, sel_client=sel_client)
+    # التكوينات التي يمكن اختيارها عند التسجيل: هذه الدورة أولًا ثم الدورات الجارية في الفرع نفسه
+    choices = [c] + db.execute("SELECT * FROM courses WHERE status='open' AND branch_id=? AND id<>? ORDER BY name",
+                               (c["branch_id"], cid)).fetchall()
+    return render_template("course_view.html", c=c, rows=rows, tot=tot, sel_client=sel_client, choices=choices)
 
 
 @app.route("/trainees/<int(signed=True):client_id>", methods=["GET", "POST"])
