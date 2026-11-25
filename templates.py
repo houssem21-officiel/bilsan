@@ -149,10 +149,12 @@ input,select,textarea{max-width:100%}input[style*="width"]{max-width:100%}
 <a href="{{ url_for('backup_page') }}">{{ ic('backup') }}النسخ الاحتياطي</a>
 <a href="{{ url_for('products') }}">{{ ic('products') }}المنتجات والمخزون</a>
 <a href="{{ url_for('stock_use') }}">{{ ic('cream') }}استهلاك مواد العمل</a>
+<a href="{{ url_for('day_report') }}">{{ ic('reports') }}تقرير اليوم (الورقة اليومية)</a>
 <a href="{{ url_for('month_report') }}">{{ ic('reports') }}تقرير الشهر (ورقة واحدة)</a>
 <a href="{{ url_for('operations') }}">{{ ic('audit') }}إلغاء العمليات</a>
 <a href="{{ url_for('cancelled_ops') }}">{{ ic('audit') }}العمليات الملغاة</a>
 <a href="{{ url_for('stock_manage') }}">{{ ic('products') }}إدارة المخزون (الجرد)</a>
+<a href="{{ url_for('stock_opening') }}">{{ ic('products') }}إدخال المخزون الموجود</a>
 <a href="{{ url_for('services_profit') }}">{{ ic('services') }}فائدة كل خدمة</a>
 <a href="{{ url_for('sessions_profit') }}">{{ ic('reports') }}فائدة كل حصة</a>
 <a href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات والموردون</a>
@@ -1678,7 +1680,7 @@ TEMPLATES["reports.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 <div class="card noprint"><form class="row"><label>الشهر<input type="month" name="month" value="{{ mm or '' }}"></label>
 <span class="mut">أو</span><label>من<input type="date" name="from" value="{{ d1 if not mm else '' }}"></label><label>إلى<input type="date" name="to" value="{{ d2 if not mm else '' }}"></label>
 {{ branch_filter(br) }}<button class="btn light">عرض</button><button type="button" class="btn gold" onclick="window.print()">طباعة</button>
-<a class="btn" href="{{ url_for('month_report', month=mm or d1[:7]) }}">تقرير الشهر في ورقة</a><a class="btn light" href="{{ url_for('services_profit', month=mm or None) }}">فائدة كل خدمة</a></form></div>
+<a class="btn" href="{{ url_for('day_report') }}">تقرير اليوم</a><a class="btn" href="{{ url_for('month_report', month=mm or d1[:7]) }}">تقرير الشهر في ورقة</a><a class="btn light" href="{{ url_for('services_profit', month=mm or None) }}">فائدة كل خدمة</a></form></div>
 <p class="mut">الفترة: {{ d1 }} ← {{ d2 }}</p>
 <div class="grid" style="margin-bottom:16px">
 <div class="stat"><div class="l">المداخيل</div><div class="n">{{ r.income|money }}</div><div class="mut">{{ r.n_pay }} عملية</div></div>
@@ -1797,7 +1799,7 @@ document.querySelector('input[name=extra]').addEventListener('input',ns);ns();cn
 
 TEMPLATES["suppliers.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}الموردون</h1>
-<div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ طلبية شراء</a><a class="btn light" href="{{ url_for('purchases') }}">كل الطلبيات</a></div>
+<div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">＋ مشتريات جديدة</a><a class="btn light" href="{{ url_for('purchases') }}">كل الطلبيات</a></div>
 <div class="card"><h2>{{ 'تعديل مورد' if edit else 'مورد جديد' }}</h2><form method="post" class="row">{% if edit %}<input type="hidden" name="id" value="{{ edit.id }}">{% endif %}
 <label>الاسم<input name="name" value="{{ edit.name if edit else '' }}" required></label><label>الهاتف<input name="phone" value="{{ edit.phone or '' if edit else '' }}"></label>
 <label>العنوان<input name="address" value="{{ edit.address or '' if edit else '' }}"></label><label>ملاحظات (ماذا يبيع)<input name="notes" value="{{ edit.notes or '' if edit else '' }}" style="width:220px"></label>
@@ -1811,7 +1813,7 @@ TEMPLATES["suppliers.html"] = r"""{% extends "base.html" %}{% block body %}
 
 TEMPLATES["purchases.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
 <h1>{{ page_icon() }}طلبيات الشراء</h1>
-<div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">+ فاتورة / طلبية شراء</a><a class="btn gold" href="{{ url_for('purchase_auto') }}">{{ ic('truck') }} طلبية أوتوماتيكية (المواد التي قاربت على النفاد)</a>{% if cu.role=='admin' %}<a class="btn light" href="{{ url_for('suppliers') }}">الموردون</a>{% endif %}</div>
+<div class="row" style="margin-bottom:12px"><a class="btn" href="{{ url_for('purchase_new') }}">＋ مشتريات جديدة</a><a class="btn gold" href="{{ url_for('purchase_auto') }}">{{ ic('truck') }} طلبية أوتوماتيكية (المواد التي قاربت على النفاد)</a>{% if cu.role=='admin' %}<a class="btn light" href="{{ url_for('suppliers') }}">الموردون</a>{% endif %}</div>
 <div class="card"><form class="row" style="margin-bottom:10px">{{ branch_filter(br) }}<button class="btn light">عرض</button></form>
 <table><tr><th>#</th><th>التاريخ</th><th>المورد</th>{% if not br %}<th>الفرع</th>{% endif %}<th>أدخلها</th><th>المجموع</th><th>المدفوع</th><th>الحالة</th></tr>
 {% for p in rows %}<tr class="{{ 'cx' if p.status=='cancelled' }}"><td><a href="{{ url_for('purchase_view', pid=p.id) }}">{{ p.id|rid }}</a></td><td>{{ p.day }}</td><td>{{ p.supplier or '-' }}</td>{% if not br %}<td>{{ p.branch }}</td>{% endif %}<td>{{ p.by_name or '' }}</td>
@@ -1830,33 +1832,50 @@ TEMPLATES["purchases.html"] = r"""{% extends "base.html" %}{% from "macros.html"
 {% endblock %}"""
 
 TEMPLATES["purchase_new.html"] = r"""{% extends "base.html" %}{% block body %}
-<h1>{{ page_icon() }}طلبية شراء جديدة</h1>
-<div class="card"><form method="post">
-<div class="row"><label>المورد<select name="supplier_id"><option value="">—</option>{% for s in sups %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select></label>
+{% set can_cost = cu.role=='admin' or perm('cost_prices') %}
+<h1>{{ page_icon() }}مشتريات جديدة</h1>
+<div class="card"><form method="post" id="pf">
+<div class="row"><label style="font-size:17px;flex-direction:row;align-items:center;gap:6px"><input type="radio" name="received" value="1" checked onchange="md()"> <b>السلعة وصلت الآن</b> (تدخل المخزون مباشرة)</label>
+<label style="font-size:17px;flex-direction:row;align-items:center;gap:6px"><input type="radio" name="received" value="0" onchange="md()"> طلبية للمورد (تصل لاحقًا)</label></div>
+<div class="row" style="margin-top:8px"><label>المورد<select name="supplier_id"><option value="">—</option>{% for s in sups %}<option value="{{ s.id }}">{{ s.name }}</option>{% endfor %}</select></label>
 {% if cu.role=='admin' %}<a class="btn light sm" href="{{ url_for('suppliers') }}">+ مورد جديد</a>
 <label>للفرع<select name="branch_id">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
-<label>التاريخ<input type="date" name="day" value="{{ today }}"></label><label>ملاحظة<input name="notes"></label></div>
-<table style="margin-top:12px" id="lines"><tr><th>المنتج</th><th>الكمية المطلوبة</th><th></th></tr></table>
-<p class="mut">اكتب الكميات فقط. عند وصول السلعة، تأكد من الكمية التي وصلت فعلًا وعدّل سعر البيع إن تغيّر.</p>
-<p><button type="button" class="btn light sm" onclick="addLine()">+ سطر</button>
+<label>التاريخ<input type="date" name="day" value="{{ today }}"></label><label>ملاحظة<input name="notes" placeholder="رقم الفاتورة..."></label></div>
+<datalist id="pl">{% for p in prods %}<option value="{{ p.name }}">{% endfor %}</datalist>
+<table style="margin-top:12px" id="lines"><tr><th>المنتج (اكتبي أول حروف الاسم)</th><th>الكمية</th>{% if can_cost %}<th class="cc">سعر الشراء للوحدة</th><th class="cc">المجموع</th>{% endif %}<th></th></tr></table>
+<p><button type="button" class="btn light sm" onclick="addLine()">＋ سطر</button>
 <button type="button" class="btn gold sm" onclick="qpShow(true)">{{ ic('products') }} منتج جديد غير مسجّل</button></p>
-<button class="btn gold">حفظ الطلبية</button></form></div>
+{% if can_cost %}<p style="font-size:18px" class="cc">مجموع الفاتورة: <b id="gt">0</b> {{ cur }}</p>{% endif %}
+<div class="row" id="paybox">{% if perm('expenses') %}<label>المدفوع للمورد الآن<input name="paid_now" style="width:110px" placeholder="0"></label>
+<select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select>{% endif %}</div>
+<p><button class="btn gold" id="sb">💾 حفظ وإدخال المخزون</button></p></form></div>
 {% include "quick_product.html" %}
 <script>
-var P={{ prods|tojson }}, PRE={{ pre|tojson }}, QP_NEED_PRICE=false;
-function qpDone(p,existed){if(!P.find(x=>x.id==p.id))P.push(p);
- var empty=[].find.call(document.querySelectorAll('#lines select'),function(s){return !s.value});
- if(empty){var o=document.createElement('option');o.value=p.id;o.dataset.c=p.cost_price||0;o.textContent=p.name;empty.appendChild(o);empty.value=p.id;empty.onchange()}
- else addLine(p.id);
- document.querySelectorAll('#lines select').forEach(function(s){if(![].some.call(s.options,function(o){return o.value==p.id})){var o=document.createElement('option');o.value=p.id;o.dataset.c=p.cost_price||0;o.textContent=p.name;s.appendChild(o)}});
- if(existed)alert('هذا المنتج مسجّل من قبل، اخترناه في الطلبية')}
-function addLine(pid,q){var t=document.getElementById('lines'),r=t.insertRow();
- var opts='<option value="">—</option>'+P.map(function(p){return '<option value="'+p.id+'" data-c="'+(p.cost_price||0)+'"'+(p.id==pid?' selected':'')+'>'+p.name.replace(/</g,'&lt;')+'</option>'}).join('');
- r.innerHTML='<td><select name="product_id" style="min-width:260px">'+opts+'</select></td><td><input name="qty" style="width:80px" value="'+(q||'')+'"></td><td><button type="button" class="btn red sm">×</button></td>';
- var s=r.querySelector('select');s.onchange=function(){};r.querySelector('button').onclick=function(){r.remove()}}
-if(PRE.length){PRE.forEach(function(x){addLine(x[0],x[1])})}else{addLine();addLine();addLine()}
+var P={{ prods|tojson }}, PRE={{ pre|tojson }}, QP_NEED_PRICE=false, CC={{ 'true' if can_cost else 'false' }};
+function byName(n){n=(n||'').trim();return P.find(function(p){return p.name==n})}
+function md(){var r=document.querySelector('input[name=received]:checked').value=='1';document.getElementById('paybox').style.display=r?'':'none';
+ document.getElementById('sb').textContent=r?'💾 حفظ وإدخال المخزون':'💾 حفظ الطلبية'}
+function tot(){if(!CC)return;var g=0;document.querySelectorAll('#lines tr.l').forEach(function(r){var q=parseFloat(r.querySelector('.q').value)||0,c=parseFloat(r.querySelector('.c').value)||0;
+ r.querySelector('.t').textContent=(q*c).toLocaleString('fr-FR');g+=q*c});document.getElementById('gt').textContent=g.toLocaleString('fr-FR')}
+function addLine(pid,q){var t=document.getElementById('lines'),r=t.insertRow();r.className='l';var p=P.find(function(x){return x.id==pid});
+ r.innerHTML='<td><input class="pn" list="pl" style="min-width:260px" placeholder="اسم المنتج" value="'+(p?p.name.replace(/"/g,'&quot;'):'')+'"><input type="hidden" name="product_id" value="'+(p?p.id:'')+'"></td>'+
+ '<td><input name="qty" class="q" type="number" min="0" step="any" style="width:80px" value="'+(q||'')+'"></td>'+
+ (CC?'<td><input name="cost" class="c" type="number" min="0" step="any" style="width:100px" value="'+(p&&p.cost_price?p.cost_price:'')+'"></td><td class="t">0</td>':'')+
+ '<td><button type="button" class="btn red sm">×</button></td>';
+ var pn=r.querySelector('.pn'),h=r.querySelector('input[type=hidden]');
+ pn.onchange=function(){var x=byName(pn.value);h.value=x?x.id:'';pn.style.borderColor=x||!pn.value?'':'#b3261e';
+  if(x&&CC){var c=r.querySelector('.c');if(!c.value&&x.cost_price)c.value=x.cost_price}tot();
+  if(x&&r===t.rows[t.rows.length-1])addLine()};
+ r.querySelectorAll('input').forEach(function(i){i.addEventListener('input',tot)});
+ r.querySelector('button').onclick=function(){r.remove();tot()}}
+function qpDone(p,existed){if(!P.find(function(x){return x.id==p.id}))P.push(p);
+ var o=document.createElement('option');o.value=p.name;document.getElementById('pl').appendChild(o);
+ var empty=[].find.call(document.querySelectorAll('#lines tr.l'),function(r){return !r.querySelector('input[type=hidden]').value});
+ if(empty){var pn=empty.querySelector('.pn');pn.value=p.name;pn.onchange()}else addLine(p.id)}
+document.getElementById('pf').onsubmit=function(){var bad=[].some.call(document.querySelectorAll('#lines tr.l'),function(r){return r.querySelector('.pn').value.trim()&&!r.querySelector('input[type=hidden]').value});
+ if(bad){alert('منتج غير موجود في القائمة (بالأحمر). اختاريه من الاقتراحات أو أضيفيه كمنتج جديد');return false}return true};
+if(PRE.length){PRE.forEach(function(x){addLine(x[0],x[1])})}addLine();addLine();md();
 </script>{% endblock %}"""
-
 TEMPLATES["purchase_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="row noprint" style="margin-bottom:12px"><a class="btn light" href="{{ url_for('purchases') }}">رجوع</a><button class="btn gold" onclick="window.print()">طباعة الطلبية للمورد</button></div>
 <div class="card">
@@ -2095,7 +2114,7 @@ TEMPLATES["tiles.html"] = r"""<div class="tiles noprint">
 <a class="tile" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }}الحصص الفائتة</a>{% endif %}
 {% if perm('stock_use') and cu.role in ('laser','beauty') %}<a class="tile" href="{{ url_for('stock_use') }}">{{ ic('cream') }}المواد المستعملة</a>{% endif %}
 {% if perm('purchases') %}<a class="tile" href="{{ url_for('purchases') }}">{{ ic('truck') }}المشتريات</a>{% endif %}
-{% if perm('products_edit') %}<a class="tile" href="{{ url_for('stock_manage') }}">{{ ic('products') }}إدارة المخزون</a>{% endif %}
+{% if perm('products_edit') %}<a class="tile" href="{{ url_for('stock_manage') }}">{{ ic('products') }}إدارة المخزون</a><a class="tile" href="{{ url_for('stock_opening') }}">{{ ic('products') }}إدخال المخزون الموجود</a>{% endif %}
 {% if perm('cancel_ops') %}<a class="tile" href="{{ url_for('operations') }}">{{ ic('audit') }}إلغاء العمليات</a>{% endif %}
 {% if perm('attendance') %}<a class="tile" href="{{ url_for('staff') }}">{{ ic('staff') }}العمال والحضور</a>{% endif %}
 {% if perm('courses') %}<a class="tile" href="{{ url_for('courses') }}">{{ ic('course') }}الدورات</a>{% endif %}
@@ -2323,6 +2342,64 @@ TEMPLATES["cancelled_ops.html"] = r"""{% extends "base.html" %}{% from "macros.h
 <td>{{ d.summary }}</td><td>{{ d.amount|money }}</td><td>{{ d.reason }}</td><td>{{ d.req_name or '' }}</td><td>{{ d.by_name or '' }}</td><td class="mut">{{ d.created_at[:16] }}</td></tr>
 {% else %}<tr><td colspan="9" class="mut">لا توجد عمليات ملغاة في هذا الشهر</td></tr>{% endfor %}</table></div>{% endblock %}"""
 
+TEMPLATES["stock_opening.html"] = r"""{% extends "base.html" %}{% block body %}
+<style>.og{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px}
+.oi{background:#fff;border:1px solid #eadcc6;border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:6px}
+.oi.ch{border-color:#2a6153;background:#eef6f2}.oi .nm{font-weight:bold}.oi .now{color:#6b6257;font-size:13px}
+.qty{display:flex;align-items:center;gap:6px}.qty button{width:42px;height:42px;font-size:22px;border-radius:10px;border:1px solid #d9c7ad;background:#fbf7f0;cursor:pointer}
+.qty input{width:90px;height:42px;font-size:20px;text-align:center;font-weight:bold}
+.cath{grid-column:1/-1;margin:10px 0 0;color:#f3d6a8;border-bottom:2px solid #e4ab74;padding-bottom:4px}
+.savebar{position:sticky;bottom:0;background:#173f36;color:#fff;padding:12px 16px;border-radius:12px;display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:14px;z-index:5}</style>
+<h1>{{ page_icon() }}إدخال المخزون الموجود — {{ branch_name(br) }}</h1>
+{% if branches %}<div class="row" style="margin-bottom:10px">{% for b in branches %}<a class="btn {{ '' if b.id==br else 'light' }}" href="{{ url_for('stock_opening', branch=b.id) }}">{{ b.name }}</a>{% endfor %}</div>{% endif %}
+<div class="card"><p>عُدّي ما يوجد في هذا الفرع من كل منتج، واكتبي <b>الكمية الموجودة الآن</b> (أو استعملي − و ＋). المنتجات التي لا توجد عندكم اتركيها فارغة.
+ثم اضغطي <b>حفظ</b> مرة واحدة في الأسفل. بعد ذلك كل ما يدخل يُسجَّل من «المشتريات».</p>
+<div class="row"><input id="flt" placeholder="🔎 ابحثي عن منتج..." style="flex:1;font-size:18px">
+<button type="button" class="btn light sm" onclick="qpShow(true)">＋ منتج غير موجود في القائمة</button></div></div>
+{% include "quick_product.html" %}
+<form method="post" id="of"><input type="hidden" name="branch" value="{{ br }}">
+<div class="og" id="og">{% set ns = namespace(cat=None) %}
+{% for r in rows %}{% set cat = ('مواد العمل' if r.usage=='use' else (r.category or 'أخرى')) %}{% if cat != ns.cat %}<h2 class="cath">{{ cat }}</h2>{% set ns.cat = cat %}{% endif %}
+<div class="oi" data-n="{{ r.name }}"><div class="nm">{{ item_ic(r.name,'product') }}{{ r.name }}</div>
+<div class="now">في البرنامج الآن: <b>{{ '%g'|format(r.qty) }}</b>{% if r.price %} · سعر البيع {{ r.price|money }}{% endif %}</div>
+<div class="qty"><button type="button" onclick="st(this,-1)">−</button><input name="q_{{ r.id }}" type="number" min="0" step="any" inputmode="decimal" placeholder="{{ '%g'|format(r.qty) }}" oninput="mk(this)"><button type="button" onclick="st(this,1)">＋</button></div>
+{% if can_cost %}<label class="now">سعر الشراء للوحدة (اختياري)<input name="c_{{ r.id }}" type="number" min="0" step="any" value="{{ '%g'|format(r.cost) if r.cost else '' }}" style="width:120px"></label>{% endif %}</div>
+{% endfor %}</div>
+<div class="savebar"><span id="cnt">لم تُكتب أي كمية بعد</span><button class="btn gold" onclick="return confirm('حفظ المخزون لهذا الفرع؟')">💾 حفظ المخزون</button></div></form>
+<script>var QP_NEED_PRICE=false;
+function mk(i){var b=i.closest('.oi');b.classList.toggle('ch',i.value!=='');var n=document.querySelectorAll('.oi.ch').length;document.getElementById('cnt').textContent=n?('كتبتِ الكمية لـ '+n+' منتج'):'لم تُكتب أي كمية بعد'}
+function st(b,d){var i=b.parentNode.querySelector('input');var v=i.value===''?(parseFloat(i.placeholder)||0):parseFloat(i.value)||0;v=Math.max(0,v+d);i.value=v;mk(i)}
+document.getElementById('flt').oninput=function(){var q=this.value.trim();document.querySelectorAll('.oi').forEach(function(e){e.style.display=!q||e.dataset.n.indexOf(q)>=0?'':'none'});
+ document.querySelectorAll('.cath').forEach(function(h){h.style.display=q?'none':''})};
+document.querySelectorAll('.qty input').forEach(function(i,k,all){i.addEventListener('keydown',function(e){if(e.key==='Enter'){e.preventDefault();var n=all[k+1];if(n){n.focus();n.select()}}})});
+function qpDone(p){location.reload()}</script>{% endblock %}"""
+
+TEMPLATES["day_report.html"] = r"""{% extends "base.html" %}{% block body %}
+<style>.dr{background:#fff;padding:18px;border-radius:10px;max-width:900px;margin:auto}.dr table{width:100%;border-collapse:collapse}
+.dr th,.dr td{border:1px solid #9a8c78;padding:4px 6px;font-size:14px}.dr th{background:#efe2cf}
+.dr .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.dr h3{text-align:center;margin:12px 0 6px}
+@media print{.dr{padding:0;max-width:none}.dr th,.dr td{font-size:12px;padding:3px 5px}}</style>
+<form class="row noprint" style="margin-bottom:10px"><label>اليوم<input type="date" name="d" value="{{ d }}"></label>
+<label>الفرع<select name="branch"><option value="0">كل الفروع</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>
+<button class="btn light">عرض</button><button type="button" class="btn gold" onclick="window.print()">🖨 طباعة</button></form>
+<div class="dr">
+<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:2px solid #c99a5b;padding-bottom:8px">
+<img src="{{ url_for('static', filename='logo_full.jpg') }}" style="width:70px;border-radius:6px">
+<div style="text-align:center"><div style="font-size:22px;font-weight:bold">تقرير اليوم</div><div>{{ branch_name(br) if br else 'كل الفروع' }}</div></div>
+<div style="text-align:left"><div>التاريخ: <b>{{ d|dmy }}</b></div><div style="font-size:18px">المجموع: <b>{{ total|money }}</b></div></div></div>
+<h3>أوقات دخول وخروج الموظفين</h3>
+<table><tr><th style="width:40px">الرقم</th><th>الاسم</th><th>الدخول</th><th>الخروج</th></tr>
+{% for a in att %}<tr><td>{{ loop.index }}</td><td>{{ a.name }}</td><td>{{ a.check_in or ('غائب' if a.status=='absent' else '') }}</td><td>{{ a.check_out or '' }}</td></tr>
+{% else %}{% for i in range(1,5) %}<tr><td>{{ i }}</td><td></td><td></td><td></td></tr>{% endfor %}{% endfor %}</table>
+<h3>التقرير المالي</h3>
+<div class="two">{% for part in [rows[:half], rows[half:]] %}{% set off = 0 if loop.first else half %}
+<table><tr><th style="width:36px">الرقم</th><th>الاسم واللقب</th><th>الجلسة</th><th style="width:80px">السعر</th></tr>
+{% for r in part %}<tr><td>{{ off + loop.index }}</td><td>{{ r.name }}</td><td>{{ r.what }}</td><td>{{ r.amount|money }}</td></tr>{% endfor %}
+{% for i in range(part|length, half) %}<tr><td>{{ off + i + 1 }}</td><td>&nbsp;</td><td></td><td></td></tr>{% endfor %}</table>{% endfor %}</div>
+<table style="margin-top:10px"><tr><th>عدد العمليات</th><td>{{ rows|length }}</td><th>المجموع</th><td><b>{{ total|money }} {{ cur }}</b></td>
+<th>المصاريف</th><td>{{ exp|money }}</td><th>الصافي</th><td><b>{{ (total-exp)|money }}</b></td></tr></table>
+</div>{% endblock %}"""
+
 TEMPLATES["stock_manage.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}إدارة المخزون — {{ branch_name(br) }}</h1>
 {% if branches and not printing %}<div class="row noprint" style="margin-bottom:10px">{% for b in branches %}<a class="btn {{ '' if b.id==br else 'light' }}" href="{{ url_for('stock_manage', branch=b.id) }}">{{ b.name }}</a>{% endfor %}</div>{% endif %}
@@ -2333,7 +2410,8 @@ TEMPLATES["stock_manage.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card noprint"><p class="mut">إذا كانت الكمية في البرنامج لا تطابق الواقع (خطأ، مواد استُعملت ولم تُسجَّل، تلف...): اكتب <b>الكمية الحقيقية التي وجدتها</b>، ويحسب البرنامج الفرق تلقائيًا ويسجّله مع السبب.
 اترك الخانة فارغة للمنتجات الصحيحة.</p>
 <form class="row"><input type="hidden" name="branch" value="{{ br }}"><input name="q" value="{{ q }}" placeholder="ابحث عن منتج"><button class="btn light">بحث</button>
-<a class="btn gold" href="{{ url_for('stock_manage', branch=br, print=1) }}" target="_blank">{{ ic('print') }} طباعة ورقة الجرد</a></form></div>
+<a class="btn gold" href="{{ url_for('stock_manage', branch=br, print=1) }}" target="_blank">{{ ic('print') }} طباعة ورقة الجرد</a>
+<a class="btn" href="{{ url_for('stock_opening', branch=br) }}">📦 إدخال المخزون الموجود (سهل)</a></form></div>
 <form method="post" class="card"><input type="hidden" name="branch" value="{{ br }}">
 <table><tr><th>المنتج</th><th>النوع</th><th>في البرنامج</th><th>الكمية الحقيقية</th><th>الفرق</th></tr>
 {% for r in rows %}<tr><td>{{ item_ic(r.name,'product') }}{{ r.name }}</td><td class="mut">{{ PRODUCT_USAGE.get(r.usage, '') }}</td><td><b>{{ '%g'|format(r.qty) }}</b></td>

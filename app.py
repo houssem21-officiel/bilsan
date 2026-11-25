@@ -3895,6 +3895,35 @@ def service_profit(br, d1, d2):
     return sorted(out.values(), key=lambda e: -e["profit"])
 
 
+@app.route("/reports/day")
+@login_required("admin")
+def day_report():
+    """تقرير اليوم (كالورقة المعمول بها في المركز): حضور الموظفين ثم كل المداخيل بالاسم والجلسة والسعر."""
+    db = get_db()
+    d = request.args.get("d") or center_today().isoformat()
+    br = int(request.args.get("branch")) if (request.args.get("branch") or "").lstrip("-").isdigit() else (scope_branch() or 0)
+    att = db.execute("""SELECT e.name, a.check_in, a.check_out, a.status FROM attendance a JOIN employees e ON e.id=a.employee_id
+        WHERE a.day=? AND (?=0 OR e.branch_id=?) ORDER BY e.name""", (d, br, br)).fetchall()
+    pays = db.execute("""SELECT p.*, c.name AS client FROM payments p LEFT JOIN clients c ON c.id=p.client_id
+        WHERE p.cancelled=0 AND substr(p.created_at,1,10)=? AND (?=0 OR p.branch_id=?) ORDER BY p.id""", (d, br, br)).fetchall()
+    rows = []
+    for p in pays:
+        desc = p["description"] or ""
+        if ": " in desc:
+            desc = desc.split(": ", 1)[1]
+        if p["kind"] == "product":
+            its = db.execute("""SELECT pr.name, si.qty FROM sale_items si JOIN products pr ON pr.id=si.product_id
+                WHERE si.payment_id=?""", (p["id"],)).fetchall()
+            if its:
+                desc = "، ".join(i["name"] + (f" ×{i['qty']:g}" if i["qty"] != 1 else "") for i in its)
+        rows.append(dict(name=p["client"] or "—", what=desc or PAY_KINDS.get(p["kind"], ""), amount=p["amount"]))
+    exp = db.execute("SELECT COALESCE(SUM(amount),0) FROM expenses WHERE day=? AND (?=0 OR branch_id=?)",
+                     (d, br, br)).fetchone()[0]
+    half = max(17, (len(rows) + 1) // 2)
+    return render_template("day_report.html", d=d, br=br, att=att, rows=rows, half=half,
+                           total=sum(r["amount"] for r in rows), exp=exp)
+
+
 @app.route("/reports/services")
 @login_required("admin")
 def services_profit():
@@ -4227,6 +4256,44 @@ def cancelled_ops():
 STOCK_REASONS = ["خطأ في العدّ", "مواد استُعملت ولم تُسجَّل", "تلف", "انتهاء الصلاحية", "ضياع", "سلعة دخلت ولم تُسجَّل", "أخرى"]
 
 
+@app.route("/stock/opening", methods=["GET", "POST"])
+@perm_required("products_edit")
+def stock_opening():
+    """إدخال المخزون الموجود في الفرع (قبل البرنامج أو عند الجرد): تكتب الكمية الموجودة لكل منتج وتحفظ مرة واحدة."""
+    db = get_db()
+    u = current_user()
+    admin = u["role"] == "admin"
+    br = (int(request.values.get("branch")) if admin and (request.values.get("branch") or "").lstrip("-").isdigit()
+          else (scope_branch() or work_branch()) if admin else u["branch_id"])
+    can_cost = admin or has_perm("cost_prices")
+    if request.method == "POST":
+        f = request.form
+        n = 0
+        for k, val in f.items():
+            if not k.startswith("q_") or val.strip() == "" or not k[2:].lstrip("-").isdigit():
+                continue
+            pid = int(k[2:])
+            cur = db.execute("SELECT COALESCE(qty,0) FROM stock WHERE product_id=? AND branch_id=?", (pid, br)).fetchone()
+            diff = round(fnum(val) - (cur[0] if cur else 0), 3)
+            if diff:
+                move_stock(db, pid, br, diff, "مخزون موجود (إدخال المخزون)", u["id"], kind="adjust")
+                n += 1
+            c = f.get(f"c_{pid}", "").strip()
+            if can_cost and c and fnum(c) > 0:
+                db.execute("UPDATE products SET cost_price=? WHERE id=?", (fnum(c), pid))
+        if n:
+            audit("إدخال المخزون الموجود", f"{n} منتج — {branch_name(br)}", br)
+        db.commit()
+        flash(f"تم حفظ المخزون: {n} منتج تغيّرت كميته" if n else "لا يوجد أي تغيير", "ok")
+        return redirect(url_for("stock_opening", branch=br))
+    rows = db.execute("""SELECT p.id, p.name, COALESCE(p.category,'') AS category, p.usage, COALESCE(p.cost_price,0) AS cost,
+        COALESCE(p.price,0) AS price, COALESCE(s.qty,0) AS qty FROM products p
+        LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1
+        ORDER BY CASE WHEN p.usage='use' THEN 1 ELSE 0 END, COALESCE(p.category,'ي'), p.id""", (br,)).fetchall()
+    return render_template("stock_opening.html", rows=[dict(r) for r in rows], br=br, can_cost=can_cost,
+                           branches=active_branches() if admin else [])
+
+
 @app.route("/stock/manage", methods=["GET", "POST"])
 @perm_required("products_edit")
 def stock_manage():
@@ -4513,12 +4580,44 @@ def purchase_new():
         if not lines:
             flash("أضف منتجًا واحدًا على الأقل بكمية", "err")
             return redirect(url_for("purchase_new"))
+        u = current_user()
+        can_cost = u["role"] == "admin" or has_perm("cost_prices")
+        costs = f.getlist("cost")
+        if can_cost and costs:
+            lines = [(p_, q_, fnum(costs[i]) if i < len(costs) else 0.0) for i, (p_, q_, _) in enumerate(lines)] \
+                if len(costs) == len(pids) else lines
+            # إعادة ربط الأسعار بالأسطر الصحيحة (الأسطر الفارغة حُذفت)
+            lines = []
+            for p_, q_, c_ in zip(pids, qtys, costs):
+                if p_ and p_.lstrip("-").isdigit() and fnum(q_) > 0:
+                    lines.append((int(p_), fnum(q_), fnum(c_)))
+        br_ = u["branch_id"] or int(f.get("branch_id") or work_branch())
         pid = db.execute("""INSERT INTO purchases(supplier_id,branch_id,day,notes,created_by,created_at)
-            VALUES(?,?,?,?,?,?)""", (f.get("supplier_id") or None, current_user()["branch_id"] or int(f.get("branch_id") or work_branch()),
+            VALUES(?,?,?,?,?,?)""", (f.get("supplier_id") or None, br_,
                                      f.get("day") or center_today().isoformat(), f.get("notes", "").strip(),
-                                     current_user()["id"], now_str())).lastrowid
-        for p, q, c in lines:
-            db.execute("INSERT INTO purchase_items(purchase_id,product_id,qty,unit_cost) VALUES(?,?,?,?)", (pid, p, q, c))
+                                     u["id"], now_str())).lastrowid
+        for p_, q_, c_ in lines:
+            db.execute("INSERT INTO purchase_items(purchase_id,product_id,qty,unit_cost) VALUES(?,?,?,?)", (pid, p_, q_, c_))
+        if f.get("received") == "1":  # شراء سريع: السلعة وصلت الآن
+            for p_, q_, c_ in lines:
+                move_stock(db, p_, br_, q_, f"شراء — {rid_filter(pid)}", u["id"])
+                if c_ > 0:
+                    db.execute("UPDATE products SET cost_price=? WHERE id=?", (c_, p_))
+            db.execute("UPDATE purchases SET status='received', received_at=? WHERE id=?", (now_str(), pid))
+            amount = fnum(f.get("paid_now")) if has_perm("expenses") else 0
+            if amount > 0:
+                worker = u["role"] != "admin"
+                sup = db.execute("SELECT name FROM suppliers WHERE id=?", (f.get("supplier_id") or 0,)).fetchone()
+                db.execute("""INSERT INTO expenses(branch_id,day,category,description,amount,method,supplier_id,purchase_id,
+                    created_by,created_at,from_cash,role) VALUES(?,?,?,?,?,?,?,?,?,?,?,?)""",
+                           (br_, center_today().isoformat(), "شراء سلع (منتجات)",
+                            f"مشتريات {rid_filter(pid)} — {sup['name'] if sup else ''}", amount,
+                            "cash" if worker else f.get("method", "cash"), f.get("supplier_id") or None, pid, u["id"],
+                            now_str(), 1 if worker else 0, u["role"] if worker else None))
+            audit("مشتريات (استلام فوري)", f"{rid_filter(pid)}: {len(lines)} منتج", br_)
+            db.commit()
+            flash("تم تسجيل المشتريات: المخزون زاد مباشرة", "ok")
+            return redirect(url_for("purchase_view", pid=pid))
         db.commit()
         flash("تم إنشاء طلبية الشراء", "ok")
         return redirect(url_for("purchase_view", pid=pid))
@@ -6164,7 +6263,7 @@ PAGE_ICONS = {
     "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream", "approvals": "key", "sessions_profit": "reports", "stock_use": "cream",
     "services_profit": "services", "month_report": "reports", "purchase_auto": "truck",
     "appt_reschedule": "calendar", "appts_missed": "calendar",
-    "operations": "audit", "cancelled_ops": "audit", "stock_manage": "products",
+    "operations": "audit", "cancelled_ops": "audit", "stock_manage": "products", "stock_opening": "products", "day_report": "reports",
 }
 
 
@@ -6326,7 +6425,7 @@ def _after_write(resp):
 NOT_LIVE = {"login", "pos", "purchase_new", "plan_new", "payment_new", "charge_new", "visit_new", "consent",
             "receipt", "certificate", "payslip", "payslips_all", "settings", "settings_images",
             "sms_campaign", "backup_page", "update_now", "setup_pair", "devices", "permissions", "purchase_auto", "appt_reschedule", "operations", "stock_manage",
-            "services", "month_report"}
+            "services", "month_report", "stock_opening", "trainee_file"}
 
 
 @app.route("/api/stamp")
