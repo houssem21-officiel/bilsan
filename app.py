@@ -842,7 +842,8 @@ def dashboard():
             LEFT JOIN users us ON us.id=p.received_by ORDER BY p.id DESC LIMIT 15""").fetchall()
         low = stock_alerts(None)[:10]
         due = due_salaries()
-        return render_template("dash_admin.html", per_branch=per_branch, grand=grand, due=due,
+        chk = setup_checklist(db) if not sync.NODE else []
+        return render_template("dash_admin.html", per_branch=per_branch, grand=grand, due=due, chk=chk,
                                recent=recent, low=low, alerts=director_alerts(db, due),
                                rooms=room_accounts(today, today, None, db.execute(
                                    """SELECT p.*, b.name AS branch FROM payments p JOIN branches b ON b.id=p.branch_id
@@ -868,6 +869,29 @@ def dashboard():
         AND cancelled=0 AND substr(created_at,1,10)=?""", (b, today)).fetchone()["t"]
     return render_template("dash_staff.html", appts=appts, pending=pending, my_total=my_total,
                            low=stock_alerts(b)[:10])
+
+
+def setup_checklist(db):
+    """قائمة تجهيز المركز للمديرة: تظهر حتى يكتمل كل شيء."""
+    items = []
+    u = current_user()
+    if u and check_password_hash(u["pw_hash"], "admin123"):
+        items.append((False, "غيّري كلمة مرور المديرة (ما زالت الافتراضية)", url_for("change_password")))
+    n = db.execute("SELECT COUNT(*) FROM services WHERE active=1 AND COALESCE(price,0)=0 AND kind<>'course'").fetchone()[0]
+    items.append((n == 0, f"حدّدي أسعار الخدمات ({n} خدمة بلا سعر)" if n else "أسعار الخدمات محدّدة", url_for("services")))
+    n = db.execute("SELECT COUNT(*) FROM products WHERE active=1 AND COALESCE(usage,'sale')<>'use' AND COALESCE(price,0)=0").fetchone()[0]
+    items.append((n == 0, f"حدّدي أسعار بيع المنتجات ({n} منتج بلا سعر)" if n else "أسعار بيع المنتجات محدّدة", url_for("products")))
+    for b in active_branches():
+        has = db.execute("SELECT 1 FROM stock_moves WHERE branch_id=? LIMIT 1", (b["id"],)).fetchone()
+        items.append((bool(has), f"أدخلي المخزون الموجود في {b['name']}" if not has else f"المخزون مُدخل في {b['name']}",
+                      url_for("stock_opening", branch=b["id"])))
+    n = db.execute("SELECT COUNT(*) FROM employees WHERE active=1").fetchone()[0]
+    items.append((n > 0, "سجّلي العمال (للحضور والأجور وتقرير اليوم)" if not n else f"العمال مسجّلون ({n})", url_for("staff")))
+    ok = bool(setting("stamp_img") and setting("signature_img"))
+    items.append((ok, "أضيفي صورة الختم والإمضاء (للشهادات والوثائق)" if not ok else "الختم والإمضاء موجودان", url_for("settings") + "#images"))
+    ok = bool(setting("backup_dir2"))
+    items.append((ok, "اختاري مكانًا ثانيًا للنسخ الاحتياطي (فلاشة أو قرص آخر)" if not ok else "النسخ الاحتياطي في مكانين", url_for("backup_page")))
+    return items
 
 
 def director_alerts(db, due=None):
