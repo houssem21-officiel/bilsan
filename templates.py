@@ -1653,6 +1653,7 @@ TEMPLATES["courses.html"] = r"""{% extends "base.html" %}{% from "macros.html" i
 {% if not locked %}<div class="card"><h2>دورة جديدة</h2>
 <form method="post" class="row">
 <label>اسم الدورة<input name="name" required style="width:260px" placeholder="مثلاً: دورة الحجامة العلاجية"></label>
+<label>الاسم بالإنجليزية (للشهادة)<input name="name_en" dir="ltr" style="width:200px" placeholder="CUPPING THERAPY"></label>
 {% if cu.role=='admin' %}<label>الفرع<select name="branch_id">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if (br or 1)==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
 <label>السعر ({{ cur }})<input name="price" style="width:110px"></label>
 <label>عدد الأيام<input name="days" value="1" style="width:70px"></label>
@@ -1687,6 +1688,8 @@ TEMPLATES["trainee_file.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="row" style="justify-content:space-between"><div class="mut">{% if cl.phone %}<span dir="ltr">{{ cl.phone }}</span> · {% endif %}{{ ens|rejectattr('status','equalto','withdrawn')|list|length }} دورة · {{ total_days }} أيام</div>
 <div class="row">{% if done %}<a class="btn gold" href="{{ url_for('trainee_certificate', client_id=cl.id) }}">🎓 الشهادة ({{ done|map(attribute='cname')|join(' + ') }})</a>{% endif %}
 <a class="btn light sm" href="{{ url_for('client_view', cid=cl.id) }}">ملف الزبون</a></div></div>
+<form method="post" class="row" style="margin-top:8px"><input type="hidden" name="action" value="latin">
+<label>الاسم بالحروف اللاتينية (للشهادة)<input name="name_latin" value="{{ cl.name_latin or '' }}" dir="ltr" placeholder="Zerouk Sara" style="width:220px"></label><button class="btn light sm">حفظ</button></form>
 <div class="money3" style="margin-top:12px"><div><div class="mut">المجموع</div><div class="n">{{ due|money }}</div></div>
 <div><div class="mut">المدفوع</div><div class="n" style="color:#2a6153">{{ paid|money }}</div></div>
 <div style="{{ 'border-color:#e4ab74' if due-paid>0.001 }}"><div class="mut">الباقي</div><div class="n" style="color:{{ '#b3261e' if due-paid>0.001 else '#2a6153' }}">{{ (due-paid)|money }}</div></div></div>
@@ -1755,13 +1758,95 @@ TEMPLATES["course_view.html"] = r"""{% extends "base.html" %}{% from "macros.htm
 {% if c.status=='open' %}<form method="post" onsubmit="return confirm('إنهاء الدورة؟ كل المسجّلين يصبحون «أكمل الدورة»')"><input type="hidden" name="action" value="finish"><button class="btn gold">إنهاء الدورة (كل المسجّلين أكملوا)</button></form>{% endif %}</div>
 
 {% if not locked %}<div class="card"><h2>تعديل الدورة</h2><form method="post" class="row"><input type="hidden" name="action" value="edit">
-<label>الاسم<input name="name" value="{{ c.name }}" style="width:240px"></label><label>السعر<input name="price" value="{{ '%g'|format(c.price) }}" style="width:100px"></label>
+<label>الاسم<input name="name" value="{{ c.name }}" style="width:240px"></label><label>بالإنجليزية<input name="name_en" value="{{ c.name_en or '' }}" dir="ltr" style="width:180px"></label><label>السعر<input name="price" value="{{ '%g'|format(c.price) }}" style="width:100px"></label>
 <label>من<input type="date" name="start_date" value="{{ c.start_date or '' }}"></label><label>إلى<input type="date" name="end_date" value="{{ c.end_date or '' }}"></label>
 <label>الأيام<input name="days" value="{{ c.days or 1 }}" style="width:60px"></label>
 <label>الساعات<input name="hours" value="{{ '%g'|format(c.hours) if c.hours else '' }}" style="width:70px"></label><label>المكوّن<input name="trainer" value="{{ c.trainer or '' }}"></label>
 <label>الحالة<select name="status">{% for k,v in COURSE_STATUS.items() %}<option value="{{ k }}" {{ 'selected' if c.status==k }}>{{ v }}</option>{% endfor %}</select></label>
 <label>ملاحظات<input name="notes" value="{{ c.notes or '' }}"></label><button class="btn light">حفظ</button></form></div>{% endif %}
 {% endblock %}"""
+
+TEMPLATES["certificate_en.html"] = r"""{% extends "base.html" %}{% block body %}
+<style>
+@font-face{font-family:"BilVibes";src:url("{{ url_for('static', filename='fonts/GreatVibes-Regular.ttf') }}")}
+@font-face{font-family:"BilOswald";src:url("{{ url_for('static', filename='fonts/Oswald.ttf') }}");font-weight:200 700}
+@font-face{font-family:"BilMont";src:url("{{ url_for('static', filename='fonts/Montserrat.ttf') }}");font-weight:100 900}
+@page{size:A4 landscape;margin:0}
+.ce{position:relative;width:100%;max-width:1123px;aspect-ratio:297/210;margin:0 auto;background:#fdfdfb;overflow:hidden;container-type:inline-size;direction:ltr;box-shadow:0 6px 30px rgba(0,0,0,.35)}
+.ce svg.bg{position:absolute;inset:0;width:100%;height:100%}
+.ce .t{position:absolute;white-space:nowrap}
+.ce .ar{direction:rtl;font-family:"Cairo","Tahoma",sans-serif;font-weight:800;color:#0f6b2f;font-size:3.1cqw;right:9.5cqw;top:3.6cqw}
+.ce .hex{position:absolute;right:1.6cqw;top:1.4cqw;width:7.2cqw;height:7.2cqw;clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%);background:#c99a3b;padding:.35cqw}
+.ce .hex img{width:100%;height:100%;clip-path:polygon(25% 3%,75% 3%,100% 50%,75% 97%,25% 97%,0 50%);object-fit:cover}
+.ce .ros{position:absolute;left:2.6cqw;top:2.2cqw;width:17cqw;height:17cqw}
+.ce .ros img{position:absolute;left:12%;top:12%;width:76%;height:76%;border-radius:50%;object-fit:cover}
+.ce .cert{right:2.8cqw;top:14.2cqw;font-family:"BilMont";font-weight:900;font-size:8.7cqw;letter-spacing:-.25cqw;line-height:1;
+ background:linear-gradient(180deg,#0a4f22 0%,#1d8f3e 45%,#0b5a27 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ce .att{right:5.2cqw;top:22.8cqw;font-family:"BilMont";font-weight:800;font-size:3.7cqw;line-height:1;
+ background:linear-gradient(180deg,#f3c75a,#c98a1b 60%,#e9b84b);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ce .pill{position:absolute;left:2.7cqw;top:20.8cqw;width:51cqw;height:5.3cqw;border-radius:3cqw;background:linear-gradient(180deg,#e5b74e,#a8741a);padding:.45cqw;box-sizing:border-box}
+.ce .pill div{width:100%;height:100%;border-radius:3cqw;background:linear-gradient(180deg,#1c8a3c,#0b5a27);color:#fff;display:flex;align-items:center;justify-content:center;
+ font-family:"BilOswald";font-weight:600;font-size:2.35cqw;letter-spacing:.02cqw}
+.ce .nm{left:5.6cqw;top:28cqw;font-family:"BilVibes";font-size:7.6cqw;color:#173f2a;line-height:1.3}
+.ce .ln{position:absolute;left:3.8cqw;top:38.4cqw;width:52.5cqw;height:.28cqw;background:linear-gradient(90deg,#c98a1b,#f3c75a,#c98a1b)}
+.ce .tx{left:3.8cqw;top:40.2cqw;width:84cqw;white-space:normal;font-family:"BilOswald";font-weight:500;font-size:2.42cqw;line-height:1.32}
+.ce .l1{color:#e0a521}.ce .l2{color:#1a1a1a}
+.ce .sl{position:absolute;left:3.8cqw;top:60.8cqw;width:38cqw;height:.28cqw;background:linear-gradient(90deg,#c98a1b,#f3c75a,#c98a1b)}
+.ce .st{left:3.8cqw;top:61.6cqw;font-family:"BilOswald";font-weight:500;font-size:2.28cqw;color:#e0a521}
+.ce .sn{left:3.8cqw;top:64.9cqw;width:38cqw;text-align:center;font-family:"BilMont";font-weight:500;font-size:2.05cqw;color:#1a1a1a}
+.ce .stamp{position:absolute;left:44cqw;top:52cqw;height:15cqw;opacity:.9}.ce .sign{position:absolute;left:14cqw;top:52cqw;height:9cqw}
+.ce .no{left:1.5cqw;bottom:1cqw;font-family:"BilMont";font-size:1.1cqw;color:#888}
+.ced input{width:100%}
+@media print{.ce text.gt1{fill:#137a36}.ce text.gt2{fill:#d79f2a}body,html{background:#fff!important}main{margin:0!important;padding:0!important;max-width:none!important}.ce{max-width:none;width:297mm;box-shadow:none}}
+</style>
+<div class="card noprint ced">
+<div class="row" style="align-items:center"><b>شهادة {{ client.name }}</b>
+{% if due - paid > 0.001 %}<span class="tag red">تنبيه: لم يُكمل الدفع (الباقي {{ (due - paid)|money }})</span>{% endif %}
+{% if not client.name_latin %}<span class="tag amber">اكتبي الاسم بالحروف اللاتينية</span>{% endif %}
+<a class="btn light sm" href="{{ url_for('trainee_certificate', client_id=client.id, model='ar') }}">النموذج العربي القديم</a></div>
+<form method="post" class="row" style="margin-top:8px"><input type="hidden" name="action" value="save_en">
+<label style="flex:1 1 220px">الاسم بالحروف اللاتينية<input name="name" value="{{ d.name }}" dir="ltr"></label>
+<label style="flex:1 1 260px">اسم الدورة بالإنجليزية<input name="course" value="{{ d.course }}" dir="ltr" placeholder="CUPPING THERAPY"></label>
+<label style="flex:1 1 200px">التاريخ<input name="dates" value="{{ d.dates }}" dir="ltr" placeholder="22,23 OCTOBER 2026"></label>
+<label style="flex:1 1 140px">المكان<input name="place" value="{{ d.place }}" dir="ltr"></label>
+<label style="flex:1 1 180px">اسم المركز<input name="center" value="{{ d.center }}" dir="ltr"></label>
+<label style="flex:1 1 280px">صفة الموقّع<input name="signer_title" value="{{ d.signer_title }}" dir="ltr"></label>
+<label style="flex:1 1 180px">اسم الموقّع<input name="signer" value="{{ d.signer }}" dir="ltr"></label>
+<label style="flex-direction:row;align-items:center;gap:6px"><input type="checkbox" name="as_default" value="1" style="width:auto"> اعتماد الموقّع والمركز لكل الشهادات</label>
+<button class="btn">حفظ</button>
+<button type="button" class="btn gold" onclick="fetch('',{method:'POST',body:new URLSearchParams({action:'printed'})});window.print()">🖨 طباعة الشهادة</button></form>
+<p class="mut">بعد الحفظ تظهر التعديلات في الشهادة. الطباعة على ورقة A4 بالعرض (أفقي)، مع تفعيل «رسومات الخلفية» في نافذة الطباعة.</p></div>
+<div class="ce">
+<svg class="bg" viewBox="0 0 1414 1000" preserveAspectRatio="none">
+<defs><linearGradient id="g1" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#0a4a20"/><stop offset=".55" stop-color="#14803a"/><stop offset="1" stop-color="#0b5a27"/></linearGradient>
+<linearGradient id="g2" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#a8741a"/><stop offset=".5" stop-color="#f6d77a"/><stop offset="1" stop-color="#b98222"/></linearGradient>
+<linearGradient id="g3" x1="1" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#0a4a20"/><stop offset=".6" stop-color="#14803a"/><stop offset="1" stop-color="#1e9a46"/></linearGradient></defs>
+<path d="M0 0H820C700 40 560 60 420 110C290 160 170 230 0 300Z" fill="url(#g1)"/>
+<path d="M820 0C700 40 560 60 420 110C290 160 170 230 0 300V318C175 246 300 176 430 128C570 78 712 46 860 0Z" fill="url(#g2)"/>
+<path d="M0 0H600C480 30 360 60 240 110C150 150 70 200 0 240Z" fill="#0b5226" opacity=".55"/>
+<path d="M860 0C712 46 570 78 430 128C300 176 175 246 0 318V330C178 262 304 192 436 145C580 94 730 56 910 0Z" fill="#fff" opacity=".9"/>
+<path d="M1414 440C1380 570 1262 690 1082 780C902 868 642 936 400 1000H1414Z" fill="url(#g3)"/>
+<path d="M1414 418C1378 553 1257 676 1076 766C894 856 632 928 372 1000H400C642 936 902 868 1082 780C1262 690 1380 570 1414 440Z" fill="url(#g2)"/>
+<path d="M1414 575C1362 690 1244 800 1064 878C964 922 862 962 790 1000H1414Z" fill="#0a4a20" opacity=".45"/>
+<path d="M1414 650C1352 758 1232 846 1102 900C1022 934 952 968 902 1000H916C966 970 1034 940 1112 908C1242 852 1360 768 1414 668Z" fill="url(#g2)"/>
+<linearGradient id="g4" gradientUnits="userSpaceOnUse" x1="0" y1="180" x2="0" y2="290"><stop offset="0" stop-color="#0a4f22"/><stop offset=".45" stop-color="#1d8f3e"/><stop offset="1" stop-color="#0b5a27"/></linearGradient>
+<linearGradient id="g5" gradientUnits="userSpaceOnUse" x1="0" y1="305" x2="0" y2="350"><stop offset="0" stop-color="#f3c75a"/><stop offset=".6" stop-color="#c98a1b"/><stop offset="1" stop-color="#e9b84b"/></linearGradient>
+<text x="1376" y="284" text-anchor="end" font-family="BilMont" font-weight="900" font-size="124" letter-spacing="-3" fill="url(#g4)" class="gt1">Certificate</text>
+<text x="1338" y="348" text-anchor="end" font-family="BilMont" font-weight="800" font-size="52" fill="url(#g5)" class="gt2">OF ATTENDANCE</text>
+<circle cx="155" cy="160" r="112" fill="url(#g2)"/><circle cx="155" cy="160" r="100" fill="#0f6b2f"/><circle cx="155" cy="160" r="94" fill="url(#g2)"/>
+</svg>
+<div class="ros"><img src="{{ url_for('static', filename='logo_full.jpg') }}" alt=""></div>
+<div class="hex"><img src="{{ url_for('static', filename='logo_full.jpg') }}" alt=""></div>
+<div class="t ar">مركز بيلسان للطب البديل</div>
+
+<div class="pill"><div>THIS CERTIFICATE IS PROUDLY PRESENTED TO</div></div>
+<div class="t nm">{{ d.name }}</div><div class="ln"></div>
+<div class="t tx"><div class="l1">IN RECOGNITION OF ATTENDANCE AT THE TRAINING COURSE ENTITLED: {{ d.course }}</div>
+<div class="l2">THAT WAS ORGANIZED BY {{ d.center }}{% if d.dates %} ON {{ d.dates }}{% endif %}{% if d.place %} IN {{ d.place }}{% endif %}.</div></div>
+{% if signature %}<img class="sign" src="{{ signature }}" alt="">{% endif %}{% if stamp %}<img class="stamp" src="{{ stamp }}" alt="">{% endif %}
+<div class="sl"></div><div class="t st">{{ d.signer_title }}</div><div class="t sn">{{ d.signer }}</div>
+<div class="t no">N° {{ cert_no }}</div>
+</div>{% endblock %}"""
 
 TEMPLATES["certificate.html"] = r"""{% extends "base.html" %}{% block body %}
 <style>

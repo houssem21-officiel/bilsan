@@ -193,6 +193,9 @@ DEFAULT_SETTINGS = {
     "backup_every_hours": "6",
     "staff_can_edit_prices": "0",
     "staff_direct_cancel": "1",
+    "cert_en_center": "BAYLASSAN CENTER",
+    "cert_en_signer_title": "TRAINING INSTRUCTOR / BAYLASSAN CEO",
+    "cert_en_signer": "Mechhoud Chahra",
     "cert_title": "شهادة تكوين",
     "cert_body": "يشهد {center} بأن {sayed} {name}، {mawlud} بتاريخ {birth_date}، قد {tabaa} بنجاح الدورة التكوينية «{course}» المنظمة من {start} إلى {end}، بحجم ساعي قدره {hours} ساعة، تحت إشراف {trainer}.",
     "cert_footer": "سُلّمت هذه الشهادة للمعني(ة) بطلب منه(ا) لاستعمالها في حدود ما يسمح به القانون.",
@@ -314,6 +317,10 @@ def init_db():
     add_col("payments", "plan_id", "INTEGER")
     add_col("appointments", "credit_used", "INTEGER DEFAULT 0")
     add_col("payments", "fix_note", "TEXT")
+    add_col("clients", "name_latin", "TEXT")
+    add_col("courses", "name_en", "TEXT")
+    add_col("course_trainees", "cert_en", "TEXT")
+    add_col("branches", "name_en", "TEXT")
     add_col("services", "aftercare", "TEXT")
     add_col("users", "lang", "TEXT")
     add_col("stock_moves", "cancelled", "INTEGER DEFAULT 0")
@@ -3535,6 +3542,7 @@ def courses():
                                              fnum(f.get("hours")) or None, f.get("trainer", "").strip(),
                                              f.get("notes", "").strip(), u["id"], now_str(),
                                              int(fnum(f.get("days")) or 1))).lastrowid
+        db.execute("UPDATE courses SET name_en=? WHERE id=?", ((f.get("name_en") or "").strip() or None, cid))
         db.commit()
         flash("تم إنشاء الدورة. سجّل المتكونين فيها.", "ok")
         return redirect(url_for("course_view", cid=cid))
@@ -3572,6 +3580,7 @@ def course_view(cid):
             if price_locked(u):
                 abort(403)
             db.execute("UPDATE courses SET days=? WHERE id=?", (int(fnum(f.get("days")) or 1), cid))
+            db.execute("UPDATE courses SET name_en=? WHERE id=?", ((f.get("name_en") or "").strip() or None, cid))
             db.execute("""UPDATE courses SET name=?,price=?,start_date=?,end_date=?,hours=?,trainer=?,notes=?,status=?
                 WHERE id=?""", (f.get("name", "").strip() or c["name"], fnum(f.get("price")), f.get("start_date") or None,
                                 f.get("end_date") or None, fnum(f.get("hours")) or None, f.get("trainer", "").strip(),
@@ -3706,6 +3715,9 @@ def trainee_file(client_id):
             st = f.get("status")
             db.execute("UPDATE course_trainees SET status=?, completed_at=? WHERE id=?",
                        (st, now_str() if st == "completed" else None, own["id"]))
+        elif act == "latin":
+            db.execute("UPDATE clients SET name_latin=? WHERE id=?", ((f.get("name_latin") or "").strip() or None, client_id))
+            flash("حُفظ الاسم اللاتيني", "ok")
         elif act == "price" and own and not price_locked(u):
             db.execute("UPDATE course_trainees SET price=? WHERE id=?", (fnum(f.get("price")), own["id"]))
             audit("تعديل سعر دورة لمتكوّن", f"{cl['name']}: {own['cname']} → {fnum(f.get('price')):g}")
@@ -3753,6 +3765,73 @@ def joined(names):
     return names[0] if len(names) == 1 else "، ".join(names[:-1]) + " و" + names[-1] if names else ""
 
 
+MONTHS_EN = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER",
+             "NOVEMBER", "DECEMBER"]
+BRANCH_EN = {1: "SKIKDA", 2: "EL HARROUCH"}
+
+
+def dates_en(dates):
+    """['2026-10-22','2026-10-23'] ← «22,23 OCTOBER 2026»"""
+    ds = sorted({d[:10] for d in dates if d})
+    if not ds:
+        return ""
+    groups = []
+    for d in ds:
+        y, m, dd = d.split("-")
+        if groups and groups[-1][0] == (y, m):
+            groups[-1][1].append(str(int(dd)))
+        else:
+            groups.append(((y, m), [str(int(dd))]))
+    parts = []
+    for i, ((y, m), days) in enumerate(groups):
+        last_y = i == len(groups) - 1 or groups[i + 1][0][0] != y
+        parts.append(",".join(days) + " " + MONTHS_EN[int(m) - 1] + (f" {y}" if last_y else ""))
+    return " - ".join(parts)
+
+
+def cert_en_data(db, rows, client):
+    """بيانات الشهادة (النموذج الأخضر): من الملف، ويمكن تعديلها وتُحفظ مع الشهادة."""
+    last = rows[-1]
+    saved = {}
+    try:
+        saved = json.loads(last["cert_en"] or "{}")
+    except (ValueError, TypeError):
+        saved = {}
+    course_names = []
+    dates = []
+    for r in rows:
+        co = db.execute("SELECT name, name_en FROM courses WHERE id=?", (r["course_id"],)).fetchone()
+        nm = (co["name_en"] or co["name"] or "").strip() if co else ""
+        if nm and nm.upper() not in [x.upper() for x in course_names]:
+            course_names.append(nm)
+        ds = [d["day_date"] for d in db.execute("SELECT day_date FROM course_days WHERE trainee_id=? AND day_date IS NOT NULL",
+                                              (r["id"],))]
+        dates += ds or [x for x in (r["start_date"], r["end_date"]) if x] or [(r["completed_at"] or r["enrolled_at"] or "")[:10]]
+    br = db.execute("SELECT id, name_en FROM branches WHERE id=?", (last["branch_id"],)).fetchone()
+    place = (br["name_en"] if br and br["name_en"] else BRANCH_EN.get(last["branch_id"], "")) if br else ""
+    d = dict(name=client["name_latin"] or client["name"],
+             course=" & ".join(course_names).upper(),
+             dates=dates_en(dates), place=place.upper(),
+             center=setting("cert_en_center") or DEFAULT_SETTINGS["cert_en_center"],
+             signer_title=setting("cert_en_signer_title") or DEFAULT_SETTINGS["cert_en_signer_title"],
+             signer=setting("cert_en_signer") or DEFAULT_SETTINGS["cert_en_signer"])
+    d.update({k: v for k, v in saved.items() if v})
+    return d
+
+
+def cert_en_save(db, rows, client_id, form):
+    last = rows[-1]
+    keys = ("course", "dates", "place", "center", "signer_title", "signer")
+    data = {k: form.get(k, "").strip() for k in keys}
+    nl = form.get("name", "").strip()
+    if nl:
+        db.execute("UPDATE clients SET name_latin=? WHERE id=?", (nl, client_id))
+    db.execute("UPDATE course_trainees SET cert_en=? WHERE id=?", (json.dumps(data, ensure_ascii=False), last["id"]))
+    for k, sk in (("signer_title", "cert_en_signer_title"), ("signer", "cert_en_signer"), ("center", "cert_en_center")):
+        if form.get("as_default") and data[k]:
+            db.execute("INSERT OR REPLACE INTO settings(key,value) VALUES(?,?)", (sk, data[k]))
+
+
 @app.route("/trainees/<int(signed=True):client_id>/certificate", methods=["GET", "POST"])
 @perm_required("courses")
 def trainee_certificate(client_id):
@@ -3766,6 +3845,22 @@ def trainee_certificate(client_id):
         flash("لا توجد دورة مكتملة بعد لهذا المتكوّن", "err")
         return redirect(url_for("trainee_file", client_id=client_id))
     last = rows[-1]
+    model = request.values.get("model", "en")
+    if request.method == "POST" and request.form.get("action") == "save_en":
+        cert_en_save(db, rows, client_id, request.form)
+        db.commit()
+        flash("حُفظت بيانات الشهادة", "ok")
+        return redirect(url_for("trainee_certificate", client_id=client_id))
+    if request.method == "POST" and request.form.get("action") == "reset_en":
+        db.execute("UPDATE course_trainees SET cert_en=NULL WHERE id=?", (last["id"],))
+        db.commit()
+        return redirect(url_for("trainee_certificate", client_id=client_id))
+    if request.method == "GET" and model == "en":
+        client = db.execute("SELECT * FROM clients WHERE id=?", (client_id,)).fetchone()
+        _, due_, paid_ = trainee_alloc(db, client_id)
+        return render_template("certificate_en.html", d=cert_en_data(db, rows, client), client=client,
+                               due=due_, paid=paid_, stamp=setting("stamp_img"), signature=setting("signature_img"),
+                               cert_no=f"{(last['completed_at'] or now_str())[:4]}/{rid_filter(last['id'])}")
     if request.method == "POST":
         act = request.form.get("action")
         if act == "reset":
@@ -3782,7 +3877,7 @@ def trainee_certificate(client_id):
                         request.form.get("footer", "").strip(), last["id"]))
             flash("تم حفظ تعديلات الشهادة", "ok")
         db.commit()
-        return redirect(url_for("trainee_certificate", client_id=client_id))
+        return redirect(url_for("trainee_certificate", client_id=client_id, model="ar"))
     dates = []
     for r in rows:
         ds = [d["day_date"] for d in db.execute("SELECT day_date FROM course_days WHERE trainee_id=? AND day_date IS NOT NULL", (r["id"],))]
