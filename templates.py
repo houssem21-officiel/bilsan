@@ -1842,7 +1842,9 @@ TEMPLATES["purchase_new.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>للفرع<select name="branch_id">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
 <label>التاريخ<input type="date" name="day" value="{{ today }}"></label><label>ملاحظة<input name="notes" placeholder="رقم الفاتورة..."></label></div>
 <datalist id="pl">{% for p in prods %}<option value="{{ p.name }}">{% endfor %}</datalist>
-<table style="margin-top:12px" id="lines"><tr><th>المنتج (اكتبي أول حروف الاسم)</th><th>الكمية</th>{% if can_cost %}<th class="cc">سعر الشراء للوحدة</th><th class="cc">المجموع</th>{% endif %}<th></th></tr></table>
+{% set can_price = cu.role=='admin' or perm('sale_prices') %}
+<table style="margin-top:12px" id="lines"><tr><th>المنتج (اكتبي أول حروف الاسم)</th><th>الكمية</th>{% if can_cost %}<th class="cc">سعر الشراء للوحدة</th><th class="cc">المجموع</th>{% endif %}{% if can_price %}<th>سعر البيع</th>{% endif %}<th></th></tr></table>
+{% if can_price %}<p class="mut">سعر البيع يظهر كما هو الآن: إذا غلا سعر الشراء، غيّري سعر البيع هنا ويتغيّر في البرنامج كله.</p>{% endif %}
 <p><button type="button" class="btn light sm" onclick="addLine()">＋ سطر</button>
 <button type="button" class="btn gold sm" onclick="qpShow(true)">{{ ic('products') }} منتج جديد غير مسجّل</button></p>
 {% if can_cost %}<p style="font-size:18px" class="cc">مجموع الفاتورة: <b id="gt">0</b> {{ cur }}</p>{% endif %}
@@ -1851,20 +1853,24 @@ TEMPLATES["purchase_new.html"] = r"""{% extends "base.html" %}{% block body %}
 <p><button class="btn gold" id="sb">💾 حفظ وإدخال المخزون</button></p></form></div>
 {% include "quick_product.html" %}
 <script>
-var P={{ prods|tojson }}, PRE={{ pre|tojson }}, QP_NEED_PRICE=false, CC={{ 'true' if can_cost else 'false' }};
+var P={{ prods|tojson }}, PRE={{ pre|tojson }}, QP_NEED_PRICE=false, CC={{ 'true' if can_cost else 'false' }}, CP={{ 'true' if can_price else 'false' }};
 function byName(n){n=(n||'').trim();return P.find(function(p){return p.name==n})}
 function md(){var r=document.querySelector('input[name=received]:checked').value=='1';document.getElementById('paybox').style.display=r?'':'none';
  document.getElementById('sb').textContent=r?'💾 حفظ وإدخال المخزون':'💾 حفظ الطلبية'}
-function tot(){if(!CC)return;var g=0;document.querySelectorAll('#lines tr.l').forEach(function(r){var q=parseFloat(r.querySelector('.q').value)||0,c=parseFloat(r.querySelector('.c').value)||0;
- r.querySelector('.t').textContent=(q*c).toLocaleString('fr-FR');g+=q*c});document.getElementById('gt').textContent=g.toLocaleString('fr-FR')}
+function tot(){var g=0;document.querySelectorAll('#lines tr.l').forEach(function(r){var q=parseFloat((r.querySelector('.q')||{}).value)||0,c=parseFloat((r.querySelector('.c')||{}).value)||0;
+ if(CC){r.querySelector('.t').textContent=(q*c).toLocaleString('fr-FR');g+=q*c}
+ var s=r.querySelector('.s');if(s){var low=c>0&&parseFloat(s.value)>0&&parseFloat(s.value)<c;s.style.borderColor=low?'#b3261e':'';s.style.background=low?'#fdecea':'';s.title=low?'سعر البيع أقل من سعر الشراء':''}});
+ if(CC)document.getElementById('gt').textContent=g.toLocaleString('fr-FR')}
 function addLine(pid,q){var t=document.getElementById('lines'),r=t.insertRow();r.className='l';var p=P.find(function(x){return x.id==pid});
  r.innerHTML='<td><input class="pn" list="pl" style="min-width:260px" placeholder="اسم المنتج" value="'+(p?p.name.replace(/"/g,'&quot;'):'')+'"><input type="hidden" name="product_id" value="'+(p?p.id:'')+'"></td>'+
  '<td><input name="qty" class="q" type="number" min="0" step="any" style="width:80px" value="'+(q||'')+'"></td>'+
  (CC?'<td><input name="cost" class="c" type="number" min="0" step="any" style="width:100px" value="'+(p&&p.cost_price?p.cost_price:'')+'"></td><td class="t">0</td>':'')+
+ (CP?'<td><input name="sale" class="s" type="number" min="0" step="any" style="width:100px" value="'+(p&&p.price?p.price:'')+'"></td>':'')+
  '<td><button type="button" class="btn red sm">×</button></td>';
  var pn=r.querySelector('.pn'),h=r.querySelector('input[type=hidden]');
  pn.onchange=function(){var x=byName(pn.value);h.value=x?x.id:'';pn.style.borderColor=x||!pn.value?'':'#b3261e';
-  if(x&&CC){var c=r.querySelector('.c');if(!c.value&&x.cost_price)c.value=x.cost_price}tot();
+  if(x&&CC){var c=r.querySelector('.c');if(!c.value&&x.cost_price)c.value=x.cost_price}
+  if(x&&CP){var s=r.querySelector('.s');if(!s.value&&x.price)s.value=x.price}tot();
   if(x&&r===t.rows[t.rows.length-1])addLine()};
  r.querySelectorAll('input').forEach(function(i){i.addEventListener('input',tot)});
  r.querySelector('button').onclick=function(){r.remove();tot()}}
@@ -2363,11 +2369,14 @@ TEMPLATES["stock_opening.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="oi" data-n="{{ r.name }}"><div class="nm">{{ item_ic(r.name,'product') }}{{ r.name }}</div>
 <div class="now">في البرنامج الآن: <b>{{ '%g'|format(r.qty) }}</b>{% if r.price %} · سعر البيع {{ r.price|money }}{% endif %}</div>
 <div class="qty"><button type="button" onclick="st(this,-1)">−</button><input name="q_{{ r.id }}" type="number" min="0" step="any" inputmode="decimal" placeholder="{{ '%g'|format(r.qty) }}" oninput="mk(this)"><button type="button" onclick="st(this,1)">＋</button></div>
-{% if can_cost %}<label class="now">سعر الشراء للوحدة (اختياري)<input name="c_{{ r.id }}" type="number" min="0" step="any" value="{{ '%g'|format(r.cost) if r.cost else '' }}" style="width:120px"></label>{% endif %}</div>
+<div class="row" style="gap:8px">{% if can_cost %}<label class="now">سعر الشراء<input name="c_{{ r.id }}" type="number" min="0" step="any" value="{{ '%g'|format(r.cost) if r.cost else '' }}" style="width:105px" oninput="mk(this)"></label>{% endif %}
+{% if can_price %}<label class="now">سعر البيع<input name="s_{{ r.id }}" type="number" min="0" step="any" value="{{ '%g'|format(r.price) if r.price else '' }}" style="width:105px" oninput="mk(this)"></label>{% endif %}</div>
+<div class="warn" style="display:none;color:#b3261e;font-size:13px">⚠ سعر البيع أقل من سعر الشراء</div></div>
 {% endfor %}</div>
 <div class="savebar"><span id="cnt">لم تُكتب أي كمية بعد</span><button class="btn gold" onclick="return confirm('حفظ المخزون لهذا الفرع؟')">💾 حفظ المخزون</button></div></form>
 <script>var QP_NEED_PRICE=false;
-function mk(i){var b=i.closest('.oi');b.classList.toggle('ch',i.value!=='');var n=document.querySelectorAll('.oi.ch').length;document.getElementById('cnt').textContent=n?('كتبتِ الكمية لـ '+n+' منتج'):'لم تُكتب أي كمية بعد'}
+function mk(i){var b=i.closest('.oi');var qi=b.querySelector('.qty input');b.classList.toggle('ch',qi.value!=='');
+ var c=b.querySelector('input[name^=c_]'),s=b.querySelector('input[name^=s_]');if(c&&s){var w=parseFloat(c.value)>0&&parseFloat(s.value)>0&&parseFloat(s.value)<parseFloat(c.value);b.querySelector('.warn').style.display=w?'':'none'}var n=document.querySelectorAll('.oi.ch').length;document.getElementById('cnt').textContent=n?('كتبتِ الكمية لـ '+n+' منتج'):'لم تُكتب أي كمية بعد'}
 function st(b,d){var i=b.parentNode.querySelector('input');var v=i.value===''?(parseFloat(i.placeholder)||0):parseFloat(i.value)||0;v=Math.max(0,v+d);i.value=v;mk(i)}
 document.getElementById('flt').oninput=function(){var q=this.value.trim();document.querySelectorAll('.oi').forEach(function(e){e.style.display=!q||e.dataset.n.indexOf(q)>=0?'':'none'});
  document.querySelectorAll('.cath').forEach(function(h){h.style.display=q?'none':''})};

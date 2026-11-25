@@ -4266,6 +4266,7 @@ def stock_opening():
     br = (int(request.values.get("branch")) if admin and (request.values.get("branch") or "").lstrip("-").isdigit()
           else (scope_branch() or work_branch()) if admin else u["branch_id"])
     can_cost = admin or has_perm("cost_prices")
+    can_price = admin or has_perm("sale_prices")
     if request.method == "POST":
         f = request.form
         n = 0
@@ -4281,6 +4282,15 @@ def stock_opening():
             c = f.get(f"c_{pid}", "").strip()
             if can_cost and c and fnum(c) > 0:
                 db.execute("UPDATE products SET cost_price=? WHERE id=?", (fnum(c), pid))
+            sp = f.get(f"s_{pid}", "").strip()
+            if can_price and sp and fnum(sp) > 0:
+                old = db.execute("SELECT name, price FROM products WHERE id=?", (pid,)).fetchone()
+                if old and fnum(sp) != (old["price"] or 0):
+                    db.execute("UPDATE products SET price=? WHERE id=?", (fnum(sp), pid))
+                    audit("تغيير سعر البيع", f"{old['name']}: {(old['price'] or 0):g} ← {fnum(sp):g}", br)
+                    if not admin:
+                        db.execute("UPDATE products SET needs_review=1, review_note=? WHERE id=?",
+                                   (f"تغيّر سعر البيع عند إدخال المخزون: {(old['price'] or 0):g} ← {fnum(sp):g}", pid))
         if n:
             audit("إدخال المخزون الموجود", f"{n} منتج — {branch_name(br)}", br)
         db.commit()
@@ -4290,7 +4300,7 @@ def stock_opening():
         COALESCE(p.price,0) AS price, COALESCE(s.qty,0) AS qty FROM products p
         LEFT JOIN stock s ON s.product_id=p.id AND s.branch_id=? WHERE p.active=1
         ORDER BY CASE WHEN p.usage='use' THEN 1 ELSE 0 END, COALESCE(p.category,'ي'), p.id""", (br,)).fetchall()
-    return render_template("stock_opening.html", rows=[dict(r) for r in rows], br=br, can_cost=can_cost,
+    return render_template("stock_opening.html", rows=[dict(r) for r in rows], br=br, can_cost=can_cost, can_price=can_price,
                            branches=active_branches() if admin else [])
 
 
@@ -4598,6 +4608,22 @@ def purchase_new():
                                      u["id"], now_str())).lastrowid
         for p_, q_, c_ in lines:
             db.execute("INSERT INTO purchase_items(purchase_id,product_id,qty,unit_cost) VALUES(?,?,?,?)", (pid, p_, q_, c_))
+        # سعر البيع الجديد (إذا ارتفع سعر الشراء)
+        can_price = u["role"] == "admin" or has_perm("sale_prices")
+        if can_price:
+            changed = []
+            for p_, q_, sp_ in zip(pids, qtys, f.getlist("sale")):
+                if not (p_ and p_.lstrip("-").isdigit()) or fnum(q_) <= 0 or not sp_.strip() or fnum(sp_) <= 0:
+                    continue
+                old = db.execute("SELECT name, price FROM products WHERE id=?", (int(p_),)).fetchone()
+                if old and fnum(sp_) != (old["price"] or 0):
+                    db.execute("UPDATE products SET price=? WHERE id=?", (fnum(sp_), int(p_)))
+                    changed.append(f"{old['name']}: {(old['price'] or 0):g} ← {fnum(sp_):g}")
+                    if u["role"] != "admin":
+                        db.execute("UPDATE products SET needs_review=1, review_note=?, added_by=? WHERE id=?",
+                                   (f"تغيّر سعر البيع عند الشراء: {(old['price'] or 0):g} ← {fnum(sp_):g}", u["id"], int(p_)))
+            if changed:
+                audit("تغيير أسعار البيع عند الشراء", f"{rid_filter(pid)}: " + "، ".join(changed), br_)
         if f.get("received") == "1":  # شراء سريع: السلعة وصلت الآن
             for p_, q_, c_ in lines:
                 move_stock(db, p_, br_, q_, f"شراء — {rid_filter(pid)}", u["id"])
@@ -4621,7 +4647,7 @@ def purchase_new():
         db.commit()
         flash("تم إنشاء طلبية الشراء", "ok")
         return redirect(url_for("purchase_view", pid=pid))
-    prods = db.execute("SELECT id,name,cost_price,category FROM products WHERE active=1 ORDER BY category,name").fetchall()
+    prods = db.execute("SELECT id,name,cost_price,price,category FROM products WHERE active=1 ORDER BY category,name").fetchall()
     pre = []
     for part in (request.args.get("items") or "").split(","):  # من صفحة تنبيهات المخزون: id:qty
         if ":" in part:
