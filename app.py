@@ -192,6 +192,7 @@ DEFAULT_SETTINGS = {
     "backup_dir2": "",
     "backup_every_hours": "6",
     "staff_can_edit_prices": "0",
+    "staff_direct_cancel": "1",
     "cert_title": "شهادة تكوين",
     "cert_body": "يشهد {center} بأن {sayed} {name}، {mawlud} بتاريخ {birth_date}، قد {tabaa} بنجاح الدورة التكوينية «{course}» المنظمة من {start} إلى {end}، بحجم ساعي قدره {hours} ساعة، تحت إشراف {trainer}.",
     "cert_footer": "سُلّمت هذه الشهادة للمعني(ة) بطلب منه(ا) لاستعمالها في حدود ما يسمح به القانون.",
@@ -312,6 +313,7 @@ def init_db():
     add_col("courses", "days", "INTEGER")
     add_col("payments", "plan_id", "INTEGER")
     add_col("appointments", "credit_used", "INTEGER DEFAULT 0")
+    add_col("payments", "fix_note", "TEXT")
     add_col("services", "aftercare", "TEXT")
     add_col("users", "lang", "TEXT")
     add_col("stock_moves", "cancelled", "INTEGER DEFAULT 0")
@@ -897,6 +899,11 @@ def setup_checklist(db):
 def director_alerts(db, due=None):
     """كل ما يحتاج انتباه المديرة، في قائمة وحدة، وكل عنصر برابط للحل."""
     al = []
+    nfix = db.execute("""SELECT COUNT(*) FROM audit WHERE substr(created_at,1,10)=? AND action IN
+        ('تصحيح وصل','إلغاء وصل','تصحيح موعد','تصحيح قسم الزيارة','إلغاء عملية') AND user_id IN (SELECT id FROM users WHERE role<>'admin')""",
+                      (center_today().isoformat(),)).fetchone()[0]
+    if nfix:
+        al.append(("amber", "audit", f"صحّح العمال أو ألغوا {nfix} عملية اليوم — للاطلاع", url_for("audit_page")))
     n = pending_approvals(db)
     if n:
         al.append(("red", "key", f"{n} طلب ينتظر موافقتك (تخفيض أو إلغاء)", url_for("approvals")))
@@ -1105,9 +1112,10 @@ def client_view(cid):
     photos = db.execute("SELECT id,kind,note,created_at FROM client_photos WHERE client_id=? ORDER BY id DESC",
                         (cid,)).fetchall() if can_see_photos() else []
     past, future = client_timeline(db, cid)
+    deletable = client_is_empty(db, cid)
     summ, first = client_summary(db, cid)
     return render_template("client_view.html", c=c, appts=appts, pays=pays, cplans=cplans, cvisits=cvisits,
-                           past=past, future=future, summ=summ, first=first,
+                           past=past, future=future, summ=summ, first=first, deletable=deletable,
                            skin=skin_card(db, cid) if has_perm("medical") else None,
                            cdebts=cdebts, notes=notes, photos=photos, can_photos=can_see_photos(),
                            services=services_for(current_user()["branch_id"] or work_branch()))
@@ -1973,6 +1981,149 @@ def payment_cancel(pid):
     return redirect(request.referrer or url_for("cashbox"))
 
 
+def can_fix(branch_id, created_at, u=None):
+    """تصحيح أو إلغاء مباشر: المديرة دائمًا، والعامل لعمليات اليوم في فرعه (إن سمحت المديرة بذلك)."""
+    u = u or current_user()
+    if not u:
+        return False
+    if u["role"] == "admin":
+        return True
+    return (has_perm("cancel_ops", u) and branch_id == u["branch_id"] and setting("staff_direct_cancel") != "0"
+            and (created_at or "")[:10] == center_today().isoformat())
+
+
+def client_is_empty(db, cid):
+    for q in ("SELECT 1 FROM visits WHERE client_id=?", "SELECT 1 FROM payments WHERE client_id=? AND cancelled=0",
+              "SELECT 1 FROM appointments WHERE client_id=? AND status<>'cancelled'", "SELECT 1 FROM plans WHERE client_id=?",
+              "SELECT 1 FROM course_trainees WHERE client_id=?", "SELECT 1 FROM charges WHERE client_id=? AND status IN ('pending','debt')"):
+        if db.execute(q + " LIMIT 1", (cid,)).fetchone():
+            return False
+    return True
+
+
+@app.route("/clients/<int(signed=True):cid>/delete", methods=["POST"])
+@perm_required("clients_edit")
+def client_delete(cid):
+    """حذف ملف سُجّل خطأً (اسم مكرر أو خاطئ) ما دام فارغًا: لا زيارات ولا دفعات ولا مواعيد."""
+    db = get_db()
+    c = db.execute("SELECT * FROM clients WHERE id=?", (cid,)).fetchone() or abort(404)
+    if not client_is_empty(db, cid):
+        flash("لا يمكن حذف هذا الملف لأن فيه عمليات. صحّحي الاسم أو الهاتف بدلًا من ذلك.", "err")
+        return redirect(url_for("client_view", cid=cid))
+    for t_ in ("client_notes", "client_photos", "skin_cards", "appointments"):
+        db.execute(f"DELETE FROM {t_} WHERE client_id=?", (cid,))
+    db.execute("DELETE FROM clients WHERE id=?", (cid,))
+    audit("حذف ملف سُجّل خطأً", f"{c['name']} {c['phone'] or ''}", c["branch_id"])
+    db.commit()
+    flash(f"حُذف الملف «{c['name']}»", "ok")
+    return redirect(url_for("clients"))
+
+
+@app.route("/payments/<int(signed=True):pid>/fix", methods=["GET", "POST"])
+@login_required()
+def payment_fix(pid):
+    """تصحيح وصل أُدخل خطأً: الزبون، المبلغ، طريقة الدفع، البيان. يبقى أثر التصحيح ظاهرًا."""
+    db = get_db()
+    u = current_user()
+    p = db.execute("""SELECT p.*, c.name AS client, c.phone FROM payments p LEFT JOIN clients c ON c.id=p.client_id
+        WHERE p.id=? AND p.cancelled=0""", (pid,)).fetchone() or abort(404)
+    if not can_fix(p["branch_id"], p["created_at"], u):
+        flash("لا يمكنك تصحيح هذا الوصل مباشرة (ليس من عمليات اليوم في فرعك). اطلبي ذلك من المديرة.", "err")
+        return redirect(url_for("receipt", pid=pid))
+    has_items = db.execute("SELECT 1 FROM sale_items WHERE payment_id=?", (pid,)).fetchone()
+    if request.method == "POST":
+        f = request.form
+        changes = []
+        new_client = f.get("client_id") or p["client_id"]
+        if str(new_client or "") != str(p["client_id"] or ""):
+            nc = db.execute("SELECT name FROM clients WHERE id=?", (new_client,)).fetchone()
+            if nc:
+                changes.append(f"الزبون: {p['client'] or '-'} ← {nc['name']}")
+                db.execute("UPDATE payments SET client_id=? WHERE id=?", (int(new_client), pid))
+                db.execute("UPDATE charges SET client_id=? WHERE payment_id=?", (int(new_client), pid))
+        amount = fnum(f.get("amount"), p["amount"])
+        if not has_items and amount > 0 and abs(amount - p["amount"]) > 0.001:
+            changes.append(f"المبلغ: {p['amount']:g} ← {amount:g}")
+            db.execute("UPDATE payments SET amount=? WHERE id=?", (amount, pid))
+        if f.get("method") in METHODS and f.get("method") != p["method"]:
+            changes.append(f"الدفع: {METHODS.get(p['method'], p['method'])} ← {METHODS[f['method']]}")
+            db.execute("UPDATE payments SET method=? WHERE id=?", (f["method"], pid))
+        desc = f.get("description", "").strip()
+        if desc and desc != (p["description"] or ""):
+            changes.append("البيان")
+            db.execute("UPDATE payments SET description=? WHERE id=?", (desc, pid))
+        if changes:
+            note = f"صُحّح في {now_str()[:16]} بواسطة {u['full_name'] or u['username']}: " + "، ".join(changes)
+            if f.get("reason", "").strip():
+                note += f" (السبب: {f['reason'].strip()})"
+            db.execute("UPDATE payments SET fix_note=TRIM(COALESCE(fix_note,'') || ' ' || ?) WHERE id=?", (note, pid))
+            audit("تصحيح وصل", f"وصل {rid_filter(pid)} — " + "، ".join(changes), p["branch_id"])
+            db.commit()
+            flash("تم تصحيح الوصل", "ok")
+        else:
+            flash("لم يتغيّر شيء", "ok")
+        return redirect(url_for("receipt", pid=pid))
+    sel = {"id": p["client_id"], "name": p["client"], "phone": p["phone"]} if p["client_id"] else None
+    return render_template("payment_fix.html", p=p, has_items=has_items, sel_client=sel)
+
+
+@app.route("/payments/<int(signed=True):pid>/void", methods=["POST"])
+@login_required()
+def payment_void(pid):
+    """إلغاء وصل: مباشرة لعمليات اليوم، أو طلب للمديرة لما قبلها. يبقى محفوظًا في «العمليات الملغاة»."""
+    db = get_db()
+    u = current_user()
+    p = db.execute("SELECT * FROM payments WHERE id=? AND cancelled=0", (pid,)).fetchone() or abort(404)
+    reason = request.form.get("reason", "").strip() or "خطأ في الإدخال"
+    if can_fix(p["branch_id"], p["created_at"], u):
+        cancel_op(db, "payment", pid, reason, u["id"])
+        audit("إلغاء وصل", f"وصل {rid_filter(pid)} — {p['amount']:g} — {reason}", p["branch_id"])
+        db.commit()
+        flash("أُلغي الوصل. هو محفوظ في «العمليات الملغاة» ولا يدخل في الحسابات.", "ok")
+    else:
+        if u["role"] != "admin" and p["branch_id"] != u["branch_id"]:
+            abort(403)
+        request_approval(db, "cxl_payment", pid, p["branch_id"], p["amount"] or 0, reason,
+                         f"وصل {rid_filter(pid)} — {p['description'] or ''}")
+        db.commit()
+        flash("أُرسل طلب الإلغاء إلى المديرة", "ok")
+    return redirect(url_for("receipt", pid=pid))
+
+
+@app.route("/appointments/<int(signed=True):aid>/edit", methods=["GET", "POST"])
+@perm_required("appointments")
+def appt_edit(aid):
+    """تصحيح موعد: الخدمة، القسم، التاريخ والساعة، الغرفة، الملاحظة، وسعر الحصة."""
+    db = get_db()
+    u = current_user()
+    a = db.execute("""SELECT a.*, c.name AS client, c.phone FROM appointments a JOIN clients c ON c.id=a.client_id
+        WHERE a.id=?""", (aid,)).fetchone() or abort(404)
+    if u["role"] != "admin" and a["branch_id"] != u["branch_id"]:
+        abort(403)
+    if request.method == "POST":
+        f = request.form
+        dept = f.get("dept") if f.get("dept") in branch_depts(a["branch_id"]) else a["dept"]
+        if u["role"] in ("laser", "beauty"):
+            dept = a["dept"]
+        at = f"{f.get('date')} {f.get('time') or '09:00'}" if f.get("date") else a["start_at"]
+        price = a["price"]
+        if a["plan_id"] and not a["paid"] and not price_locked(u) and f.get("price", "").strip() != "":
+            price = fnum(f.get("price"))
+        db.execute("""UPDATE appointments SET dept=?, service_id=?, start_at=?, post_id=?, notes=?, price=? WHERE id=?""",
+                   (dept, f.get("service_id") or None, at, f.get("post_id") or None, f.get("notes", "").strip(), price, aid))
+        if at != a["start_at"]:
+            db.execute("UPDATE appointments SET sms_sent_at=NULL, morning_sent_at=NULL WHERE id=?", (aid,))
+        if a["plan_id"]:
+            db.execute("""UPDATE plans SET total_price=(SELECT COALESCE(SUM(price),0) FROM appointments WHERE plan_id=?)
+                WHERE id=? AND price_mode='session'""", (a["plan_id"], a["plan_id"]))
+        audit("تصحيح موعد", f"{a['client']} — {a['start_at'] or ''} ← {at}", a["branch_id"])
+        db.commit()
+        flash("تم تصحيح الموعد", "ok")
+        return redirect(url_for("appointments", date=(at or "")[:10] or None))
+    return render_template("appt_edit.html", a=a, depts=branch_depts(a["branch_id"]),
+                           services=services_for(a["branch_id"]), posts=posts_for(a["branch_id"]), slots=WORK_SLOTS)
+
+
 @app.route("/receipt/<int(signed=True):pid>")
 @login_required()
 def receipt(pid):
@@ -1988,7 +2139,8 @@ def receipt(pid):
         WHERE ch.payment_id=? ORDER BY i.id""", (pid,)).fetchall()
     rest = db.execute("""SELECT COALESCE(SUM(amount),0) FROM charges WHERE status='debt' AND debt_of IN
         (SELECT id FROM charges WHERE payment_id=?)""", (pid,)).fetchone()[0]
-    return render_template("receipt.html", p=p, items=items, vitems=vitems, rest=rest)
+    return render_template("receipt.html", p=p, items=items, vitems=vitems, rest=rest,
+                           fixable=can_fix(p["branch_id"], p["created_at"]))
 
 
 # ---------------------------------------------------------------- نقطة البيع (منتجات)
@@ -3284,6 +3436,12 @@ def visit_view(vid):
                 flash("انتهى العلاج (بدون مبلغ)", "ok")
             db.commit()
             return redirect(url_for("visit_queue") if u["role"] != "reception" else url_for("reception"))
+        elif act == "move" and v["status"] == "waiting" and u["role"] in ("admin", "reception") \
+                and request.form.get("target") in VISIT_TARGETS and request.form.get("target") != v["target"]:
+            t_ = request.form["target"]
+            db.execute("UPDATE visits SET target=? WHERE id=?", (t_, vid))
+            audit("تصحيح قسم الزيارة", f"{v['client']}: {VISIT_TARGETS.get(v['target'])} ← {VISIT_TARGETS[t_]}", v["branch_id"])
+            flash(f"نُقل الزبون إلى {VISIT_TARGETS[t_]}", "ok")
         elif act == "cancel" and v["status"] in ("waiting", "treating") and u["role"] in ("admin", "reception"):
             for it in items:
                 if it["product_id"]:
@@ -4373,8 +4531,10 @@ def operations():
                 flash("أُرسل الطلب إلى المديرة", "ok")
         elif kind in OP_KINDS and oid.lstrip("-").isdigit():
             oid = int(oid)
-            if admin:
+            if admin or (day == today and setting("staff_direct_cancel") != "0"):
                 ok = cancel_op(db, kind, oid, reason, u["id"])
+                if ok and not admin:
+                    audit("إلغاء عملية", f"{OP_KINDS.get(kind)} {rid_filter(oid)} — {reason}", br)
                 flash("تم الإلغاء. العملية محفوظة في «العمليات الملغاة» ولا تدخل في الحسابات." if ok
                       else "العملية أُلغيت سابقًا أو تغيّرت", "ok" if ok else "err")
             else:
@@ -4391,7 +4551,7 @@ def operations():
     done = db.execute("""SELECT o.*, u.full_name AS by_name, r.full_name AS req_name FROM cancelled_ops o
         LEFT JOIN users u ON u.id=o.done_by LEFT JOIN users r ON r.id=o.requested_by WHERE o.branch_id=? AND o.day=? ORDER BY o.id DESC""",
                       (br, day)).fetchall()
-    return render_template("operations.html", ops=ops, pend=pend, done=done, day=day, br=br, admin=admin,
+    return render_template("operations.html", ops=ops, pend=pend, done=done, day=day, br=br, admin=admin, direct=(day == today and setting("staff_direct_cancel") != "0"),
                            branches=active_branches() if admin else [], today=today)
 
 
@@ -5752,7 +5912,7 @@ def settings():
                 continue
             elif k in ("backup_dir", "backup_dir2", "backup_every_hours"):
                 continue  # من صفحة النسخ الاحتياطي
-            elif k == "staff_can_edit_prices":
+            elif k in ("staff_can_edit_prices", "staff_direct_cancel"):
                 v = "1" if request.form.get(k) else "0"
             elif k == "director_branch":
                 v = request.form.get(k, "") if request.form.get(k, "").isdigit() else ""
@@ -6478,7 +6638,7 @@ PAGE_ICONS = {
     "attendance": "staff", "courses": "course", "course_view": "course", "stock_use": "cream", "approvals": "key", "sessions_profit": "reports", "stock_use": "cream",
     "services_profit": "services", "month_report": "reports", "purchase_auto": "truck",
     "appt_reschedule": "calendar", "appts_missed": "calendar",
-    "operations": "audit", "cancelled_ops": "audit", "stock_manage": "products", "stock_opening": "products", "day_report": "reports",
+    "operations": "audit", "cancelled_ops": "audit", "stock_manage": "products", "stock_opening": "products", "day_report": "reports", "payment_fix": "cash", "appt_edit": "calendar", "trainee_file": "course",
 }
 
 

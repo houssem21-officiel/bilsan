@@ -103,6 +103,7 @@ input,select,textarea{max-width:100%}input[style*="width"]{max-width:100%}
 .hj{display:block;font-size:13.5px;color:#7a5323;margin-top:3px}.hj b{background:#f6e9d6;border:1px solid #ecd3b0;border-radius:14px;padding:1px 9px;margin-inline-start:6px}
 .hjd{display:flex;align-items:center;gap:10px;padding:11px 4px;border-bottom:1px solid #ece2d3;text-decoration:none;color:var(--txt)}.hjd:last-child{border:0}.hjd:hover{background:#f6efe3}
 .nodebar{font-size:14px;color:var(--goldl);margin-bottom:8px}.nodebar a{color:var(--goldl)}
+[dir=ltr]{unicode-bidi:isolate}
 .hpill{background:var(--gold);color:var(--g9);border-radius:20px;padding:3px 12px;font-size:14px;font-weight:bold}
 .gs{position:relative;flex:1;max-width:380px;min-width:200px}.gs input{width:100%;background:rgba(255,255,255,.95);border-radius:22px;padding:8px 16px;font-size:15px;border:1px solid var(--gold)}
 #gsr{position:absolute;top:44px;inset-inline:0;background:#fff;border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.3);z-index:50;display:none;max-height:420px;overflow:auto}
@@ -477,6 +478,7 @@ TEMPLATES["client_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <label>حساسية<input name="allergies" value="{{ c.allergies or '' }}"></label>
 <label>أدوية يتناولها<input name="medications" value="{{ c.medications or '' }}"></label>
 <label style="flex:1">ملاحظات<input name="notes" value="{{ c.notes or '' }}"></label><button class="btn">حفظ</button></form>
+{% if deletable and perm('clients_edit') %}<form method="post" action="{{ url_for('client_delete', cid=c.id) }}" style="margin-top:8px" onsubmit="return confirm('حذف هذا الملف نهائيًا؟ (سُجّل خطأً ولا عمليات فيه)')"><button class="btn red sm">حذف هذا الملف (سُجّل خطأً)</button></form>{% endif %}
 {% if perm('consent') %}<form class="row" action="{{ url_for('consent', cid=c.id) }}" style="margin-top:8px"><label>وثيقة الموافقة على<input name="procedure" list="procs2" style="width:240px" placeholder="اختر الإجراء"></label>
 <datalist id="procs2">{% for s in services %}<option value="{{ s.name }}">{% endfor %}</datalist><button class="btn light sm">طباعة وثيقة الموافقة</button></form>{% endif %}</details></div>
 
@@ -564,6 +566,7 @@ TEMPLATES["appt_cards.html"] = r"""<style>.day-h{margin:16px 0 6px;color:#173f36
 <form method="post" action="{{ url_for('appt_arrived', aid=a.id) }}"><button class="btn sm">✓ وصل</button></form>
 <form method="post" action="{{ url_for('appt_status', aid=a.id) }}"><input type="hidden" name="status" value="noshow"><button class="btn light sm">لم يحضر</button></form>
 <a class="btn light sm" href="{{ url_for('appt_reschedule', aid=a.id) }}">أجّل</a>
+<a class="btn light sm" href="{{ url_for('appt_edit', aid=a.id) }}">✎ تصحيح</a>
 <form method="post" action="{{ url_for('appt_status', aid=a.id) }}" onsubmit="return confirm('إلغاء هذا الموعد؟')"><input type="hidden" name="status" value="cancelled"><button class="btn red sm">إلغاء</button></form>{% endif %}</div></div>
 {% else %}<p class="mut" style="margin-top:12px">لا توجد مواعيد في هذه الفترة.</p>{% endfor %}
 <script>document.querySelectorAll('[data-hd]').forEach(function(e){try{e.textContent=new Date(e.dataset.hd+'T12:00:00').toLocaleDateString('ar',{weekday:'long'})}catch(x){}});</script>"""
@@ -809,6 +812,30 @@ function qpSave(){var e=document.getElementById('qp_err');var d={name:document.g
   qpShow(false);qpDone(r.product,r.existed)}).catch(function(){e.textContent='تعذّر الحفظ';e.style.display=''})}
 </script>"""
 
+TEMPLATES["payment_fix.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker with context %}{% block body %}
+<h1>{{ page_icon() }}تصحيح الوصل رقم {{ p.id|rid }}</h1>
+<div class="card" style="max-width:640px"><p class="mut">صحّحي ما أُدخل خطأً ثم احفظي. يبقى أثر التصحيح ظاهرًا في الوصل، وتطّلع عليه المديرة.</p>
+<form method="post" class="row" style="flex-direction:column;align-items:stretch">
+{{ client_picker(sel_client) }}
+<label>المبلغ ({{ cur }}){% if has_items %} <span class="mut">— بيع منتجات: لتغيير المبلغ ألغي الوصل وأعيدي البيع</span>{% endif %}
+<input name="amount" type="number" min="0" step="any" value="{{ '%g'|format(p.amount) }}" {{ 'readonly' if has_items }} style="font-size:20px"></label>
+<label>طريقة الدفع<select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}" {{ 'selected' if p.method==k }}>{{ v }}</option>{% endfor %}</select></label>
+<label>البيان<input name="description" value="{{ p.description or '' }}"></label>
+<label>سبب التصحيح (اختياري)<input name="reason" placeholder="مثلاً: كُتب المبلغ خطأً"></label>
+<div class="row"><button class="btn gold">حفظ التصحيح</button><a class="btn light" href="{{ url_for('receipt', pid=p.id) }}">رجوع</a></div></form></div>{% endblock %}"""
+
+TEMPLATES["appt_edit.html"] = r"""{% extends "base.html" %}{% block body %}
+<h1>{{ page_icon() }}تصحيح موعد: {{ a.client }}</h1>
+<div class="card" style="max-width:720px"><form method="post" class="row">
+{% if cu.role in ('admin','reception') %}<label>القسم<select name="dept">{% for k in ('reception','beauty','laser') if k in depts %}<option value="{{ k }}" {{ 'selected' if a.dept==k }}>{{ VISIT_TARGETS[k] }}</option>{% endfor %}</select></label>{% endif %}
+<label>الخدمة<select name="service_id"><option value="">—</option>{% for s in services %}<option value="{{ s.id }}" {{ 'selected' if a.service_id==s.id }}>{{ s.name }} ({{ VISIT_TARGETS.get(s.dept, DEPTS[s.dept]) }})</option>{% endfor %}</select></label>
+<label>التاريخ<input type="date" name="date" value="{{ (a.start_at or '')[:10] }}" data-hijri></label>
+<label>الساعة<select name="time">{% for s in slots %}<option {{ 'selected' if (a.start_at or '')[11:16]==s }}>{{ s }}</option>{% endfor %}{% if (a.start_at or '')[11:16] and (a.start_at or '')[11:16] not in slots %}<option selected>{{ a.start_at[11:16] }}</option>{% endif %}</select></label>
+{% if posts %}<label>الغرفة<select name="post_id"><option value="">—</option>{% for p in posts %}<option value="{{ p.id }}" {{ 'selected' if a.post_id==p.id }}>{{ p.name }}</option>{% endfor %}</select></label>{% endif %}
+{% if a.plan_id %}<label>سعر الحصة<input name="price" type="number" min="0" step="any" value="{{ '%g'|format(a.price or 0) }}" {{ 'readonly' if (locked or a.paid) }} style="width:110px"></label>{% endif %}
+<label style="flex:1">ملاحظة<input name="notes" value="{{ a.notes or '' }}"></label>
+<div class="row" style="width:100%"><button class="btn gold">حفظ التصحيح</button><a class="btn light" href="{{ url_for('appointments', date=(a.start_at or '')[:10]) }}">رجوع</a></div></form></div>{% endblock %}"""
+
 TEMPLATES["receipt.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="card" style="max-width:420px;margin:auto" id="rc">
 <div style="text-align:center"><img src="{{ url_for('static', filename='logo_full.jpg') }}" alt="" style="width:110px;border-radius:10px"><h1 style="margin:6px 0 4px">{{ center }}</h1><div class="mut">{{ p.branch }}</div>
@@ -825,10 +852,15 @@ TEMPLATES["receipt.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="mut" style="text-align:center">طريقة الدفع: {{ METHODS.get(p.method, p.method) }} — استلمه: {{ p.by_name or '' }}</div>
 <div class="row noprint" style="justify-content:center;margin-top:14px"><button class="btn" onclick="window.print()">طباعة</button>
 <a class="btn light" href="{{ url_for('reception') if can_collect else url_for('dashboard') }}">رجوع</a>
-{% if cu.role!='admin' and not p.cancelled %}<details class="noprint" style="margin-top:10px"><summary class="btn light sm" style="list-style:none">طلب إلغاء هذا الوصل من المديرة</summary>
+{% if fixable and not p.cancelled %}<a class="btn light" href="{{ url_for('payment_fix', pid=p.id) }}">✎ تصحيح الوصل</a>
+<details class="noprint"><summary class="btn red" style="list-style:none">إلغاء الوصل</summary>
+<form method="post" action="{{ url_for('payment_void', pid=p.id) }}" class="row" style="margin-top:6px" onsubmit="return confirm('إلغاء هذا الوصل؟ يبقى محفوظًا في «العمليات الملغاة» ولا يدخل في الحسابات')">
+<input name="reason" placeholder="السبب (مثلاً: خطأ في الإدخال)" style="min-width:200px"><button class="btn red sm">تأكيد الإلغاء</button></form></details>{% endif %}
+{% if cu.role!='admin' and not p.cancelled and not fixable %}<details class="noprint" style="margin-top:10px"><summary class="btn light sm" style="list-style:none">طلب إلغاء هذا الوصل من المديرة</summary>
 <form method="post" action="{{ url_for('approval_request') }}" class="row" style="margin-top:6px"><input type="hidden" name="kind" value="cancel_payment"><input type="hidden" name="ref_id" value="{{ p.id }}">
 <input name="reason" placeholder="سبب الإلغاء" required style="min-width:200px"><button class="btn red sm">إرسال الطلب</button></form></details>{% endif %}
-{% if cu.role=='admin' and not p.cancelled %}<form method="post" action="{{ url_for('payment_cancel', pid=p.id) }}" onsubmit="return confirm('إلغاء هذه الدفعة؟ سيُرجع المخزون إن كانت بيعًا')"><button class="btn red">إلغاء الدفعة</button></form>{% endif %}</div>
+</div>
+{% if p.fix_note %}<p class="mut noprint" style="font-size:13px;margin-top:10px">✎ {{ p.fix_note }}</p>{% endif %}
 </div>{% endblock %}"""
 
 TEMPLATES["cashbox.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
@@ -1124,6 +1156,7 @@ TEMPLATES["settings.html"] = r"""{% extends "base.html" %}{% block body %}
 <p class="mut">المتغيرات: {name} الاسم، {procedure} الإجراء، {center} المركز، {birth_date}، {phone}، {date}.</p></div>
 <div class="card"><h2>الأسعار</h2>
 <p><label><input type="checkbox" name="staff_can_edit_prices" value="1" {{ 'checked' if s.staff_can_edit_prices=='1' }}> السماح للعمال (الاستقبال والأقسام) بتغيير السعر عند التحصيل</label></p>
+<p><label><input type="checkbox" name="staff_direct_cancel" value="1" {{ 'checked' if s.staff_direct_cancel!='0' }}> السماح للاستقبال بتصحيح أو إلغاء عمليات <b>اليوم</b> مباشرة (تظهر لكِ في الصفحة الرئيسية وفي سجل العمليات). عمليات الأمس تحتاج موافقتك دائمًا.</label></p>
 <p class="mut">إذا لم يُفعَّل: الأسعار تُعدَّل من المديرة فقط في «الخدمات والأسعار» و«المنتجات»، والعمال يستعملونها كما هي.</p></div>
 <div class="card"><h2>المديرة</h2><div class="row"><label>فرع المديرة<select name="director_branch"><option value="">—</option>{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if s.director_branch==b.id|string }}>{{ b.name }}</option>{% endfor %}</select></label></div></div>
 <div class="card"><h2>العمال والرواتب</h2>
@@ -1608,6 +1641,8 @@ TEMPLATES["visit_view.html"] = r"""{% extends "base.html" %}{% block body %}
 {% if can_treat %}<form method="post" onsubmit="return confirm('إنهاء العلاج وإرسال المجموع ({{ total|money|striptags }}) إلى الاستقبال؟')"><input type="hidden" name="action" value="finish"><button class="btn gold">إنهاء العلاج وإرسال المبلغ إلى الاستقبال</button></form>
 {% if can_collect %}<form method="post" class="row" onsubmit="return confirm('إنهاء العلاج وتحصيل {{ total|money|striptags }} هنا؟')"><input type="hidden" name="action" value="finish"><input type="hidden" name="collect" value="1">
 <select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select><button class="btn">إنهاء العلاج وتحصيل المبلغ هنا</button></form>{% endif %}{% endif %}
+{% if (cu.role=='admin' or perm('reception_visits')) and v.status=='waiting' %}<form method="post" class="row" style="gap:6px"><input type="hidden" name="action" value="move">
+<label style="flex-direction:row;align-items:center;gap:6px">أُرسل خطأً؟ انقله إلى<select name="target">{% for k in ('reception','beauty','laser') %}<option value="{{ k }}" {{ 'selected' if v.target==k }}>{{ VISIT_TARGETS[k] }}</option>{% endfor %}</select></label><button class="btn light">نقل</button></form>{% endif %}
 {% if cu.role=='admin' or perm('reception_visits') %}<form method="post" onsubmit="return confirm('إلغاء الزيارة؟')"><input type="hidden" name="action" value="cancel"><button class="btn red">إلغاء الزيارة</button></form>{% endif %}
 </div>
 <script>function sw(){var k=document.getElementById('kind').value;document.getElementById('k_service').style.display=k=='service'?'':'none';document.getElementById('k_product').style.display=k=='product'?'':'none'}</script>
@@ -2458,13 +2493,15 @@ TEMPLATES["operations.html"] = r"""{% extends "base.html" %}{% block body %}
 {% if branches %}<div class="row noprint" style="margin-bottom:10px">{% for b in branches %}<a class="btn {{ '' if b.id==br else 'light' }}" href="{{ url_for('operations', branch=b.id, day=day) }}">{{ b.name }}</a>{% endfor %}</div>{% endif %}
 <div class="card"><form class="row"><input type="hidden" name="branch" value="{{ br }}"><label>اليوم<input type="date" name="day" value="{{ day }}"{% if not admin %}{% endif %}></label><button class="btn light">عرض</button></form>
 <p class="mut">العملية الملغاة <b>تبقى محفوظة</b> في «العمليات الملغاة»، لكنها لا تدخل في الصندوق ولا في تقرير الشهر ولا في المخزون (السلعة ترجع للمخزون).
-{% if not admin %}يُرسل الإلغاء طلبًا إلى المديرة، وعند موافقتها يُنفَّذ تلقائيًا.{% endif %}</p></div>
+{% if not admin %}{% if direct %}عمليات <b>اليوم</b> تُلغى أو تُصحَّح مباشرة، والمديرة تطّلع عليها. عمليات الأمس تُرسل طلبًا إلى المديرة.{% else %}يُرسل الإلغاء طلبًا إلى المديرة، وعند موافقتها يُنفَّذ تلقائيًا.{% endif %}{% endif %}</p></div>
 <div class="card"><h2>عمليات يوم {{ day }} ({{ ops|length }})</h2>
 <table><tr><th>الوقت</th><th>العملية</th><th>الزبون</th><th>المبلغ</th><th>بواسطة</th><th class="noprint">إلغاء</th></tr>
 {% for o in ops %}<tr><td>{{ (o.at or '')[11:16] }}</td><td>{{ o.label }}</td><td>{{ o.client or '' }}</td><td>{{ o.amount|money if o.amount is not none else '' }}</td><td class="mut">{{ o.by or '' }}</td>
 <td class="noprint">{% if (o.kind, o.id) in pend %}<span class="tag amber">في انتظار المديرة</span>{% else %}
 <form method="post" class="row" style="gap:4px" onsubmit="return confirm('إلغاء هذه العملية؟')"><input type="hidden" name="kind" value="{{ o.kind }}"><input type="hidden" name="id" value="{{ o.id }}"><input type="hidden" name="day" value="{{ day }}"><input type="hidden" name="branch" value="{{ br }}">
-<input name="reason" placeholder="السبب" required style="width:140px"><button class="btn red sm">{{ 'إلغاء' if admin else 'طلب إلغاء' }}</button></form>{% endif %}</td></tr>
+<input name="reason" placeholder="السبب" required style="width:140px"><button class="btn red sm">{{ 'إلغاء' if (admin or direct) else 'طلب إلغاء' }}</button>
+{% if o.kind=='payment' and (admin or direct) %}<a class="btn light sm" href="{{ url_for('payment_fix', pid=o.id) }}">✎ تصحيح</a>{% endif %}
+{% if o.kind=='visit' %}<a class="btn light sm" href="{{ url_for('visit_view', vid=o.id) }}">فتح</a>{% endif %}</form>{% endif %}</td></tr>
 {% else %}<tr><td colspan="6" class="mut">لا توجد عمليات في هذا اليوم</td></tr>{% endfor %}</table>
 {% if ops %}<form method="post" class="row noprint" style="margin-top:14px;border-top:1px dashed #e0d2bb;padding-top:12px" onsubmit="return confirm('إلغاء كل عمليات يوم {{ day }}؟ (تبقى محفوظة في «العمليات الملغاة»)')">
 <input type="hidden" name="kind" value="day"><input type="hidden" name="day" value="{{ day }}"><input type="hidden" name="branch" value="{{ br }}">
