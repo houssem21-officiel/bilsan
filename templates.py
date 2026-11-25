@@ -310,7 +310,7 @@ TEMPLATES["login.html"] = r"""{% extends "base.html" %}{% block body %}
 <div style="max-width:380px;margin:30px auto;text-align:center">
 <img class="brandlogo" src="{{ url_for('static', filename='logo.png') }}" alt="{{ center }}" style="width:230px">
 <div class="card" style="margin-top:18px">
-{% if NODE and node_status and (node_status.first or not node_status.ok) %}<div class="flash err" style="text-align:right">هذا الحاسوب غير مربوط بعد بالحاسوب المركزي{% if node_status.first %}، فلا يمكن الدخول قبل الربط{% endif %}. {% if node_status.err %}<div class="mut" style="font-size:13px" dir="auto">{{ node_status.err[:160] }}</div>{% endif %}
+{% if NODE and node_status and (node_status.first or not node_status.ok) %}<div class="flash err" style="text-align:right">هذا الحاسوب غير مربوط بعد بالحاسوب المركزي{% if node_status.first %}، فلا يمكن الدخول قبل الربط{% endif %}. {% if node_status.err %}<div class="mut" style="font-size:13px" dir="auto">{{ node_status.err[:160]|replace('<urlopen error ','')|replace('>','')|replace('[Errno 11001] getaddrinfo failed','لم يُعثر على اسم الحاسوب المركزي')|replace('timed out','انتهت مهلة الاتصال')|replace('[WinError 10061]','رفض الحاسوب المركزي الاتصال (البرنامج غير مفتوح فيه؟)') }}</div>{% endif %}
 <form method="post" action="{{ url_for('node_central') }}" style="margin-top:8px"><button class="btn gold" style="width:100%">🔎 بحث تلقائي عن الحاسوب المركزي</button></form>
 <form method="post" action="{{ url_for('node_central') }}" class="row" style="margin-top:8px"><input name="ip" placeholder="192.168.1.10" dir="ltr" style="flex:1;text-align:center" required><button class="btn light">ربط</button></form>
 <div class="mut" style="font-size:13px">العنوان يظهر في حاسوب المديرة: الإدارة ← الحواسيب (تطبيق الهاتف للمديرة).</div></div>{% endif %}
@@ -2325,7 +2325,7 @@ TEMPLATES["devices.html"] = r"""{% extends "base.html" %}{% block body %}
 <td><b>{{ d.full_name }}</b><div class="mut">رقم {{ d.slot }}</div></td><td>{{ d.branch }}</td><td>{{ PLACES.get(d.role, d.role) }}</td>
 <td>{% if d.last_seen %}{{ d.last_seen[:16] }}{% else %}<span class="mut">لم يتصل بعد</span>{% endif %}</td>
 <td dir="ltr">{% if d.app_version %}{{ d.app_version }}{% if d.app_version != version %} <span title="سيتحدث قريبًا">⏳</span>{% else %} ✅{% endif %}{% else %}<span class="mut">—</span>{% endif %}</td>
-<td>{% if d.active %}<span style="color:#1a7a40">🟢 يعمل</span>{% else %}<span style="color:#a12">⛔ موقوف</span>{% endif %}
+<td>{% if not d.active %}<span style="color:#a12">⛔ موقوف</span>{% elif d.online %}<span style="color:#1a7a40;font-weight:bold">🟢 متصل الآن</span>{% elif d.last_seen %}<span style="color:#b06a00;font-weight:bold">🟠 غير متصل</span>{% else %}<span class="mut">⚪ لم يتصل بعد</span>{% endif %}
 {% if codes.get(d.id) %}<div class="mut">رمز الربط: <b dir="ltr" style="font-size:16px;letter-spacing:2px">{{ codes[d.id].code }}</b></div>{% endif %}</td>
 <td><form method="post" style="display:flex;gap:4px"><input type="hidden" name="act" value="password"><input type="hidden" name="id" value="{{ d.id }}">
 <input name="password" placeholder="كلمة السر" minlength="4" required style="width:120px"><button class="btn sm">حفظ</button></form></td>

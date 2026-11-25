@@ -933,7 +933,7 @@ def director_alerts(db, due=None):
     for b in active_branches():
         n = sum(1 for r in reorder_suggestions(b["id"]) if r["suggest"] > 0)
         if n:
-            al.append(("amber", "truck", f"{b['name']}: {n} مادة لازم تتشرى — الطلبية جاهزة، ما عليكِ إلا الموافقة",
+            al.append(("amber", "truck", f"{b['name']}: {n} مادة يجب شراؤها — طلبية الشراء جاهزة وتنتظر موافقتك",
                        url_for("purchase_auto", branch=b["id"])))
     due = due if due is not None else due_salaries()
     if due:
@@ -944,8 +944,11 @@ def director_alerts(db, due=None):
         lim = (center_now() - timedelta(minutes=10)).strftime("%Y-%m-%d %H:%M:%S")
         off = db.execute("""SELECT full_name FROM users WHERE device=1 AND active=1 AND last_seen IS NOT NULL
             AND last_seen<?""", (lim,)).fetchall()
+        never = db.execute("SELECT full_name FROM users WHERE device=1 AND active=1 AND last_seen IS NULL").fetchall()
         if off and 8 <= center_now().hour < 20:
-            al.append(("amber", "monitor", "حواسيب غير متصلة: " + "، ".join(o[0] for o in off[:4]), url_for("devices")))
+            al.append(("amber", "monitor", "حواسيب انقطع اتصالها منذ أكثر من 10 دقائق: " + "، ".join(o[0] for o in off[:5]), url_for("devices")))
+        if never:
+            al.append(("amber", "monitor", "حواسيب لم تتصل بعد بهذا الحاسوب: " + "، ".join(o[0] for o in never[:5]), url_for("devices")))
     n = db.execute("""SELECT COUNT(*) FROM appointments WHERE plan_id IS NOT NULL AND status='scheduled'
         AND start_at IS NOT NULL AND substr(start_at,1,10)<?""", (center_today().isoformat(),)).fetchone()[0]
     if n:
@@ -6480,8 +6483,14 @@ def sms_page():
 
 # ---------------------------------------------------------------- الحواسيب
 def device_rows(db):
-    return db.execute("""SELECT u.*, b.name AS branch FROM users u LEFT JOIN branches b ON b.id=u.branch_id
-        WHERE u.device=1 ORDER BY u.branch_id DESC, u.role='reception' DESC, u.id""").fetchall()
+    lim = (center_now() - timedelta(minutes=3)).strftime("%Y-%m-%d %H:%M:%S")
+    out = []
+    for r in db.execute("""SELECT u.*, b.name AS branch FROM users u LEFT JOIN branches b ON b.id=u.branch_id
+            WHERE u.device=1 ORDER BY u.branch_id DESC, u.role='reception' DESC, u.id"""):
+        d = dict(r)
+        d["online"] = bool(d.get("last_seen") and d["last_seen"] >= lim)
+        out.append(d)
+    return out
 
 
 def new_pair_code(db, uid):
