@@ -6,7 +6,7 @@
   #define Variant "Setup"
 #endif
 #ifndef AppVer
-  #define AppVer "23.3"
+  #define AppVer "23.4"
 #endif
 #ifndef CfgDir
   #define CfgDir "..\build\cfg\" + Variant

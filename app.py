@@ -396,6 +396,10 @@ def init_db():
             not con.execute("SELECT 1 FROM settings WHERE key='catalog_v2'").fetchone():
         catalog.apply_catalog(con)  # يضيف الناقص (حتى بعد مسح البيانات) ويصنّف الكل
         con.execute("INSERT INTO settings(key,value) VALUES('catalog_v2','1')")
+    if not sync.NODE and not os.environ.get("BILSAN_NO_CATALOG") and \
+            not con.execute("SELECT 1 FROM settings WHERE key='catalog_v3'").fetchone():
+        catalog.apply_catalog(con)  # النسخة 23.4: الرنين الحيوي والتشخيص الكمي
+        con.execute("INSERT INTO settings(key,value) VALUES('catalog_v3','1')")
     if not sync.NODE and not con.execute("SELECT 1 FROM posts").fetchone():
         names = {"reception": ["الاستقبال", "غرفة الحجامة"], "laser": ["غرفة الليزر"], "beauty": ["غرفة التجميل"]}
         for d in con.execute("SELECT * FROM departments ORDER BY branch_id, id").fetchall():
