@@ -523,31 +523,126 @@ TEMPLATES["client_view.html"] = r"""{% extends "base.html" %}{% block body %}
 var f=b.dataset.f;document.querySelectorAll('#tl .tli').forEach(function(el){el.style.display=(!f||el.dataset.d==f)?'':'none'})}})})();</script>
 {% endblock %}"""
 
-TEMPLATES["appointments.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box, branch_filter with context %}{% block body %}
-<h1>{{ page_icon() }}المواعيد</h1>
-<div class="row" style="margin-bottom:14px"><a class="btn" href="{{ url_for('plan_new') }}">+ موعد بعدة حصص (خطة جلسات)</a>
-<a class="btn light" href="{{ url_for('plans') }}">كل خطط الحصص</a>
-{% if perm('appointments') %}<a class="btn light" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }} الحصص الفائتة (لم يحضروا)</a>{% endif %}</div>
-{% if perm('appointments') %}<div class="card"><h2>موعد واحد</h2>
-<form method="post" class="row">
-{{ client_picker(sel_client, True) }}
-{% if cu.role=='admin' %}<label>الفرع<select name="branch_id" onchange="location='?branch='+this.value+'&date={{ d }}'">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if form_branch==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
-{% if cu.role in ('admin','reception') %}<label>القسم<select name="dept" id="dept">{% for k in depts %}<option value="{{ k }}">{{ DEPTS[k] }}</option>{% endfor %}</select></label>{% endif %}
-<label>الخدمة<select name="service_id"><option value="">—</option>{% for s in services %}{% if cu.role not in ('laser','beauty') or s.dept==cu.role %}<option value="{{ s.id }}" data-dept="{{ s.dept }}">{{ s.name }} ({{ DEPTS[s.dept] }})</option>{% endif %}{% endfor %}</select></label>
-<label>الغرفة<select name="post_id"><option value="">—</option>{% for p in posts %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></label>
-<label>التاريخ<input type="date" name="date" value="{{ d }}" required data-hijri></label>
-<label>الساعة<input type="time" name="time" required></label>
-<label>ملاحظة<input name="notes"></label>
-<label style="flex-direction:row;align-items:center;gap:4px"><input type="checkbox" name="force" value="1"> حجز رغم التعارض</label>
-<button class="btn">تسجيل الموعد</button></form>
-<p class="mut">مواعيد التجميل تصل الزبون تذكيرًا برسالة SMS قبل الموعد تلقائيًا (حسب الإعدادات).</p></div>{% endif %}
-{{ new_client_box(request.path ~ '?date=' ~ d) }}
-<div class="card"><form class="row" style="margin-bottom:12px">
-<label>اليوم<input type="date" name="date" value="{{ d }}" data-hijri></label>
-{{ branch_filter(br) }}
-{% if cu.role in ('admin','reception') %}<label>القسم<select name="dept"><option value="">الكل</option>{% for k,v in DEPTS.items() %}<option value="{{ k }}" {{ 'selected' if dept==k }}>{{ v }}</option>{% endfor %}</select></label>{% endif %}
-<button class="btn light">عرض</button></form>
-{% include "appt_table.html" %}</div>{% endblock %}"""
+TEMPLATES["appointments.html"] = r"""{% extends "base.html" %}{% from "macros.html" import branch_filter with context %}{% block body %}
+<style>
+.tabs{display:flex;flex-wrap:wrap;gap:6px;align-items:center}.tabs a,.tabs button{border:1px solid #d9c7ad;background:#fbf7f0;color:#173f36;border-radius:20px;padding:7px 16px;text-decoration:none;font-family:inherit;font-size:15px;cursor:pointer}
+.tabs a.on{background:#173f36;color:#fff;border-color:#173f36}
+.nf h3{margin:14px 0 6px;color:#173f36}.step{display:inline-flex;width:26px;height:26px;border-radius:50%;background:#e4ab74;color:#173f36;align-items:center;justify-content:center;font-weight:bold;margin-left:6px}
+#cres{display:flex;flex-direction:column;gap:6px;margin-top:6px;max-height:280px;overflow:auto}
+.cr{display:flex;justify-content:space-between;align-items:center;gap:8px;border:1px solid #eadcc6;border-radius:10px;padding:8px 12px;background:#fff;cursor:pointer}
+.cr:hover{border-color:#2a6153;background:#eef6f2}.cr .m{color:#6b6257;font-size:13px}
+#csel{display:none;align-items:center;gap:10px;background:#eef6f2;border:1px solid #2a6153;border-radius:10px;padding:10px 14px;font-size:17px}
+.dbtn{display:flex;gap:6px;flex-wrap:wrap}.dbtn label{flex-direction:row;align-items:center;gap:6px;border:1px solid #d9c7ad;border-radius:10px;padding:8px 14px;background:#fff;cursor:pointer}
+.dbtn input:checked+span{font-weight:bold;color:#173f36}
+#ses td{padding:4px}.tot{font-size:18px;margin-top:6px}
+.day-h{margin:16px 0 6px;color:#173f36;border-bottom:2px solid #e4ab74;padding-bottom:4px}
+.ap{display:grid;grid-template-columns:70px 1fr auto;gap:10px;align-items:center;background:#fff;border:1px solid #eadcc6;border-radius:12px;padding:10px 12px;margin:6px 0}
+.ap .tm{font-size:20px;font-weight:bold;color:#173f36;text-align:center}.ap .nm{font-size:17px;font-weight:bold}
+.ap.done{opacity:.6}.ap.noshow{background:#fff6f5;border-color:#f3c1bc}.ap.cancelled{opacity:.45}
+.ap .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+@media(max-width:760px){.ap{grid-template-columns:56px 1fr}.ap .acts{grid-column:1/-1;justify-content:flex-start}}
+</style>
+<h1>{{ page_icon() }}المواعيد والحصص</h1>
+<div class="row" style="margin-bottom:12px">{% if perm('appointments') %}<button class="btn gold" type="button" onclick="nf(true)">＋ موعد جديد</button>{% endif %}
+<a class="btn light" href="{{ url_for('plans') }}">كل الحصص</a>
+{% if perm('appointments') %}<a class="btn light" href="{{ url_for('appts_missed') }}">{{ ic('calendar') }} لم يحضروا</a>{% endif %}</div>
+
+{% if perm('appointments') %}<div class="card nf" id="nf" style="display:{{ 'block' if open_form else 'none' }}">
+<form method="post" action="{{ url_for('appt_quick') }}" id="qf">
+<h3><span class="step">1</span>الشخص</h3>
+<input type="hidden" name="client_id" id="cid" value="{{ sel_client.id if sel_client else '' }}">
+<div id="csel"><b id="cname">{{ sel_client.name if sel_client else '' }}</b><span class="mut" id="cphone" dir="ltr">{{ sel_client.phone if sel_client else '' }}</span>
+<a id="cfile" href="{{ url_for('client_view', cid=sel_client.id) if sel_client else '#' }}" target="_blank">فتح الملف</a><button type="button" class="btn light sm" onclick="pick(null)">تغيير</button></div>
+<div id="cbox"><input id="cq" placeholder="اكتب الاسم أو رقم الهاتف..." autocomplete="off" style="width:100%;font-size:18px">
+<div id="cres"></div>
+<div id="cnew" style="display:none;margin-top:8px" class="row"><b style="width:100%">لا يوجد ملف بهذا الاسم أو الرقم — تسجيل شخص جديد:</b>
+<label>الاسم واللقب<input name="new_name" id="nn"></label><label>الهاتف<input name="new_phone" id="np" placeholder="05xxxxxxxx" dir="ltr"></label></div></div>
+
+<h3><span class="step">2</span>القسم والخدمة</h3>
+<div class="row">{% if cu.role=='admin' %}<label>الفرع<select name="branch_id" id="brs" onchange="location='?new=1&branch='+this.value">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if form_branch==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% endif %}
+{% if cu.role in ('laser','beauty') %}<input type="hidden" name="dept" value="{{ cu.role }}">{% else %}
+<div class="dbtn">{% for k in depts %}<label><input type="radio" name="dept" value="{{ k }}" {{ 'checked' if loop.first }} onchange="flt()"><span>{{ VISIT_TARGETS.get(k, DEPTS[k]) }}</span></label>{% endfor %}</div>{% endif %}</div>
+<div class="row" style="margin-top:8px"><label>الخدمة<select name="service_id" id="srv" onchange="sp()" style="min-width:260px"><option value="" data-p="">—</option>
+{% for s in services %}<option value="{{ s.id }}" data-dept="{{ s.dept }}" data-p="{{ '%g'|format(s.price or 0) }}">{{ s.name }}</option>{% endfor %}</select></label>
+{% if posts %}<label>الغرفة<select name="post_id"><option value="">—</option>{% for p in posts %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></label>{% endif %}
+<label style="flex:1">ملاحظة<input name="notes"></label></div>
+
+<h3><span class="step">3</span>الموعد أو الحصص</h3>
+<table id="ses"><tr><th>الحصة</th><th>التاريخ</th><th>الساعة</th><th>السعر ({{ cur }})</th><th></th></tr></table>
+<div class="row" style="margin-top:6px"><button type="button" class="btn light" onclick="addS()">＋ حصة</button>
+<label>الحصة التالية بعد<select id="gap"><option value="1">يوم</option><option value="7" selected>أسبوع</option><option value="14">أسبوعين</option><option value="21">3 أسابيع</option><option value="30">شهر</option></select></label></div>
+<div id="multi" style="display:none"><input type="hidden" name="multi" value="">
+<div class="tot">المجموع: <b id="tot">0</b> {{ cur }}</div>
+<div class="row"><label>اسم الحصص<input name="title" id="ttl" placeholder="مثلاً: مساج الجسم" style="width:240px"></label>
+{% if can_collect %}<label>تسبيق الآن (اختياري)<input name="advance" type="number" min="0" step="any" style="width:120px"></label>
+<label>طريقة الدفع<select name="method">{% for k,v in METHODS.items() %}<option value="{{ k }}">{{ v }}</option>{% endfor %}</select></label>{% endif %}</div></div>
+<p style="margin-top:14px"><button class="btn gold" style="font-size:18px;padding:10px 30px">حفظ</button>
+<button type="button" class="btn light" onclick="nf(false)">إغلاق</button></p></form></div>{% endif %}
+
+<div class="card"><div class="tabs">
+<a class="{{ 'on' if rng=='day' and d==t0 }}" href="?date={{ t0 }}&dept={{ dept }}">اليوم</a>
+<a class="{{ 'on' if rng=='day' and d==t1 }}" href="?date={{ t1 }}&dept={{ dept }}">غدًا</a>
+<a class="{{ 'on' if rng=='week' }}" href="?date={{ t0 }}&range=week&dept={{ dept }}">هذا الأسبوع</a>
+<form style="display:inline-flex;gap:6px;align-items:center"><input type="date" name="date" value="{{ d }}" onchange="this.form.submit()"><input type="hidden" name="dept" value="{{ dept }}"></form>
+{% if cu.role in ('admin','reception') %}<span style="margin-inline-start:12px"></span>
+<a class="{{ 'on' if not dept }}" href="?date={{ d }}&range={{ rng }}">كل الأقسام</a>
+{% for k in ('reception','beauty','laser') %}<a class="{{ 'on' if dept==k }}" href="?date={{ d }}&range={{ rng }}&dept={{ k }}">{{ VISIT_TARGETS[k] }}</a>{% endfor %}{% endif %}</div>
+{% set ns = namespace(day=None) %}
+{% for a in rows %}{% if a.start_at[:10] != ns.day %}{% set ns.day = a.start_at[:10] %}<h3 class="day-h">{{ ns.day|dmy }} <span class="mut" data-hd="{{ ns.day }}"></span></h3>{% endif %}
+<div class="ap {{ a.status }}"><div class="tm">{{ a.start_at[11:16] }}</div>
+<div><div class="nm"><a href="{{ url_for('client_view', cid=a.client_id) }}">{{ a.client }}</a> <span class="mut" dir="ltr" style="font-size:14px;font-weight:normal">{{ a.phone or '' }}</span></div>
+<div>{{ a.plan_title or a.service or DEPTS.get(a.dept) }}{% if a.plan_id %} — <a href="{{ url_for('plan_view', pid=a.plan_id) }}"><b>الحصة {{ a.session_no }} من {{ a.plan_n }}</b></a>{% endif %}
+<span class="tag">{{ VISIT_TARGETS.get(a.dept, DEPTS.get(a.dept)) }}</span>{% if a.room %}<span class="mut"> {{ a.room }}</span>{% endif %}
+{% if not br %}<span class="mut"> · {{ a.branch }}</span>{% endif %}
+{% if a.status!='scheduled' %}<span class="tag {{ 'red' if a.status=='noshow' else '' }}">{{ APPT_STATUS[a.status] }}</span>{% endif %}
+{% if a.paid %}<span class="tag">مدفوعة</span>{% endif %}</div>{% if a.notes %}<div class="mut">{{ a.notes }}</div>{% endif %}</div>
+<div class="acts">{% if a.status=='scheduled' and perm('appointments') %}
+<form method="post" action="{{ url_for('appt_arrived', aid=a.id) }}"><button class="btn sm">✓ وصل</button></form>
+<form method="post" action="{{ url_for('appt_status', aid=a.id) }}"><input type="hidden" name="status" value="noshow"><button class="btn light sm">لم يحضر</button></form>
+<a class="btn light sm" href="{{ url_for('appt_reschedule', aid=a.id) }}">أجّل</a>
+<form method="post" action="{{ url_for('appt_status', aid=a.id) }}" onsubmit="return confirm('إلغاء هذا الموعد؟')"><input type="hidden" name="status" value="cancelled"><button class="btn red sm">إلغاء</button></form>{% endif %}</div></div>
+{% else %}<p class="mut" style="margin-top:12px">لا توجد مواعيد في هذه الفترة.</p>{% endfor %}</div>
+
+<script>
+var SL={{ slots|tojson }}, BR='{{ form_branch }}', T0='{{ t0 }}';
+function nf(on){var e=document.getElementById('nf');if(!e)return;e.style.display=on?'block':'none';if(on){e.scrollIntoView({behavior:'smooth'});var q=document.getElementById('cq');if(q&&!document.getElementById('cid').value)q.focus()}}
+function esc(s){return (s||'').replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function pick(c){var s=document.getElementById('csel'),b=document.getElementById('cbox');
+ if(c){document.getElementById('cid').value=c.id;document.getElementById('cname').textContent=c.name;document.getElementById('cphone').textContent=c.phone||'';
+  document.getElementById('cfile').href='/clients/'+c.id;s.style.display='flex';b.style.display='none'}
+ else{document.getElementById('cid').value='';s.style.display='none';b.style.display='';document.getElementById('cq').value='';document.getElementById('cres').innerHTML='';document.getElementById('cq').focus()}}
+var tq;var cq=document.getElementById('cq');if(cq)cq.oninput=function(){clearTimeout(tq);var v=cq.value.trim();tq=setTimeout(function(){
+ var r=document.getElementById('cres'),nw=document.getElementById('cnew');if(v.length<2){r.innerHTML='';nw.style.display='none';return}
+ fetch('/api/clients?q='+encodeURIComponent(v)).then(function(x){return x.json()}).then(function(d){r.innerHTML='';
+  d.items.forEach(function(c){var e=document.createElement('div');e.className='cr';e.innerHTML='<div><b>'+esc(c.name)+'</b> <span class="m" dir="ltr">'+esc(c.phone)+'</span></div><div class="m">'+(c.n_visits?('زيارات: '+c.n_visits+' · آخرها '+c.last_visit):'ملف بدون زيارات')+'</div>';
+   e.onclick=function(){pick(c)};r.appendChild(e)});
+  nw.style.display='flex';var dg=/^[0-9 +]+$/.test(v);document.getElementById(dg?'np':'nn').value=v;
+  nw.querySelector('b').textContent=d.items.length?'ليس من هؤلاء؟ تسجيل شخص جديد:':'لا يوجد ملف بهذا الاسم أو الرقم — تسجيل شخص جديد:'})},250)};
+{% if sel_client %}pick({id:'{{ sel_client.id }}',name:{{ sel_client.name|tojson }},phone:{{ (sel_client.phone or '')|tojson }}});{% endif %}
+function dep(){var r=document.querySelector('input[name=dept]:checked')||document.querySelector('input[name=dept]');return r?r.value:''}
+function flt(){var d=dep(),s=document.getElementById('srv');[].forEach.call(s.options,function(o){o.hidden=!!(o.dataset.dept&&d&&o.dataset.dept!=d)});
+ if(s.selectedOptions[0]&&s.selectedOptions[0].hidden)s.value='';sp();busy()}
+function sp(){var o=document.getElementById('srv').selectedOptions[0],p=o?o.dataset.p:'';document.querySelectorAll('#ses .pr').forEach(function(i){if(!i.dataset.t)i.value=p});
+ var tt=document.getElementById('ttl');if(tt&&!tt.dataset.t)tt.value=o&&o.value?o.textContent.trim():'';tot()}
+function tot(){var s=0,rows=document.querySelectorAll('#ses tr.sr');rows.forEach(function(r,i){r.querySelector('.no').textContent=i+1;s+=parseFloat(r.querySelector('.pr').value)||0});
+ document.getElementById('tot').textContent=s.toLocaleString('fr-FR');var m=rows.length>1;document.getElementById('multi').style.display=m?'':'none';
+ document.querySelector('input[name=multi]').value=m?'1':''}
+function addDays(d,n){var x=new Date(d+'T12:00:00');x.setDate(x.getDate()+n);return x.toISOString().slice(0,10)}
+function addS(){var t=document.getElementById('ses'),rows=t.querySelectorAll('tr.sr'),last=rows[rows.length-1];
+ var d=last?addDays(last.querySelector('input[type=date]').value||T0,parseInt(document.getElementById('gap').value)):'{{ d if d >= t0 else t0 }}';
+ var tm=last?last.querySelector('select').value:'09:00',pr=last?last.querySelector('.pr').value:((document.getElementById('srv').selectedOptions[0]||{}).dataset||{}).p||'';
+ var r=t.insertRow();r.className='sr';
+ r.innerHTML='<td class="no"></td><td><input type="date" name="sd" value="'+d+'" required></td><td><select name="st">'+SL.map(function(s){return '<option'+(s==tm?' selected':'')+'>'+s+'</option>'}).join('')+'</select></td>'+
+ '<td><input name="sp" class="pr" type="number" min="0" step="any" style="width:110px" value="'+pr+'" {{ "readonly" if locked }}></td><td><button type="button" class="btn red sm">×</button></td>';
+ r.querySelector('.pr').oninput=function(){this.dataset.t=1;tot()};r.querySelector('input[type=date]').onchange=function(){busy(r)};
+ r.querySelector('button').onclick=function(){if(t.querySelectorAll('tr.sr').length>1){r.remove();tot()}};busy(r);tot()}
+function busy(row){var rows=row?[row]:document.querySelectorAll('#ses tr.sr');rows.forEach(function(r){var d=r.querySelector('input[type=date]').value,s=r.querySelector('select');if(!d)return;
+ fetch('/api/slots?date='+d+'&branch='+BR+'&dept='+dep()).then(function(x){return x.json()}).then(function(b){[].forEach.call(s.options,function(o){var n=b[o.value];o.textContent=o.value+(n?' — محجوز ('+n+')':'');o.style.color=n?'#b3261e':''})})})}
+var tt=document.getElementById('ttl');if(tt)tt.oninput=function(){tt.dataset.t=1};
+if(document.getElementById('ses')){addS();flt()}
+var qf=document.getElementById('qf');if(qf)qf.onsubmit=function(){if(!document.getElementById('cid').value&&!document.getElementById('nn').value.trim()){alert('اختر الشخص من القائمة أو اكتب اسمه');return false}return true};
+document.querySelectorAll('[data-hd]').forEach(function(e){try{e.textContent=new Date(e.dataset.hd+'T12:00:00').toLocaleDateString('ar',{weekday:'long'})}catch(x){}});
+</script>{% endblock %}"""
 
 TEMPLATES["charge_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" import client_picker, new_client_box with context %}{% block body %}
 <h1>{{ page_icon() }}إرسال مبلغ إلى الاستقبال</h1>
@@ -1286,10 +1381,11 @@ dates();
 TEMPLATES["plan_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <h1>{{ page_icon() }}{{ p.title }}</h1>
 <div class="grid" style="margin-bottom:16px">
-<div class="stat"><div class="l">الزبون</div><div class="n" style="font-size:18px"><a href="{{ url_for('client_view', cid=p.client_id) }}">{{ p.client }}</a></div><div class="mut">{{ p.phone or '' }} · {{ p.branch }} · {{ DEPTS[p.dept] }}{% if p.room %} · {{ p.room }}{% endif %}</div></div>
+<div class="stat"><div class="l">الزبون</div><div class="n" style="font-size:18px"><a href="{{ url_for('client_view', cid=p.client_id) }}">{{ p.client }}</a></div><div class="mut"><span dir="ltr">{{ p.phone or '' }}</span> · {{ p.branch }} · {{ VISIT_TARGETS.get(p.dept, DEPTS[p.dept]) }}{% if p.room %} · {{ p.room }}{% endif %}</div></div>
 <div class="stat"><div class="l">الحصص المنجزة</div><div class="n">{{ st.done }} / {{ st.n }}</div><div class="mut">{{ PLAN_STATUS[p.status] }}</div></div>
 <div class="stat"><div class="l">سعر الخطة</div><div class="n">{{ st.total|money }}</div><div class="mut">{{ 'سعر إجمالي' if p.price_mode=='total' else 'مجموع أسعار الحصص' }}{% if p.price_mode=='total' and (st.sum_price - st.total)|abs > 0.01 %} · <span style="color:#b3261e">مجموع الحصص {{ st.sum_price|money }}</span>{% endif %}</div></div>
-<div class="stat"><div class="l">المدفوع / الباقي</div><div class="n" style="font-size:20px">{{ st.paid|money }} / <span style="color:{{ '#9a6200' if st.remaining>0 else 'inherit' }}">{{ st.remaining|money }}</span></div><div class="mut">{{ st.paid_n }} حصة مدفوعة من {{ st.n }}</div></div></div>
+<div class="stat"><div class="l">المدفوع / الباقي</div><div class="n" style="font-size:20px">{{ st.paid|money }} / <span style="color:{{ '#9a6200' if st.remaining>0 else 'inherit' }}">{{ st.remaining|money }}</span></div><div class="mut">{{ st.paid_n }} حصة مدفوعة من {{ st.n }}</div></div>
+<div class="stat"><div class="l">التسبيق المتبقّي</div><div class="n" style="color:#2a6153">{{ st.credit|money }}</div><div class="mut">مجموع التسبيقات {{ st.adv|money }} — يُخصم تلقائيًا عند وصول الزبون</div></div></div>
 
 <form method="post"><button name="action" value="save" style="display:none" aria-hidden="true"></button>
 <div class="card"><h2>الحصص</h2>
@@ -1302,7 +1398,7 @@ TEMPLATES["plan_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <td><select name="r_{{ k }}"><option value="">—</option>{% for r in posts %}<option value="{{ r.id }}" {{ 'selected' if x.post_id==r.id }}>{{ r.name }}</option>{% endfor %}</select></td>
 <td><select name="s_{{ k }}">{% for kk,v in APPT_STATUS.items() %}<option value="{{ kk }}" {{ 'selected' if x.status==kk }}>{{ v }}</option>{% endfor %}</select></td>
 <td>{% if x.paid %}{{ x.price|money }}<input type="hidden" name="p_{{ k }}" value="{{ x.price }}">{% else %}<input name="p_{{ k }}" {% if locked %}readonly title="السعر تحدده المديرة"{% endif %} value="{{ '%g'|format(x.price or 0) }}" style="width:90px">{% endif %}</td>
-<td>{% if x.paid %}<span class="tag">مدفوعة</span> <a class="mut" href="{{ url_for('receipt', pid=x.payment_id) }}">وصل {{ x.payment_id|rid }}</a>{% elif x.pending_charge %}<span class="tag amber">عند الاستقبال</span>{% else %}<span class="tag red">غير مدفوعة</span>{% endif %}</td>
+<td>{% if x.paid %}<span class="tag">مدفوعة</span> {% if x.credit_used %}<span class="mut">من التسبيق</span>{% elif x.payment_id %}<a class="mut" href="{{ url_for('receipt', pid=x.payment_id) }}">وصل {{ x.payment_id|rid }}</a>{% endif %}{% elif x.pending_charge %}<span class="tag amber">عند الاستقبال</span>{% else %}<span class="tag red">غير مدفوعة</span>{% endif %}</td>
 <td class="noprint">{% if not x.paid %}<button class="btn red sm" formaction="{{ url_for('session_delete', aid=x.id) }}" onclick="return confirm('حذف الحصة {{ x.session_no }}؟')">حذف</button>{% endif %}</td></tr>
 {% else %}<tr><td colspan="9" class="mut">لا توجد حصص</td></tr>{% endfor %}</table>
 <div class="row noprint" style="margin-top:12px"><button class="btn" name="action" value="save">حفظ التعديلات (التواريخ، الحالات، الأسعار)</button></div></div>
@@ -1315,8 +1411,16 @@ TEMPLATES["plan_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <label {{ 'hidden' if locked }}>المبلغ المستلم<input name="amount" id="payamt" style="width:110px" placeholder="تلقائي"></label>
 <label>الدفع<select name="method">{% for kk,v in METHODS.items() %}<option value="{{ kk }}">{{ v }}</option>{% endfor %}</select></label>
 <button class="btn gold" name="action" value="pay">تسجيل دفع الحصص المحددة</button>{% endif %}
+{% if st.credit > 0 %}<button class="btn" name="action" value="pay_credit">دفع المحدد من التسبيق</button>{% endif %}
 <button class="btn light" name="action" value="send">إرسال المحدد للاستقبال للتحصيل</button></div></div>
 </form>
+{% if can_collect %}<div class="card noprint"><h2>تسبيق على الحصص</h2>
+<p class="mut">يدفع الزبون مبلغًا مسبقًا، ويُخصم منه ثمن كل حصة عند حضورها.</p>
+<form method="post" class="row"><input type="hidden" name="action" value="advance">
+<label>المبلغ ({{ cur }})<input name="amount" type="number" min="0" step="any" required style="width:120px"></label>
+<label>طريقة الدفع<select name="method">{% for kk,v in METHODS.items() %}<option value="{{ kk }}">{{ v }}</option>{% endfor %}</select></label>
+<button class="btn gold">تسجيل التسبيق وطباعة الوصل</button></form>
+{% if st.advances %}<table style="margin-top:8px"><tr><th>الوصل</th><th>التاريخ</th><th>المبلغ</th></tr>{% for v in st.advances %}<tr><td><a href="{{ url_for('receipt', pid=v.id) }}">{{ v.id|rid }}</a></td><td>{{ v.created_at[:16] }}</td><td>{{ v.amount|money }}</td></tr>{% endfor %}</table>{% endif %}</div>{% endif %}
 
 <div class="grid noprint">
 <div class="card"><h2>إضافة حصص</h2><form method="post" class="row"><input type="hidden" name="action" value="add">

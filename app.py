@@ -310,6 +310,8 @@ def init_db():
     add_col("sms_log", "client_id", "INTEGER")
     add_col("services", "category", "TEXT")
     add_col("courses", "days", "INTEGER")
+    add_col("payments", "plan_id", "INTEGER")
+    add_col("appointments", "credit_used", "INTEGER DEFAULT 0")
     add_col("services", "aftercare", "TEXT")
     add_col("users", "lang", "TEXT")
     add_col("stock_moves", "cancelled", "INTEGER DEFAULT 0")
@@ -922,6 +924,14 @@ def clients():
     if request.method == "POST":
         need("clients_edit")
         name = request.form.get("name", "").strip()
+        dup = find_by_phone(db, request.form.get("phone", ""))
+        if name and dup:
+            flash(f"هذا الرقم مسجّل من قبل باسم «{dup['name']}»، فهذا ملفه (لا يُفتح ملف ثانٍ لنفس الشخص).", "ok")
+            back = request.form.get("back")
+            if back and back.startswith("/"):
+                sep = "&" if "?" in back else "?"
+                return redirect(f"{back}{sep}client_id={dup['id']}")
+            return redirect(url_for("client_view", cid=dup["id"]))
         if not name:
             flash("الاسم مطلوب", "err")
         else:
@@ -1079,13 +1089,126 @@ def client_view(cid):
                            services=services_for(current_user()["branch_id"] or work_branch()))
 
 
+def phone_digits(p):
+    d = re.sub(r"\D", "", p or "")
+    if d.startswith("213") and len(d) > 9:
+        d = "0" + d[3:]
+    return d
+
+
+def find_by_phone(db, phone):
+    d = phone_digits(phone)
+    if len(d) < 8:
+        return None
+    for r in db.execute("""SELECT id, name, phone FROM clients
+            WHERE replace(replace(replace(replace(phone,' ',''),'-',''),'.',''),'/','') LIKE ?""", (f"%{d[-8:]}%",)):
+        if phone_digits(r["phone"]) == d:
+            return r
+    return None
+
+
 @app.route("/api/clients")
 @login_required()
 def api_clients():
     s = request.args.get("q", "").strip()
-    rows = get_db().execute("SELECT id,name,phone FROM clients WHERE name LIKE ? OR phone LIKE ? LIMIT 15",
-                            (f"%{s}%", f"%{s}%")).fetchall()
+    db = get_db()
+    rows = db.execute("""SELECT c.id, c.name, c.phone,
+        (SELECT MAX(substr(created_at,1,10)) FROM visits v WHERE v.client_id=c.id) AS last_visit,
+        (SELECT COUNT(*) FROM visits v WHERE v.client_id=c.id AND v.status<>'cancelled') AS n_visits
+        FROM clients c WHERE c.name LIKE ? OR c.phone LIKE ? ORDER BY (c.name LIKE ?) DESC, c.name LIMIT 15""",
+                      (f"%{s}%", f"%{s}%", f"{s}%")).fetchall()
     return {"items": [dict(r) for r in rows]}
+
+
+@app.route("/api/slots")
+@login_required()
+def api_slots():
+    """الساعات المحجوزة في يوم معيّن (للقسم في الفرع)، لتظهر في اختيار الساعة."""
+    db = get_db()
+    br = int(request.args.get("branch") or work_branch())
+    q = "SELECT substr(start_at,12,5) AS t, COUNT(*) AS n FROM appointments WHERE substr(start_at,1,10)=? AND branch_id=? AND status='scheduled'"
+    args = [request.args.get("date", ""), br]
+    if request.args.get("dept"):
+        q += " AND dept=?"
+        args.append(request.args["dept"])
+    return {r["t"]: r["n"] for r in db.execute(q + " GROUP BY t", args)}
+
+
+def plan_credit(db, pid):
+    """التسبيق المتبقّي على خطة حصص: مجموع التسبيقات ناقص الحصص التي دُفعت منه."""
+    adv = db.execute("SELECT COALESCE(SUM(amount),0) FROM payments WHERE plan_id=? AND cancelled=0", (pid,)).fetchone()[0]
+    used = db.execute("SELECT COALESCE(SUM(price),0) FROM appointments WHERE plan_id=? AND credit_used=1", (pid,)).fetchone()[0]
+    return round(adv, 2), round(adv - used, 2)
+
+
+@app.route("/appointments/quick", methods=["POST"])
+@perm_required("appointments")
+def appt_quick():
+    """موعد جديد في صفحة واحدة: الشخص (ملفه أو تسجيل جديد)، القسم والخدمة، وحصة أو عدة حصص بسعر لكل حصة."""
+    db = get_db()
+    u = current_user()
+    f = request.form
+    br = u["branch_id"] or int(f.get("branch_id") or work_branch())
+    dept = u["role"] if u["role"] in ("laser", "beauty") else f.get("dept")
+    if dept not in branch_depts(br):
+        flash("اختر القسم", "err")
+        return redirect(url_for("appointments"))
+    cid = f.get("client_id")
+    if not cid:
+        name, phone = f.get("new_name", "").strip(), f.get("new_phone", "").strip()
+        dup = find_by_phone(db, phone)
+        if dup:
+            cid = dup["id"]
+            flash(f"الرقم {phone} مسجّل باسم «{dup['name']}»، فأُضيف الموعد إلى ملفه.", "ok")
+        elif name:
+            cid = db.execute("INSERT INTO clients(name,phone,branch_id,created_at) VALUES(?,?,?,?)",
+                             (name, phone, br, now_str())).lastrowid
+        else:
+            flash("اختر الشخص أو اكتب اسمه", "err")
+            return redirect(url_for("appointments"))
+    cid = int(cid)
+    srv = f.get("service_id") or None
+    srow = db.execute("SELECT * FROM services WHERE id=?", (srv or 0,)).fetchone()
+    ds, ts, ps = f.getlist("sd"), f.getlist("st"), f.getlist("sp")
+    rows = [(d, ts[i] if i < len(ts) else "", ps[i] if i < len(ps) else "") for i, d in enumerate(ds)]
+    rows = [r for r in rows if r[0]] or [("", "", "")]
+    post = f.get("post_id") or None
+    locked = price_locked(u)
+    list_price = (srow["price"] or 0) if srow else 0
+    if len(rows) == 1 and not f.get("multi"):
+        d, t, _ = rows[0]
+        if not d:
+            flash("اختر التاريخ", "err")
+            return redirect(url_for("appointments"))
+        db.execute("""INSERT INTO appointments(client_id,branch_id,dept,service_id,start_at,notes,created_by,created_at,post_id)
+            VALUES(?,?,?,?,?,?,?,?,?)""", (cid, br, dept, srv, f"{d} {t or '09:00'}", f.get("notes", "").strip(),
+                                           u["id"], now_str(), post))
+        audit("موعد جديد", f"{d} {t}", br)
+        db.commit()
+        flash("تم تسجيل الموعد", "ok")
+        return redirect(url_for("appointments", date=d))
+    title = f.get("title", "").strip() or ((srow["name"] if srow else DEPTS.get(dept)) + f" — {len(rows)} حصص")
+    pid = db.execute("""INSERT INTO plans(client_id,branch_id,dept,service_id,post_id,title,total_price,price_mode,
+        notes,created_by,created_at,pay_mode) VALUES(?,?,?,?,?,?,0,'session',?,?,?,'session')""",
+                     (cid, br, dept, srv, post, title, f.get("notes", "").strip(), u["id"], now_str())).lastrowid
+    for i, (d, t, pr) in enumerate(rows):
+        price = list_price if (locked or pr.strip() == "") else fnum(pr)
+        db.execute("""INSERT INTO appointments(client_id,branch_id,dept,service_id,start_at,status,created_by,
+            created_at,plan_id,session_no,price,paid,post_id) VALUES(?,?,?,?,?,'scheduled',?,?,?,?,?,0,?)""",
+                   (cid, br, dept, srv, f"{d} {t or '09:00'}" if d else None, u["id"], now_str(), pid, i + 1, price, post))
+    db.execute("UPDATE plans SET total_price=(SELECT COALESCE(SUM(price),0) FROM appointments WHERE plan_id=?) WHERE id=?",
+               (pid, pid))
+    adv = fnum(f.get("advance"))
+    audit("حصص جديدة", f"{title}", br)
+    if adv > 0 and can_collect(u):
+        pay = make_payment(db, br, cid, adv, f.get("method", "cash"), "service", f"تسبيق: {title}", u["id"], dept=dept)
+        db.execute("UPDATE payments SET plan_id=? WHERE id=?", (pid, pay))
+        db.commit()
+        flash(f"تم تسجيل {len(rows)} حصص والتسبيق", "ok")
+        return redirect(url_for("receipt", pid=pay))
+    db.commit()
+    flash(f"تم تسجيل {len(rows)} حصص", "ok")
+    return redirect(url_for("plan_view", pid=pid))
 
 
 # ---------------------------------------------------------------- المواعيد
@@ -1132,14 +1255,21 @@ def appointments():
         flash("تم تسجيل الموعد", "ok")
         return redirect(url_for("appointments", date=d, branch=br if is_admin() else None))
     d = request.args.get("date") or center_today().isoformat()
+    rng = request.args.get("range", "day")
     br = scope_branch()
     dept = request.args.get("dept") or (u["role"] if u["role"] in ("laser", "beauty") else "")
     q = """SELECT a.*, c.name AS client, c.phone, s.name AS service, s.price AS sprice, b.name AS branch,
            po.name AS room, pl.title AS plan_title, (SELECT COUNT(*) FROM appointments x WHERE x.plan_id=a.plan_id) AS plan_n
            FROM appointments a JOIN clients c ON c.id=a.client_id LEFT JOIN services s ON s.id=a.service_id
            JOIN branches b ON b.id=a.branch_id LEFT JOIN posts po ON po.id=a.post_id
-           LEFT JOIN plans pl ON pl.id=a.plan_id WHERE substr(a.start_at,1,10)=?"""
-    args = [d]
+           LEFT JOIN plans pl ON pl.id=a.plan_id WHERE substr(a.start_at,1,10) BETWEEN ? AND ?"""
+    try:
+        d0 = datetime.strptime(d, "%Y-%m-%d").date()
+    except ValueError:
+        d0 = center_today()
+        d = d0.isoformat()
+    d_end = (d0 + timedelta(days=6)).isoformat() if rng == "week" else d
+    args = [d, d_end]
     if br:
         q += " AND a.branch_id=?"
         args.append(br)
@@ -1152,7 +1282,10 @@ def appointments():
     if request.args.get("client_id"):
         sel_client = db.execute("SELECT id,name,phone FROM clients WHERE id=?",
                                 (request.args["client_id"],)).fetchone()
-    return render_template("appointments.html", rows=rows, d=d, br=br, dept=dept,
+    today = center_today()
+    return render_template("appointments.html", rows=rows, d=d, br=br, dept=dept, rng=rng, d_end=d_end,
+                           t0=today.isoformat(), t1=(today + timedelta(days=1)).isoformat(),
+                           slots=WORK_SLOTS, open_form=bool(request.args.get("new") or request.args.get("client_id")),
                            depts=branch_depts(form_branch), form_branch=form_branch,
                            services=services_for(form_branch), sel_client=sel_client,
                            posts=posts_for(form_branch))
@@ -1319,10 +1452,14 @@ def appt_arrived(aid):
         (a["price"] or 0) if a["plan_id"] else service_price(a["service_id"]))
     if a["plan_id"] and db.execute("SELECT 1 FROM charges WHERE appointment_id=? AND status='pending'", (aid,)).fetchone():
         price = 0  # ثمنها أُرسل للاستقبال من قبل
+    from_credit = False
+    if a["plan_id"] and price > 0 and plan_credit(db, a["plan_id"])[1] >= price - 0.001:
+        db.execute("UPDATE appointments SET paid=1, credit_used=1 WHERE id=?", (aid,))  # تُخصم من التسبيق
+        price, from_credit = 0, True
     vid = db.execute("""INSERT INTO visits(client_id,branch_id,target,request,status,created_by,created_at,appointment_id)
         VALUES(?,?,?,?,'waiting',?,?,?)""", (a["client_id"], a["branch_id"], target,
                                              (a["notes"] or "")[:300], u["id"], now_str(), aid)).lastrowid
-    note = "" if price else (" (مدفوعة)" if a["paid"] else " (ضمن الباقة)" if a["plan_id"] else "")
+    note = "" if price else (" (مدفوعة من التسبيق)" if from_credit else " (مدفوعة)" if a["paid"] else " (ضمن الباقة)" if a["plan_id"] else "")
     db.execute("""INSERT INTO visit_items(visit_id,kind,service_id,description,qty,unit_price,stage,added_by,created_at,appt_id)
         VALUES(?,'service',?,?,1,?,'reception',?,?,?)""", (vid, a["service_id"], label + note, price, u["id"], now_str(), aid))
     audit("وصول زبون لموعد", label, a["branch_id"])
@@ -5038,7 +5175,9 @@ def plan_data(plan_id):
     )
     total = p["total_price"] if p["price_mode"] == "total" else st["sum_price"]
     st["total"] = total
-    st["remaining"] = round(total - st["paid"], 2)
+    st["adv"], st["credit"] = plan_credit(db, plan_id)
+    st["remaining"] = round(total - st["paid"] - max(st["credit"], 0), 2)
+    st["advances"] = db.execute("SELECT * FROM payments WHERE plan_id=? AND cancelled=0 ORDER BY id", (plan_id,)).fetchall()
     return p, sessions, st
 
 
@@ -5261,6 +5400,32 @@ def plan_view(pid):
                 db.commit()
                 flash(f"تم تسجيل دفع {len(chosen)} حصة في الصندوق", "ok")
                 return redirect(url_for("receipt", pid=pay_id))
+        elif act == "advance":
+            if not can_collect(u):
+                abort(403)
+            amount = fnum(f.get("amount"))
+            if amount <= 0:
+                flash("اكتب مبلغ التسبيق", "err")
+            else:
+                pay = make_payment(db, p["branch_id"], p["client_id"], amount, f.get("method", "cash"), "service",
+                                   f"تسبيق: {p['title']}", u["id"], dept=p["dept"])
+                db.execute("UPDATE payments SET plan_id=? WHERE id=?", (pid, pay))
+                db.commit()
+                flash("تم تسجيل التسبيق", "ok")
+                return redirect(url_for("receipt", pid=pay))
+        elif act == "pay_credit":
+            ids = [int(i) for i in f.getlist("sel") if i.lstrip("-").isdigit()]
+            chosen = [x for x in sessions if x["id"] in ids and not x["paid"]]
+            need_ = round(sum(x["price"] or 0 for x in chosen), 2)
+            if not chosen:
+                flash("حدد الحصص", "err")
+            elif need_ > st["credit"] + 0.001:
+                flash(f"التسبيق المتبقّي ({st['credit']:g}) لا يكفي لهذه الحصص ({need_:g})", "err")
+            else:
+                for x in chosen:
+                    db.execute("UPDATE appointments SET paid=1, credit_used=1 WHERE id=?", (x["id"],))
+                    db.execute("UPDATE charges SET status='cancelled' WHERE appointment_id=? AND status='pending'", (x["id"],))
+                flash(f"دُفعت {len(chosen)} حصة من التسبيق", "ok")
         elif act == "send":
             ids = [int(i) for i in f.getlist("sel") if i.lstrip("-").isdigit()]
             n_ = 0
