@@ -203,8 +203,8 @@ def apply_rows(con, tables, deleted, rcv=None):
                     row["_rcv"] = rcv
                 row["_dirty"] = 0
                 cur = con.execute(f"SELECT _upd FROM {t} WHERE id=?", (row["id"],)).fetchone()
-                if cur and cur[0] and row.get("_upd") and cur[0] >= row["_upd"]:
-                    continue
+                if cur and cur[0] and row.get("_upd") and cur[0] > row["_upd"]:
+                    continue  # (المساوي يُعاد تطبيقه: قد يحمل أعمدة جديدة بعد تحديث البرنامج)
                 if t == "attendance":  # نفس العامل ونفس اليوم برقمين مختلفين: الأحدث يبقى
                     o = con.execute("SELECT id,_upd FROM attendance WHERE employee_id=? AND day=? AND id<>?",
                                     (row.get("employee_id"), row.get("day"), row["id"])).fetchone()
@@ -569,7 +569,11 @@ def node_sync_once(connect):
                 break
         # 2) استقبال ما تغيّر في المركزي
         #    إذا كان المركزي بنسخة أحدث ننتظر التحديث أولًا (قد تكون فيه أعمدة جديدة)
-        for _ in range(0 if central_is_newer(con) else 20):
+        #    حتى لو كان المركزي أحدث نستقبل (القوائم والزبائن تظهر فورًا)، ونحفظ من أين بدأ الفرق
+        #    لنعيد استقبال نفس الأسطر كاملة بأعمدتها الجديدة بعد تحديث هذا الحاسوب.
+        if central_is_newer(con) and not state_get(con, "resync_from", ""):
+            state_set(con, "resync_from", state_get(con, "last_pull", "") or "-")
+        for _ in range(20):
             since = state_get(con, "last_pull", "")
             iv = con.execute("SELECT value FROM settings WHERE key='img_ver'").fetchone()
             res = _post("/sync/pull", {"branch_id": NODE["branch_id"], "device": NODE.get("device"),
@@ -664,9 +668,28 @@ def watch_central():
             time.sleep(5)
 
 
+def after_update(connect):
+    """بعد تحديث برنامج هذا الحاسوب: نعيد استقبال ما وصل أثناء اختلاف النسختين (بأعمدته الكاملة)."""
+    con = connect()
+    try:
+        if state_get(con, "app_version", "") != APP_VERSION:
+            rf = state_get(con, "resync_from", "")
+            if rf and not central_is_newer(con):
+                state_set(con, "last_pull", "" if rf == "-" else rf)
+                state_set(con, "resync_from", "")
+            state_set(con, "app_version", APP_VERSION)
+            con.commit()
+    finally:
+        con.close()
+
+
 def node_loop(connect, every=20):
     """فورًا بعد أي عملية هنا، وفورًا عند وصول جديد في المركزي (watch_central)،
     ومرة كل 20 ثانية احتياطًا. عند انقطاع الاتصال نعيد المحاولة كل 10 ثوانٍ."""
+    try:
+        after_update(connect)
+    except Exception as e:  # noqa: BLE001
+        print("after_update:", e)
     threading.Thread(target=watch_central, daemon=True).start()
     while True:
         ok = False
