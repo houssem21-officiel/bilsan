@@ -48,7 +48,7 @@ app.secret_key = _secret()
 
 ROLES = {"admin": "المدير (الحاسوب المركزي)", "reception": "الاستقبال",
          "laser": "الليزر", "beauty": "التجميل"}
-DEPTS = {"reception": "الاستقبال", "laser": "الليزر", "beauty": "التجميل"}
+DEPTS = {"reception": "العلاج", "laser": "الليزر", "beauty": "التجميل"}  # reception = قسم العلاج (الحجامة والرنين والتشخيص...)
 SERVICE_KINDS = {"hijama": "حجامة", "herbs": "أعشاب", "course": "دورات",
                  "laser": "ليزر", "beauty": "تجميل", "other": "أخرى"}
 PAY_KINDS = {"service": "خدمة", "product": "بيع منتجات", "course": "دورة", "other": "أخرى"}

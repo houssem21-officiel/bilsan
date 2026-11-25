@@ -678,7 +678,7 @@ TEMPLATES["charge_new.html"] = r"""{% extends "base.html" %}{% from "macros.html
 <div class="card"><p class="mut">بعد تقديم الخدمة، حدّد المبلغ هنا فيظهر عند الاستقبال ليحصّله من الزبون.</p>
 <form method="post" class="row">
 {{ client_picker(sel_client) }}
-{% if cu.role in ('admin','reception') %}<label>القسم<select name="dept">{% for k in depts %}<option value="{{ k }}">{{ DEPTS[k] }}</option>{% endfor %}</select></label>{% endif %}
+{% if cu.role in ('admin','reception') %}<label>القسم<select name="dept">{% for k in DEPTS if k in depts %}<option value="{{ k }}">{{ DEPTS[k] }}</option>{% endfor %}</select></label>{% endif %}
 <label>الخدمة<select name="service_id" onchange="var o=this.selectedOptions[0];if(o.dataset.p&&o.dataset.p!='0')document.getElementById('amt').value=o.dataset.p">
 <option value="">—</option>{% for s in services %}<option value="{{ s.id }}" data-p="{{ '%g'|format(s.price) }}">{{ s.name }}</option>{% endfor %}</select></label>
 <label>البيان<input name="description"></label>
@@ -1022,7 +1022,7 @@ TEMPLATES["branch_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <div class="stat"><div class="l">صندوق هذا الشهر</div><div class="n">{{ month.s|money }} {{ cur }}</div>
 <div class="mut">{% for k in by_kind %}{{ PAY_KINDS[k.kind] }}: {{ k.s|money }} · {% endfor %}</div></div>
 <div class="stat"><div class="l">قيمة المخزون (بسعر البيع)</div><div class="n">{{ stock_value|money }} {{ cur }}</div><div class="mut">{{ stock|length }} منتج · {{ alerts|length }} تنبيه</div></div>
-<div class="stat"><div class="l">الأقسام والموظفون</div><div>{% for k in depts %}<span class="tag">{{ DEPTS[k] }}</span> {% endfor %}</div>
+<div class="stat"><div class="l">الأقسام والموظفون</div><div>{% for k in DEPTS if k in depts %}<span class="tag">{{ DEPTS[k] }}</span> {% endfor %}</div>
 <div class="mut">{% for u in staff %}{{ u.full_name or u.username }} ({{ ROLES[u.role] }}){{ '، ' if not loop.last }}{% else %}لا يوجد موظفون بعد{% endfor %}</div></div></div>
 <div class="card"><h2>مبالغ تنتظر التحصيل ({{ pending|length }})</h2><table><tr><th>#</th><th>القسم</th><th>الزبون</th><th>البيان</th><th>المبلغ</th></tr>
 {% for c in pending %}<tr><td>{{ c.id|rid }}</td><td>{{ DEPTS[c.dept] }}</td><td>{{ c.client or '-' }}</td><td>{{ c.description }}</td><td>{{ c.amount|money }}</td></tr>
@@ -1036,14 +1036,14 @@ TEMPLATES["branch_view.html"] = r"""{% extends "base.html" %}{% block body %}
 <table>
 {% for p in posts %}<tr><td colspan="5" style="padding:4px 0"><form method="post" action="{{ url_for('branch_posts', bid=b.id) }}" class="row" style="align-items:center">
 <input type="hidden" name="id" value="{{ p.id }}"><input name="name" value="{{ p.name }}" style="width:200px">
-<select name="dept"><option value="">—</option>{% for k in depts %}<option value="{{ k }}" {{ 'selected' if p.dept==k }}>{{ DEPTS[k] }}</option>{% endfor %}</select>
+<select name="dept"><option value="">—</option>{% for k in DEPTS if k in depts %}<option value="{{ k }}" {{ 'selected' if p.dept==k }}>{{ DEPTS[k] }}</option>{% endfor %}</select>
 <span class="tag">{{ post_counts.get(p.id, 0) }} عامل</span>
 <select name="active"><option value="1">مفعّلة</option><option value="0" {{ 'selected' if not p.active }}>موقوفة</option></select>
 <button class="btn sm" name="action" value="save">حفظ</button>
 <button class="btn red sm" name="action" value="delete" onclick="return confirm('حذف؟')">حذف</button></form></td></tr>{% endfor %}
 <tr><td colspan="5" style="padding-top:10px"><form method="post" action="{{ url_for('branch_posts', bid=b.id) }}" class="row" style="align-items:center">
 <input name="name" placeholder="وظيفة أو غرفة جديدة" style="width:200px" required>
-<select name="dept"><option value="">— القسم —</option>{% for k in depts %}<option value="{{ k }}">{{ DEPTS[k] }}</option>{% endfor %}</select>
+<select name="dept"><option value="">— القسم —</option>{% for k in DEPTS if k in depts %}<option value="{{ k }}">{{ DEPTS[k] }}</option>{% endfor %}</select>
 <button class="btn gold sm">+ إضافة</button></form></td></tr></table></div>
 <div class="card"><h2>عمال الفرع اليوم</h2>
 <div class="row" style="margin-bottom:10px"><a class="btn sm" href="{{ url_for('attendance', branch=b.id) }}">تسجيل حضور اليوم</a>
@@ -1390,7 +1390,7 @@ TEMPLATES["plan_new.html"] = r"""{% extends "base.html" %}{% from "macros.html" 
 <div class="card"><form method="post">
 <div class="row">{{ client_picker(sel_client, True) }}
 {% if cu.role=='admin' %}<label>الفرع<select name="branch_id" onchange="location='?branch_id='+this.value">{% for b in all_branches %}<option value="{{ b.id }}" {{ 'selected' if br==b.id }}>{{ b.name }}</option>{% endfor %}</select></label>{% else %}<input type="hidden" name="branch_id" value="{{ br }}">{% endif %}
-{% if cu.role in ('admin','reception') %}<label>القسم<select name="dept">{% for k in depts %}<option value="{{ k }}" {{ 'selected' if k!='reception' and loop.index==2 }}>{{ DEPTS[k] }}</option>{% endfor %}</select></label>{% endif %}
+{% if cu.role in ('admin','reception') %}<label>القسم<select name="dept">{% for k in DEPTS if k in depts %}<option value="{{ k }}" >{{ DEPTS[k] }}</option>{% endfor %}</select></label>{% endif %}
 <label>الخدمة<select name="service_id" id="svc" onchange="fillPkg()" required><option value="">—</option>{% for s in services %}{% if cu.role not in ('laser','beauty') or s.dept==cu.role %}<option value="{{ s.id }}" data-n="{{ s.pkg_sessions or 1 }}" data-i="{{ s.pkg_interval or 0 }}" data-p="{{ s.price or 0 }}" data-t="{{ s.pkg_total or 0 }}" data-pay="{{ s.pkg_pay or 'session' }}" data-d="{{ s.dept }}">{{ s.name }}</option>{% endif %}{% endfor %}</select></label>
 <label>الغرفة<select name="post_id"><option value="">—</option>{% for p in posts %}<option value="{{ p.id }}">{{ p.name }}</option>{% endfor %}</select></label>
 <label>اسم الخطة<input name="title" placeholder="يُكتب تلقائيًا من الخدمة" style="width:240px"></label></div>
